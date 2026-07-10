@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-# ta_mobile
+# rental-ps-app
 
 A new Flutter project.
 
@@ -16,6 +15,3 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
-=======
-# rental-ps-app
->>>>>>> 32d6bfd18005b9ace952953b3a78b05de09e5ee3
