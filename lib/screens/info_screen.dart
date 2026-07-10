@@ -1,0 +1,860 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../theme/app_theme.dart';
+import '../data/dummy_data.dart';
+import '../models/ps_unit.dart';
+import '../widgets/neon_card.dart';
+import '../widgets/section_title.dart';
+import '../widgets/retro_button.dart';
+import '../providers/booking_provider.dart';
+
+class InfoScreen extends StatefulWidget {
+  const InfoScreen({super.key});
+
+  @override
+  State<InfoScreen> createState() => _InfoScreenState();
+}
+
+class _InfoScreenState extends State<InfoScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _mainTabController;
+
+  // Game filter state
+  String _gameFilter = 'semua'; // 'semua', 'populer', or a genre string
+
+  @override
+  void initState() {
+    super.initState();
+    _mainTabController = TabController(length: 2, vsync: this);
+    _mainTabController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _mainTabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // ── Top toggle: Info Unit / Info Game ──
+        Container(
+          margin: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceDark,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.dividerColor),
+          ),
+          child: TabBar(
+            controller: _mainTabController,
+            indicator: BoxDecoration(
+              color: AppTheme.accentCyan,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            indicatorSize: TabBarIndicatorSize.tab,
+            dividerColor: Colors.transparent,
+            labelColor: Colors.white,
+            unselectedLabelColor: AppTheme.textMuted,
+            labelStyle: GoogleFonts.spaceGrotesk(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+            unselectedLabelStyle: GoogleFonts.spaceGrotesk(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+            tabs: const [
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.sports_esports_outlined, size: 18),
+                    SizedBox(width: 6),
+                    Text('Info Unit'),
+                  ],
+                ),
+              ),
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.videogame_asset_outlined, size: 18),
+                    SizedBox(width: 6),
+                    Text('Info Game'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        // ── Content ──
+        Expanded(
+          child: TabBarView(
+            controller: _mainTabController,
+            children: [_buildUnitTab(), _buildGameTab()],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ════════════════════════════════════════════
+  //  TAB 1: Info Unit
+  // ════════════════════════════════════════════
+  Widget _buildUnitTab() {
+    final unitStatuses = context.watch<BookingProvider>().units;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // PS type cards
+          ...dummyPsUnits.map((ps) {
+            final units = unitStatuses
+                .where((u) => u.psType.toLowerCase() == ps.id)
+                .toList();
+            final available = units.where((u) => u.isAvailable).length;
+            final inUse = units.length - available;
+            final color = ps.id == 'ps4'
+                ? AppTheme.accentCyan
+                : ps.id.contains('nintendo')
+                    ? AppTheme.accentRed
+                    : AppTheme.accentMagenta;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: NeonCard(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
+                      children: [
+                        Icon(Icons.sports_esports, color: color, size: 28),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                  ps.name,
+                                  style: GoogleFonts.pressStart2p(
+                                    fontSize: 14,
+                                    color: color,
+                                    shadows: AppTheme.neonShadow(color),
+                                  ),
+                                ),
+                              Text(
+                                '${ps.totalUnits} unit tersedia · ${ps.controllersPerUnit} stik/unit',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.textMuted,
+                                  ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Status summary
+                    Row(
+                      children: [
+                        _buildStatusBadge(
+                          '$available Tersedia',
+                          AppTheme.accentGreen,
+                        ),
+                        const SizedBox(width: 10),
+                        _buildStatusBadge(
+                          '$inUse Digunakan',
+                          AppTheme.accentRed,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 220,
+                        mainAxisExtent: 75,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                      ),
+                      itemCount: units.length,
+                      itemBuilder: (context, index) {
+                        final unit = units[index];
+                        return GestureDetector(
+                          onTap: () => _showUnitDetails(unit),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: unit.isAvailable
+                                ? AppTheme.accentGreen.withValues(alpha: 0.1)
+                                : AppTheme.accentRed.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: unit.isAvailable
+                                  ? AppTheme.accentGreen
+                                  : AppTheme.dividerColor,
+                              width: unit.isAvailable ? 2 : 1,
+                            ),
+                            boxShadow: unit.isAvailable
+                                ? AppTheme.neonShadow(AppTheme.accentGreen, blur: 10)
+                                : null,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                unit.isAvailable
+                                    ? Icons.check_circle_outline
+                                    : Icons.block_outlined,
+                                size: 16,
+                                color: unit.isAvailable
+                                    ? AppTheme.accentGreen
+                                    : AppTheme.accentRed,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                unit.label,
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: unit.isAvailable
+                                      ? AppTheme.accentGreen
+                                      : AppTheme.accentRed,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                unit.isAvailable ? 'Kosong' : 'Dipakai',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 9,
+                                  color: unit.isAvailable
+                                      ? AppTheme.accentGreen
+                                      : AppTheme.textMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ));
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+
+          // Cara rental
+          const SizedBox(height: 8),
+          const SectionTitle(title: 'Cara Rental'),
+          _buildTimeline(),
+          const SizedBox(height: 24),
+
+          // S&K
+          const SectionTitle(title: 'Syarat & Ketentuan'),
+          _buildTerms(),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ════════════════════════════════════════════
+  //  TAB 2: Info Game
+  // ════════════════════════════════════════════
+  Widget _buildGameTab() {
+    // Filter games
+    List<GameItem> filtered;
+    if (_gameFilter == 'semua') {
+      filtered = List.from(gameCatalog);
+    } else if (_gameFilter == 'populer') {
+      filtered = gameCatalog.where((g) => g.popularRank != null).toList();
+      filtered.sort((a, b) => a.popularRank!.compareTo(b.popularRank!));
+    } else {
+      // Genre filter
+      filtered = gameCatalog.where((g) => g.genre == _gameFilter).toList();
+    }
+
+    return Column(
+      children: [
+        // Filter chips
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              _buildFilterChip('Semua Game', 'semua', Icons.apps_outlined),
+              const SizedBox(width: 8),
+              _buildFilterChip('Paling Populer', 'populer', Icons.star_outline),
+              const SizedBox(width: 8),
+              _buildGenreDropdownChip(),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Game list
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            itemCount: filtered.length,
+            itemBuilder: (context, index) {
+              final game = filtered[index];
+              return _buildGameCard(game);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterChip(String label, String value, IconData icon) {
+    final isActive = _gameFilter == value;
+    return GestureDetector(
+      onTap: () => setState(() {
+        _gameFilter = value;
+      }),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? AppTheme.accentCyan : AppTheme.cardDark,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isActive ? AppTheme.accentCyan : AppTheme.dividerColor,
+          ),
+          boxShadow: isActive ? AppTheme.neonShadow(AppTheme.accentCyan, blur: 5) : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: isActive ? Colors.white : AppTheme.textMuted,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label.toUpperCase(),
+              style: GoogleFonts.spaceGrotesk(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isActive ? Colors.black : AppTheme.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGenreDropdownChip() {
+    final genres = getUniqueGenres();
+    final isGenreActive = _gameFilter != 'semua' && _gameFilter != 'populer';
+
+    return PopupMenuButton<String>(
+      onSelected: (genre) {
+        setState(() => _gameFilter = genre);
+      },
+      color: AppTheme.cardDark,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: AppTheme.dividerColor),
+      ),
+      itemBuilder: (context) => genres.map((g) {
+        return PopupMenuItem(
+          value: g,
+          child: Text(
+            g,
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+        );
+      }).toList(),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isGenreActive ? AppTheme.accentCyan : AppTheme.cardDark,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isGenreActive ? AppTheme.accentCyan : AppTheme.dividerColor,
+          ),
+          boxShadow: isGenreActive ? AppTheme.neonShadow(AppTheme.accentCyan, blur: 5) : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.search,
+              size: 16,
+              color: isGenreActive ? Colors.white : AppTheme.textMuted,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              isGenreActive ? _gameFilter.toUpperCase() : 'Cari by Genre',
+              style: GoogleFonts.spaceGrotesk(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isGenreActive ? Colors.black : AppTheme.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGameCard(GameItem game) {
+    final isPopular = game.popularRank != null;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: NeonCard(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            // Game Image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                game.imageUrl ??
+                    'https://placehold.co/120x120/1e1e2e/00d2ff/png?text=${Uri.encodeComponent(game.title.split(" ").take(2).join(" "))}',
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  width: 60,
+                  height: 60,
+                  color: isPopular
+                      ? AppTheme.accentMagenta.withValues(alpha: 0.12)
+                      : AppTheme.accentCyan.withValues(alpha: 0.08),
+                  child: Icon(
+                    Icons.videogame_asset,
+                    color: isPopular
+                        ? AppTheme.accentMagenta
+                        : AppTheme.accentCyan,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Rank badge + title
+                  if (isPopular)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentMagenta.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: AppTheme.accentMagenta.withValues(alpha: 0.5)),
+                        boxShadow: AppTheme.neonShadow(AppTheme.accentMagenta, blur: 2),
+                      ),
+                      child: Text(
+                        '#${game.popularRank} HOT',
+                        style: GoogleFonts.pressStart2p(
+                          fontSize: 8,
+                          color: AppTheme.accentMagenta,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  Text(
+                    game.title.toUpperCase(),
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.category_outlined,
+                        size: 12,
+                        color: AppTheme.textMuted,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        game.genre,
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  // Platform chips
+                  Row(
+                    children: game.platform.split(' ').map((p) {
+                      return Container(
+                        margin: const EdgeInsets.only(right: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: p == 'PS5'
+                              ? AppTheme.accentMagenta.withValues(alpha: 0.1)
+                              : AppTheme.accentCyan.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          p,
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: p == 'PS5'
+                                ? AppTheme.accentMagenta
+                                : AppTheme.accentCyan,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+            // Status
+            if (!isPopular)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentGreen.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: AppTheme.accentGreen.withValues(alpha: 0.5)),
+                  boxShadow: AppTheme.neonShadow(AppTheme.accentGreen, blur: 2),
+                ),
+                child: Text(
+                  'TERSEDIA',
+                  style: GoogleFonts.pressStart2p(
+                    fontSize: 7,
+                    color: AppTheme.accentGreen,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Shared: Timeline ──
+  Widget _buildTimeline() {
+    return Column(
+      children: caraKerjaRental.asMap().entries.map((entry) {
+        final index = entry.key;
+        final step = entry.value;
+        final isLast = index == caraKerjaRental.length - 1;
+
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 40,
+                child: Column(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentCyan.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          step.step,
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.accentCyan,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (!isLast)
+                      Expanded(
+                        child: Container(
+                          width: 2,
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          color: AppTheme.dividerColor,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: isLast ? 0 : 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(step.icon, size: 18, color: AppTheme.accentCyan),
+                          const SizedBox(width: 8),
+                          Text(
+                            step.title,
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        step.description,
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 12,
+                          color: AppTheme.textSecondary,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  // ── Shared: S&K ──
+  Widget _buildTerms() {
+    return NeonCard(
+      child: Theme(
+        data: ThemeData(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: const EdgeInsets.only(top: 8),
+          iconColor: AppTheme.textSecondary,
+          collapsedIconColor: AppTheme.textMuted,
+          title: Row(
+            children: [
+              const Icon(
+                Icons.description_outlined,
+                color: AppTheme.accentMagenta,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Baca Syarat & Ketentuan',
+                style: GoogleFonts.spaceGrotesk(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          children: syaratKetentuan.asMap().entries.map((entry) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 22,
+                    child: Text(
+                      '${entry.key + 1}.',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 12,
+                        color: AppTheme.accentMagenta,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      entry.value,
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 12,
+                        color: AppTheme.textSecondary,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  void _showUnitDetails(UnitStatus unit) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppTheme.cardDark,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border.all(color: AppTheme.dividerColor),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Detail ${unit.label}',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: unit.isAvailable 
+                          ? AppTheme.accentGreen.withValues(alpha: 0.15)
+                          : AppTheme.accentRed.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      unit.isAvailable ? 'Tersedia' : 'Sedang Dipakai',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: unit.isAvailable ? AppTheme.accentGreen : AppTheme.accentRed,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              if (unit.isAvailable)
+                Text(
+                  'Unit ini sedang kosong dan siap untuk disewa. Silakan masuk ke menu Booking untuk memesan unit ini.',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 14,
+                    color: AppTheme.textSecondary,
+                    height: 1.5,
+                  ),
+                )
+              else ...[
+                _buildDetailRow(Icons.person_outline, 'Pemain', unit.playerName ?? 'Tidak diketahui'),
+                const SizedBox(height: 12),
+                _buildDetailRow(Icons.access_time, 'Mulai', unit.startTime ?? '-'),
+                const SizedBox(height: 12),
+                _buildDetailRow(Icons.timer_off_outlined, 'Selesai', unit.endTime ?? '-'),
+                const SizedBox(height: 12),
+                _buildDetailRow(Icons.info_outline, 'Status', unit.isWalkIn ? 'Walk-in (Langsung)' : 'Booking App'),
+              ],
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: RetroButton(
+                  label: 'Tutup',
+                  onPressed: () => Navigator.pop(context),
+                  backgroundColor: AppTheme.accentCyan,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: AppTheme.textMuted),
+        const SizedBox(width: 12),
+        Text(
+          label,
+          style: GoogleFonts.spaceGrotesk(
+            fontSize: 14,
+            color: AppTheme.textSecondary,
+          ),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: GoogleFonts.spaceGrotesk(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+}
