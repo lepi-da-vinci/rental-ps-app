@@ -6,7 +6,6 @@ import '../theme/app_theme.dart';
 import '../data/dummy_data.dart';
 import '../models/booking.dart';
 import '../providers/booking_provider.dart';
-import '../widgets/neon_card.dart';
 import '../widgets/section_title.dart';
 import '../widgets/retro_button.dart';
 
@@ -62,231 +61,302 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Section 1: Data Diri ──
-            _buildSectionCard(
-              title: 'Data Diri',
-              icon: Icons.person_outline,
+            // Header
+            Row(
               children: [
-                _buildLabel('Nama Lengkap'),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _nameController,
-                  style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
-                  decoration: const InputDecoration(
-                    hintText: 'Masukkan nama kamu',
-                    prefixIcon: Icon(
-                      Icons.badge_outlined,
-                      color: AppTheme.textMuted,
-                    ),
+                Text(
+                  'Reservasi ',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary,
                   ),
-                  validator: (v) => (v == null || v.trim().isEmpty)
-                      ? 'Nama wajib diisi'
-                      : null,
                 ),
-                const SizedBox(height: 16),
-                _buildLabel('No. HP / WhatsApp'),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
-                  decoration: const InputDecoration(
-                    hintText: '08xxxxxxxxxx',
-                    prefixIcon: Icon(
-                      Icons.phone_outlined,
-                      color: AppTheme.textMuted,
-                    ),
+                Text(
+                  'Konsol',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.accentMagenta,
                   ),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) {
-                      return 'No. HP wajib diisi';
-                    }
-                    if (v.trim().length < 10) return 'No. HP minimal 10 digit';
-                    return null;
-                  },
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-
-            // ── Section 2: Detail Booking ──
-            _buildSectionCard(
-              title: 'Detail Booking',
-              icon: Icons.event_outlined,
-              children: [
-                _buildLabel('Tipe PlayStation'),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  initialValue: _selectedPsType,
-                  dropdownColor: AppTheme.cardDark,
-                  style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
-                  decoration: const InputDecoration(
-                    hintText: 'Pilih tipe PS',
-                    prefixIcon: Icon(
-                      Icons.sports_esports_outlined,
-                      color: AppTheme.textMuted,
-                    ),
-                  ),
-                  items: _psTypes
-                      .map((t) => DropdownMenuItem(value: t, child: Text(t)))
-                      .toList(),
-                  onChanged: (v) => setState(() => _selectedPsType = v),
-                  validator: (v) => v == null ? 'Pilih tipe PS' : null,
-                ),
-                const SizedBox(height: 16),
-                // Date & Time in a row
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildLabel('Tanggal'),
-                          const SizedBox(height: 8),
-                          GestureDetector(
-                            onTap: _pickDate,
-                            child: AbsorbPointer(
-                              child: TextFormField(
-                                style: GoogleFonts.spaceGrotesk(
-                                  color: AppTheme.textPrimary,
-                                  fontSize: 13,
-                                ),
-                                decoration: InputDecoration(
-                                  hintText: _selectedDate != null
-                                      ? DateFormat(
-                                          'dd/MM/yyyy',
-                                        ).format(_selectedDate!)
-                                      : 'dd/mm/yyyy',
-                                  prefixIcon: const Icon(
-                                    Icons.calendar_today_outlined,
-                                    color: AppTheme.textMuted,
-                                    size: 20,
-                                  ),
-                                ),
-                                validator: (_) => _selectedDate == null
-                                    ? 'Pilih tanggal'
-                                    : null,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildLabel('Jam Mulai'),
-                          const SizedBox(height: 8),
-                          DropdownButtonFormField<String>(
-                            initialValue: _selectedTime,
-                            dropdownColor: AppTheme.cardDark,
-                            style: GoogleFonts.spaceGrotesk(
-                              color: AppTheme.textPrimary,
-                              fontSize: 13,
-                            ),
-                            decoration: const InputDecoration(
-                              hintText: 'Jam',
-                              prefixIcon: Icon(
-                                Icons.access_time_outlined,
-                                color: AppTheme.textMuted,
-                                size: 20,
-                              ),
-                            ),
-                            items: timeSlotOptions
-                                .map(
-                                  (t) => DropdownMenuItem(
-                                    value: t,
-                                    child: Text(t),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (v) => setState(() => _selectedTime = v),
-                            validator: (v) => v == null ? 'Pilih jam' : null,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildLabel('Durasi'),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  initialValue: _selectedDuration,
-                  dropdownColor: AppTheme.cardDark,
-                  style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
-                  decoration: const InputDecoration(
-                    hintText: 'Pilih durasi',
-                    prefixIcon: Icon(
-                      Icons.hourglass_bottom_outlined,
-                      color: AppTheme.textMuted,
-                    ),
-                  ),
-                  items: durationOptions
-                      .map((d) => DropdownMenuItem(value: d, child: Text(d)))
-                      .toList(),
-                  onChanged: (v) => setState(() => _selectedDuration = v),
-                  validator: (v) => v == null ? 'Pilih durasi' : null,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // ── Estimated price ──
-            if (_estimatedPrice != null) ...[
-              NeonCard(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.receipt_long_outlined,
-                      color: AppTheme.accentCyan,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Estimasi harga:',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 13,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      _estimatedPrice!,
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.accentCyan,
-                      ),
-                    ),
-                  ],
-                ),
+            const SizedBox(height: 8),
+            Text(
+              'Isi form di bawah — tim kami akan konfirmasi ketersediaan dalam 5 menit.',
+              style: GoogleFonts.spaceGrotesk(
+                fontSize: 14,
+                color: AppTheme.textSecondary,
               ),
-              const SizedBox(height: 16),
-            ],
-
-            // ── Submit ──
-            RetroButton(
-              label: 'Konfirmasi Booking',
-              icon: Icons.check_circle_outline,
-              isFullWidth: true,
-              backgroundColor: AppTheme.accentCyan,
-              onPressed: _submitBooking,
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 32),
 
+            LayoutBuilder(
+              builder: (context, constraints) {
+                bool isLarge = constraints.maxWidth > 800;
+
+                Widget formContent = Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppTheme.cardDark,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppTheme.dividerColor),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildLabel('NAMA LENGKAP'),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _nameController,
+                        style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
+                        decoration: const InputDecoration(
+                          hintText: 'Nama kamu',
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      _buildLabel('NOMOR WHATSAPP'),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
+                        decoration: const InputDecoration(
+                          hintText: '08xxxxxxxxxx',
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
+                      ),
+                      const SizedBox(height: 20),
+
+                      _buildLabel('PILIH KONSOL'),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: _psTypes.map((type) {
+                          bool isSelected = _selectedPsType == type;
+                          return InkWell(
+                            onTap: () => setState(() => _selectedPsType = type),
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              width: isLarge ? (constraints.maxWidth - 400 - 48 - 24) / 3 : (constraints.maxWidth - 96) / 2,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                color: isSelected ? AppTheme.accentMagenta.withValues(alpha: 0.1) : AppTheme.surfaceDark,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isSelected ? AppTheme.accentMagenta : AppTheme.dividerColor,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    type.contains('Nintendo') ? Icons.gamepad : Icons.sports_esports,
+                                    color: isSelected ? AppTheme.textPrimary : AppTheme.textMuted,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    type,
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 12,
+                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                                      color: isSelected ? AppTheme.textPrimary : AppTheme.textMuted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 20),
+
+                      _buildLabel('DURASI'),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: durationOptions.map((duration) {
+                          bool isSelected = _selectedDuration == duration;
+                          return InkWell(
+                            onTap: () => setState(() => _selectedDuration = duration),
+                            borderRadius: BorderRadius.circular(24),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: isSelected ? AppTheme.accentMagenta.withValues(alpha: 0.1) : AppTheme.surfaceDark,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: isSelected ? AppTheme.accentMagenta : AppTheme.dividerColor,
+                                ),
+                              ),
+                              child: Text(
+                                duration,
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 12,
+                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                                  color: isSelected ? AppTheme.textPrimary : AppTheme.textMuted,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 20),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildLabel('TANGGAL'),
+                                const SizedBox(height: 8),
+                                GestureDetector(
+                                  onTap: _pickDate,
+                                  child: AbsorbPointer(
+                                    child: TextFormField(
+                                      style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary, fontSize: 13),
+                                      decoration: InputDecoration(
+                                        hintText: _selectedDate != null ? DateFormat('dd/MM/yyyy').format(_selectedDate!) : 'dd/mm/yyyy',
+                                        suffixIcon: const Icon(Icons.calendar_today_outlined, color: AppTheme.textMuted, size: 18),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildLabel('JAM MULAI'),
+                                const SizedBox(height: 8),
+                                DropdownButtonFormField<String>(
+                                  initialValue: _selectedTime,
+                                  dropdownColor: AppTheme.cardDark,
+                                  style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary, fontSize: 13),
+                                  decoration: const InputDecoration(
+                                    hintText: '--:--',
+                                    suffixIcon: Icon(Icons.access_time_outlined, color: AppTheme.textMuted, size: 18),
+                                  ),
+                                  items: timeSlotOptions.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                                  onChanged: (v) => setState(() => _selectedTime = v),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+
+                Widget summaryContent = Container(
+                  width: isLarge ? 320 : double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceDark, // slightly different dark to distinguish
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'RINGKASAN',
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textMuted,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      _buildSummaryRow('Konsol', _selectedPsType ?? '-'),
+                      const SizedBox(height: 16),
+                      _buildSummaryRow('Durasi', _selectedDuration ?? '-'),
+                      const SizedBox(height: 16),
+                      _buildSummaryRow('Estimasi', _estimatedPrice ?? '-'),
+                      const SizedBox(height: 24),
+                      const Divider(color: AppTheme.dividerColor),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'TOTAL',
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textMuted,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          Text(
+                            _estimatedPrice ?? 'Rp 0',
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      RetroButton(
+                        label: 'Konfirmasi Booking',
+                        isFullWidth: true,
+                        backgroundColor: AppTheme.accentMagenta, // Assuming the button is purple/magenta from the UI
+                        onPressed: _submitBooking,
+                      ),
+                      const SizedBox(height: 12),
+                      Center(
+                        child: Text(
+                          'Bayar di tempat · Batal gratis sebelum 1 jam',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 10,
+                            color: AppTheme.textMuted,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (isLarge) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: formContent),
+                      const SizedBox(width: 24),
+                      summaryContent,
+                    ],
+                  );
+                } else {
+                  return Column(
+                    children: [
+                      formContent,
+                      const SizedBox(height: 24),
+                      summaryContent,
+                    ],
+                  );
+                }
+              },
+            ),
+
+            const SizedBox(height: 40),
             // ── History ──
             _buildRecentBookings(),
             const SizedBox(height: 16),
@@ -296,37 +366,30 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  // ── Section Card wrapper ──
-  Widget _buildSectionCard({
-    required String title,
-    required IconData icon,
-    required List<Widget> children,
-  }) {
-    return NeonCard(
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 18, color: AppTheme.accentCyan),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary,
-                ),
-              ),
-            ],
+  Widget _buildSummaryRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.spaceGrotesk(
+            fontSize: 13,
+            color: AppTheme.textSecondary,
           ),
-          const SizedBox(height: 16),
-          ...children,
-        ],
-      ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.spaceGrotesk(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+      ],
     );
   }
+
+
 
   Widget _buildLabel(String text) {
     return Text(
@@ -699,8 +762,13 @@ class _BookingScreenState extends State<BookingScreen> {
                 padding: const EdgeInsets.only(bottom: 10),
                 child: GestureDetector(
                   onTap: () => _showBookingDetails(b),
-                  child: NeonCard(
+                  child: Container(
                     padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardDark,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppTheme.dividerColor),
+                    ),
                     child: Row(
                       children: [
                         Container(

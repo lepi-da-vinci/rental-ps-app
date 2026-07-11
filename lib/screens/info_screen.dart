@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../data/dummy_data.dart';
 import '../models/ps_unit.dart';
-import '../widgets/neon_card.dart';
 import '../widgets/section_title.dart';
 import '../widgets/retro_button.dart';
 import '../providers/booking_provider.dart';
@@ -38,67 +37,264 @@ class _InfoScreenState extends State<InfoScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // ── Top toggle: Info Unit / Info Game ──
-        Container(
-          margin: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: AppTheme.surfaceDark,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.dividerColor),
+    return DefaultTabController(
+      length: 2,
+      child: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'INFO',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textMuted,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tentang Timeless',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tempat main favorit sejak 2022. Kami hadir buat kamu yang cari pengalaman gaming nyaman, dengan koleksi konsol lengkap dan harga bersahabat.',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 14,
+                        color: AppTheme.textSecondary,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        bool isLarge = constraints.maxWidth > 600;
+                        return Wrap(
+                          spacing: 16,
+                          runSpacing: 16,
+                          children: [
+                            _buildInfoCard(
+                              icon: Icons.location_on_outlined,
+                              title: 'ALAMAT',
+                              content: 'Jl. Merdeka No. 123, Bandung',
+                              width: isLarge ? (constraints.maxWidth - 32) / 3 : constraints.maxWidth,
+                            ),
+                            _buildInfoCard(
+                              icon: Icons.phone_outlined,
+                              title: 'TELEPON',
+                              content: '+62 812 3456 7890',
+                              width: isLarge ? (constraints.maxWidth - 32) / 3 : constraints.maxWidth,
+                            ),
+                            _buildInfoCard(
+                              icon: Icons.email_outlined,
+                              title: 'EMAIL',
+                              content: 'halo@timeless.id',
+                              width: isLarge ? (constraints.maxWidth - 32) / 3 : constraints.maxWidth,
+                            ),
+                          ],
+                        );
+                      }
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      'Fasilitas',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        bool isLarge = constraints.maxWidth > 600;
+                        return Wrap(
+                          spacing: 16,
+                          runSpacing: 16,
+                          children: [
+                            _buildFacilityCard(
+                              icon: Icons.ac_unit,
+                              title: 'Ruangan Ber-AC',
+                              subtitle: 'Suhu terjaga 22°C sepanjang hari.',
+                              width: isLarge ? (constraints.maxWidth - 48) / 4 : (constraints.maxWidth - 16) / 2,
+                            ),
+                            _buildFacilityCard(
+                              icon: Icons.wifi,
+                              title: 'WiFi 200 Mbps',
+                              subtitle: 'Gratis untuk semua pengunjung.',
+                              width: isLarge ? (constraints.maxWidth - 48) / 4 : (constraints.maxWidth - 16) / 2,
+                            ),
+                            _buildFacilityCard(
+                              icon: Icons.coffee,
+                              title: 'Cafe & Snack',
+                              subtitle: 'Kopi, mie, dan cemilan siap saji.',
+                              width: isLarge ? (constraints.maxWidth - 48) / 4 : (constraints.maxWidth - 16) / 2,
+                            ),
+                            _buildFacilityCard(
+                              icon: Icons.shield_outlined,
+                              title: 'Konsol Original',
+                              subtitle: 'Semua game & konsol resmi.',
+                              width: isLarge ? (constraints.maxWidth - 48) / 4 : (constraints.maxWidth - 16) / 2,
+                            ),
+                          ],
+                        );
+                      }
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ),
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _SliverAppBarDelegate(
+                TabBar(
+                  controller: _mainTabController,
+                  indicator: BoxDecoration(
+                    color: AppTheme.accentCyan,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  dividerColor: Colors.transparent,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: AppTheme.textMuted,
+                  labelStyle: GoogleFonts.spaceGrotesk(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  unselectedLabelStyle: GoogleFonts.spaceGrotesk(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  tabs: const [
+                    Tab(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.sports_esports_outlined, size: 18),
+                          SizedBox(width: 6),
+                          Text('Info Unit'),
+                        ],
+                      ),
+                    ),
+                    Tab(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.videogame_asset_outlined, size: 18),
+                          SizedBox(width: 6),
+                          Text('Info Game'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ];
+        },
+        body: TabBarView(
+          controller: _mainTabController,
+          children: [_buildUnitTab(), _buildGameTab()],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard({required IconData icon, required String title, required String content, required double width}) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppTheme.accentMagenta.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: AppTheme.accentMagenta, size: 24),
           ),
-          child: TabBar(
-            controller: _mainTabController,
-            indicator: BoxDecoration(
-              color: AppTheme.accentCyan,
+          const SizedBox(height: 24),
+          Text(
+            title,
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textMuted,
+              letterSpacing: 1.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            content,
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFacilityCard({required IconData icon, required String title, required String subtitle, required double width}) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.accentCyan.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            indicatorSize: TabBarIndicatorSize.tab,
-            dividerColor: Colors.transparent,
-            labelColor: Colors.white,
-            unselectedLabelColor: AppTheme.textMuted,
-            labelStyle: GoogleFonts.spaceGrotesk(
-              fontSize: 13,
+            child: Icon(icon, color: AppTheme.accentCyan, size: 20),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 14,
               fontWeight: FontWeight.w700,
+              color: AppTheme.textPrimary,
             ),
-            unselectedLabelStyle: GoogleFonts.spaceGrotesk(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 12,
+              color: AppTheme.textSecondary,
+              height: 1.4,
             ),
-            tabs: const [
-              Tab(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.sports_esports_outlined, size: 18),
-                    SizedBox(width: 6),
-                    Text('Info Unit'),
-                  ],
-                ),
-              ),
-              Tab(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.videogame_asset_outlined, size: 18),
-                    SizedBox(width: 6),
-                    Text('Info Game'),
-                  ],
-                ),
-              ),
-            ],
           ),
-        ),
-        // ── Content ──
-        Expanded(
-          child: TabBarView(
-            controller: _mainTabController,
-            children: [_buildUnitTab(), _buildGameTab()],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -128,8 +324,20 @@ class _InfoScreenState extends State<InfoScreen>
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 20),
-              child: NeonCard(
+              child: Container(
                 padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppTheme.cardDark,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.dividerColor),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -147,7 +355,6 @@ class _InfoScreenState extends State<InfoScreen>
                                   style: GoogleFonts.pressStart2p(
                                     fontSize: 14,
                                     color: color,
-                                    shadows: AppTheme.neonShadow(color),
                                   ),
                                 ),
                               Text(
@@ -207,13 +414,10 @@ class _InfoScreenState extends State<InfoScreen>
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: unit.isAvailable
-                                  ? AppTheme.accentGreen
+                                  ? AppTheme.accentGreen.withValues(alpha: 0.5)
                                   : AppTheme.dividerColor,
-                              width: unit.isAvailable ? 2 : 1,
+                              width: 1,
                             ),
-                            boxShadow: unit.isAvailable
-                                ? AppTheme.neonShadow(AppTheme.accentGreen, blur: 10)
-                                : null,
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -458,8 +662,13 @@ class _InfoScreenState extends State<InfoScreen>
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: NeonCard(
+      child: Container(
         padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppTheme.cardDark,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.dividerColor),
+        ),
         child: Row(
           children: [
             // Game Image
@@ -505,7 +714,6 @@ class _InfoScreenState extends State<InfoScreen>
                         color: AppTheme.accentMagenta.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(color: AppTheme.accentMagenta.withValues(alpha: 0.5)),
-                        boxShadow: AppTheme.neonShadow(AppTheme.accentMagenta, blur: 2),
                       ),
                       child: Text(
                         '#${game.popularRank} HOT',
@@ -689,7 +897,13 @@ class _InfoScreenState extends State<InfoScreen>
 
   // ── Shared: S&K ──
   Widget _buildTerms() {
-    return NeonCard(
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.dividerColor),
+      ),
       child: Theme(
         data: ThemeData(dividerColor: Colors.transparent),
         child: ExpansionTile(
@@ -856,5 +1070,38 @@ class _InfoScreenState extends State<InfoScreen>
         ),
       ],
     );
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar _tabBar;
+
+  _SliverAppBarDelegate(this._tabBar);
+
+  @override
+  double get minExtent => _tabBar.preferredSize.height + 28; // margin + padding
+  @override
+  double get maxExtent => _tabBar.preferredSize.height + 28;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: AppTheme.backgroundDark,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceDark,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.dividerColor),
+        ),
+        child: _tabBar,
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return false;
   }
 }
