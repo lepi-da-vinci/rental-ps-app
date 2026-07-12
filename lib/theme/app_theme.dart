@@ -15,6 +15,24 @@ class AppTheme {
   static const Color textMuted = Color(0xFF6B6B7B);
   static const Color dividerColor = Color(0xFF2A2A3D);
 
+  // ── Booking Colors Palette ──
+  static const List<Color> bookingColors = [
+    accentCyan,
+    accentGreen,
+    accentMagenta,
+    Colors.orangeAccent,
+    Colors.amber,
+    Colors.purpleAccent,
+    accentTeal,
+  ];
+
+  static Color getBookingColor(String id) {
+    if (id.isEmpty) return accentCyan;
+    // Hash string to an index
+    int hash = id.codeUnits.fold(0, (a, b) => a + b);
+    return bookingColors[hash % bookingColors.length];
+  }
+
   // ── Neon shadow glow ──
   static List<BoxShadow> neonShadow(Color color, {double spread = 1, double blur = 8}) {
     return [

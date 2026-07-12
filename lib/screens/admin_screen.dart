@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
+import '../models/booking.dart';
 import '../providers/booking_provider.dart';
 import '../data/dummy_data.dart';
 import '../models/ps_unit.dart';
@@ -21,7 +22,7 @@ class _AdminScreenState extends State<AdminScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -63,6 +64,7 @@ class _AdminScreenState extends State<AdminScreen>
               Tab(text: 'Dashboard'),
               Tab(text: 'Timeline Unit'),
               Tab(text: 'Semua Booking'),
+              Tab(text: 'Data Jadwal'),
             ],
           ),
         ),
@@ -74,6 +76,7 @@ class _AdminScreenState extends State<AdminScreen>
               _buildDashboard(),
               _buildUnitTimeline(),
               _buildBookingList(),
+              _buildDataJadwal(),
             ],
           ),
         ),
@@ -290,7 +293,7 @@ class _AdminScreenState extends State<AdminScreen>
                   ),
                 ),
                 const SizedBox(height: 12),
-                ...units.map((u) => _buildTimelineRow(u)),
+                ...units.map((u) => _buildTimelineRow(context, u)),
               ],
             );
           },
@@ -299,90 +302,209 @@ class _AdminScreenState extends State<AdminScreen>
     );
   }
 
-  Widget _buildTimelineRow(UnitStatus unit) {
+  Widget _buildTimelineRow(BuildContext context, UnitStatus unit) {
+    final provider = context.read<BookingProvider>();
+    final todayBookings = provider.bookingsForDate(provider.now);
+    
+    // Filter bookings specific to this unit.
+    // assignedUnit format is typically '$psType ${unit.label}' or similar.
+    // We check if it ends with the unit label and contains the base psType.
+    final unitBookings = todayBookings.where((b) {
+      return b.assignedUnit.endsWith(unit.label) && b.assignedUnit.contains(unit.psType);
+    }).toList();
+
+    // Get today's operating hours
+    final todayHours = getOperatingHours().firstWhere((h) => h.isToday, orElse: () => getOperatingHours().first);
+    final parts = todayHours.hours.split(RegExp(r'[-–]'));
+    int startOpHour = 10;
+    int endOpHour = 22;
+    if (parts.length == 2) {
+      startOpHour = int.tryParse(parts[0].split(':')[0].trim()) ?? 10;
+      endOpHour = int.tryParse(parts[1].split(':')[0].trim()) ?? 22;
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
       decoration: AppTheme.cardDecoration(),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceDark,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppTheme.dividerColor),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              unit.label.replaceAll('Unit ', '#'),
-              style: GoogleFonts.spaceGrotesk(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textSecondary,
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+          title: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceDark,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppTheme.dividerColor),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  unit.label.replaceAll('Unit ', '#'),
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: unit.isAvailable
-                ? Text(
-                    'Tersedia',
-                    style: GoogleFonts.spaceGrotesk(
-                      color: AppTheme.accentGreen,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        unit.playerName ?? 'Unknown',
+              const SizedBox(width: 16),
+              Expanded(
+                child: unit.isAvailable
+                    ? Text(
+                        'Tersedia',
                         style: GoogleFonts.spaceGrotesk(
-                          fontSize: 15,
+                          color: AppTheme.accentGreen,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimary,
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            unit.isWalkIn ? Icons.directions_walk : Icons.book_online,
-                            size: 14,
-                            color: AppTheme.textMuted,
-                          ),
-                          const SizedBox(width: 6),
                           Text(
-                            '${unit.startTime} - ${unit.endTime}',
+                            unit.playerName ?? 'Unknown',
                             style: GoogleFonts.spaceGrotesk(
-                              fontSize: 12,
-                              color: AppTheme.textSecondary,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
                             ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                unit.isWalkIn ? Icons.directions_walk : Icons.book_online,
+                                size: 14,
+                                color: AppTheme.textMuted,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '${unit.startTime} - ${unit.endTime}',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 12,
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-          ),
-          if (!unit.isAvailable)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppTheme.accentRed.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(6),
               ),
+              if (!unit.isAvailable)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentRed.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'IN USE',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.accentRed,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          children: [
+            const Divider(color: AppTheme.dividerColor),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
               child: Text(
-                'IN USE',
+                'Jadwal Hari Ini (${todayHours.hours})',
                 style: GoogleFonts.spaceGrotesk(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.accentRed,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textMuted,
                 ),
               ),
             ),
-        ],
+            const SizedBox(height: 12),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: List.generate(endOpHour - startOpHour, (index) {
+                  final h = startOpHour + index;
+                  
+                  // Check if any booking overlaps with this hour
+                  Booking? matchedBooking;
+                  for (final b in unitBookings) {
+                    final bStart = int.tryParse(b.time.split(':')[0]) ?? 0;
+                    final durStr = b.duration.replaceAll(RegExp(r'[^0-9]'), '');
+                    final dur = int.tryParse(durStr) ?? 1;
+                    final bEnd = bStart + dur;
+                    if (h >= bStart && h < bEnd) {
+                      matchedBooking = b;
+                      break;
+                    }
+                  }
+
+                  final isBooked = matchedBooking != null;
+                  final isWalkIn = matchedBooking?.id.startsWith('WI-') ?? false;
+                  
+                  String tooltipMsg = 'Kosong';
+                  if (matchedBooking != null) {
+                    final b = matchedBooking;
+                    final startH = int.parse(b.time.split(':')[0]);
+                    final durH = int.parse(b.duration.replaceAll(RegExp(r'[^0-9]'), ''));
+                    tooltipMsg = '${b.customerName} (${b.time} - ${startH + durH}:00)';
+                  }
+
+                  Color blockColor = AppTheme.surfaceDark;
+                  Color borderColor = AppTheme.dividerColor;
+                  if (isBooked) {
+                    final bookingColor = AppTheme.getBookingColor(matchedBooking.id);
+                    blockColor = bookingColor.withValues(alpha: 0.15);
+                    borderColor = bookingColor;
+                  }
+
+                  return Tooltip(
+                    message: tooltipMsg,
+                    child: Container(
+                      width: 50,
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: blockColor,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: borderColor,
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            '${h.toString().padLeft(2, '0')}:00',
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: isBooked ? AppTheme.textPrimary : AppTheme.textMuted,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Icon(
+                            isBooked ? (isWalkIn ? Icons.directions_walk : Icons.person) : Icons.check_circle_outline,
+                            size: 14,
+                            color: isBooked 
+                                ? AppTheme.getBookingColor(matchedBooking.id)
+                                : AppTheme.textMuted.withValues(alpha: 0.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -394,8 +516,8 @@ class _AdminScreenState extends State<AdminScreen>
   Widget _buildBookingList() {
     return Consumer<BookingProvider>(
       builder: (context, provider, child) {
-        final allBookings = provider.bookings.reversed.toList(); // newest first
-        if (allBookings.isEmpty) {
+        final onlineBookings = provider.bookings.where((b) => !b.id.startsWith('WI-')).toList().reversed.toList(); // newest first
+        if (onlineBookings.isEmpty) {
           return Center(
             child: Text(
               'Belum ada booking',
@@ -406,11 +528,11 @@ class _AdminScreenState extends State<AdminScreen>
 
         return ListView.separated(
           padding: const EdgeInsets.all(24),
-          itemCount: allBookings.length,
+          itemCount: onlineBookings.length,
           separatorBuilder: (context, index) => const SizedBox(height: 16),
           itemBuilder: (context, index) {
-            final b = allBookings[index];
-            final isWalkIn = b.id.startsWith('WI-');
+            final b = onlineBookings[index];
+            final isWalkIn = false; // By definition these are online bookings
             return Dismissible(
               key: Key(b.id),
               direction: DismissDirection.endToStart,
@@ -500,6 +622,154 @@ class _AdminScreenState extends State<AdminScreen>
                             ),
                           ],
                         ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ════════════════════════════════════════════════════════
+  //  TAB 4: DATA JADWAL (Detailed View)
+  // ════════════════════════════════════════════════════════
+
+  Widget _buildDataJadwal() {
+    return Consumer<BookingProvider>(
+      builder: (context, provider, child) {
+        final allBookings = provider.bookings.toList();
+        // Sort by time
+        allBookings.sort((a, b) => a.time.compareTo(b.time));
+        
+        if (allBookings.isEmpty) {
+          return Center(
+            child: Text(
+              'Belum ada jadwal hari ini',
+              style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
+            ),
+          );
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.all(24),
+          itemCount: allBookings.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final b = allBookings[index];
+            final isWalkIn = b.id.startsWith('WI-');
+            final bookingColor = AppTheme.getBookingColor(b.id);
+
+            return Container(
+              decoration: BoxDecoration(
+                color: AppTheme.cardDark,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.dividerColor),
+              ),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Color Indicator Strip
+                    Container(
+                      width: 8,
+                      decoration: BoxDecoration(
+                        color: bookingColor,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          bottomLeft: Radius.circular(12),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  b.customerName,
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimary,
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: bookingColor.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    b.assignedUnit,
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: bookingColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Icon(Icons.schedule, size: 14, color: AppTheme.textMuted),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${b.time} (${b.duration})',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 13,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Icon(Icons.phone, size: 14, color: AppTheme.textMuted),
+                                const SizedBox(width: 4),
+                                Text(
+                                  b.phone,
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 13,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Icon(
+                                  isWalkIn ? Icons.directions_walk : Icons.language,
+                                  size: 14,
+                                  color: AppTheme.textMuted,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  isWalkIn ? 'Walk-in' : 'Booking Online',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 13,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  'ID: ${b.id}',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 11,
+                                    color: AppTheme.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],

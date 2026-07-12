@@ -15,6 +15,9 @@ class BookingProvider extends ChangeNotifier {
   Timer? _clockTimer;
 
   BookingProvider() {
+    // Muat data booking dummy awal
+    _bookings.addAll(getDummyBookings());
+
     _clockTimer = Timer.periodic(const Duration(seconds: 60), (_) {
       _now = DateTime.now();
       notifyListeners();

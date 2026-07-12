@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/ps_unit.dart';
 import '../models/price_package.dart';
+import '../models/booking.dart';
 
 // ══════════════════════════════════════════
 //  PlayStation Units (PS4 & PS5 only)
@@ -74,168 +75,108 @@ const List<PsUnit> dummyPsUnits = [
 // ══════════════════════════════════════════
 //  Unit Availability Status (dummy/simulasi)
 // ══════════════════════════════════════════
+
 List<UnitStatus> getDummyUnitStatus() {
-  // Simulate: some units in use, some available
   return [
-    // PS4 — 5 units
-    const UnitStatus(
-      unitId: 'PS4-01',
+    for (int i = 1; i <= 5; i++) UnitStatus(unitId: 'PS4-0$i', psType: 'PS4', label: 'Unit $i', isAvailable: true),
+    for (int i = 1; i <= 8; i++) UnitStatus(unitId: 'PS5-0$i', psType: 'PS5', label: 'Unit $i', isAvailable: true),
+    for (int i = 1; i <= 5; i++) UnitStatus(unitId: 'PS5-VIP-0$i', psType: 'PS5 VIP', label: 'Ruang $i', isAvailable: true),
+    for (int i = 1; i <= 2; i++) UnitStatus(unitId: 'NIN-VIP-0$i', psType: 'Nintendo VIP', label: 'Ruang $i', isAvailable: true),
+  ];
+}
+
+List<Booking> getDummyBookings() {
+  final now = DateTime.now();
+  return [
+    Booking(
+      id: 'WI-DUMMY1',
+      customerName: 'Budi (Walk-in)',
+      phone: '-',
       psType: 'PS4',
-      label: 'Unit 1',
-      isAvailable: true,
+      date: now,
+      time: '14:00',
+      duration: '2 Jam',
+      assignedUnit: 'PS4 Unit 2',
     ),
-    const UnitStatus(
-      unitId: 'PS4-02',
+    Booking(
+      id: 'ONL-DUMMY2',
+      customerName: 'Sandi',
+      phone: '081234567890',
       psType: 'PS4',
-      label: 'Unit 2',
-      isAvailable: false,
-      playerName: 'Budi (Walk-in)',
-      startTime: '14:00',
-      endTime: '16:00',
-      isWalkIn: true,
+      date: now,
+      time: '13:00',
+      duration: '4 Jam',
+      assignedUnit: 'PS4 Unit 4',
     ),
-    const UnitStatus(
-      unitId: 'PS4-03',
-      psType: 'PS4',
-      label: 'Unit 3',
-      isAvailable: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS4-04',
-      psType: 'PS4',
-      label: 'Unit 4',
-      isAvailable: false,
-      playerName: 'Sandi',
-      startTime: '13:00',
-      endTime: '17:00',
-      isWalkIn: false,
-    ),
-    const UnitStatus(
-      unitId: 'PS4-05',
-      psType: 'PS4',
-      label: 'Unit 5',
-      isAvailable: true,
-    ),
-    // PS5 — 8 units
-    const UnitStatus(
-      unitId: 'PS5-01',
+    Booking(
+      id: 'WI-DUMMY3',
+      customerName: 'Riki (Walk-in)',
+      phone: '-',
       psType: 'PS5',
-      label: 'Unit 1',
-      isAvailable: false,
-      playerName: 'Riki (Walk-in)',
-      startTime: '11:00',
-      endTime: '13:00',
-      isWalkIn: true,
+      date: now,
+      time: '11:00',
+      duration: '2 Jam',
+      assignedUnit: 'PS5 Unit 1',
     ),
-    const UnitStatus(
-      unitId: 'PS5-02',
+    Booking(
+      id: 'ONL-DUMMY4',
+      customerName: 'Siska',
+      phone: '081298765432',
       psType: 'PS5',
-      label: 'Unit 2',
-      isAvailable: true,
+      date: now,
+      time: '12:00',
+      duration: '4 Jam',
+      assignedUnit: 'PS5 Unit 4',
     ),
-    const UnitStatus(
-      unitId: 'PS5-03',
+    Booking(
+      id: 'WI-DUMMY5',
+      customerName: 'Adit (Walk-in)',
+      phone: '-',
       psType: 'PS5',
-      label: 'Unit 3',
-      isAvailable: true,
+      date: now,
+      time: '10:00', // Adjusted 10:30 to 10:00 for hourly blocks
+      duration: '2 Jam',
+      assignedUnit: 'PS5 Unit 6',
     ),
-    const UnitStatus(
-      unitId: 'PS5-04',
+    Booking(
+      id: 'ONL-DUMMY6',
+      customerName: 'Dimas',
+      phone: '085511223344',
       psType: 'PS5',
-      label: 'Unit 4',
-      isAvailable: false,
-      playerName: 'Siska',
-      startTime: '12:00',
-      endTime: '16:00',
-      isWalkIn: false,
+      date: now,
+      time: '09:00',
+      duration: '5 Jam',
+      assignedUnit: 'PS5 Unit 8',
     ),
-    const UnitStatus(
-      unitId: 'PS5-05',
-      psType: 'PS5',
-      label: 'Unit 5',
-      isAvailable: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-06',
-      psType: 'PS5',
-      label: 'Unit 6',
-      isAvailable: false,
-      playerName: 'Adit (Walk-in)',
-      startTime: '10:30',
-      endTime: '12:30',
-      isWalkIn: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-07',
-      psType: 'PS5',
-      label: 'Unit 7',
-      isAvailable: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-08',
-      psType: 'PS5',
-      label: 'Unit 8',
-      isAvailable: false,
-      playerName: 'Dimas',
-      startTime: '09:00',
-      endTime: '14:00',
-      isWalkIn: false,
-    ),
-    // PS5 VIP — 3 rooms
-    const UnitStatus(
-      unitId: 'PS5-VIP-01',
+    Booking(
+      id: 'WI-DUMMY7',
+      customerName: 'Anton (Walk-in)',
+      phone: '-',
       psType: 'PS5 VIP',
-      label: 'Ruang 1',
-      isAvailable: true,
+      date: now,
+      time: '10:00',
+      duration: '5 Jam',
+      assignedUnit: 'PS5 VIP Ruang 2',
     ),
-    const UnitStatus(
-      unitId: 'PS5-VIP-02',
+    Booking(
+      id: 'WI-DUMMY8',
+      customerName: 'Joko (Walk-in)',
+      phone: '-',
       psType: 'PS5 VIP',
-      label: 'Ruang 2',
-      isAvailable: false,
-      playerName: 'Anton (Walk-in)',
-      startTime: '10:00',
-      endTime: '15:00',
-      isWalkIn: true,
+      date: now,
+      time: '08:00',
+      duration: '4 Jam',
+      assignedUnit: 'PS5 VIP Ruang 4',
     ),
-    const UnitStatus(
-      unitId: 'PS5-VIP-03',
-      psType: 'PS5 VIP',
-      label: 'Ruang 3',
-      isAvailable: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-VIP-04',
-      psType: 'PS5 VIP',
-      label: 'Ruang 4',
-      isAvailable: false,
-      playerName: 'Joko (Walk-in)',
-      startTime: '08:00',
-      endTime: '12:00',
-      isWalkIn: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-VIP-05',
-      psType: 'PS5 VIP',
-      label: 'Ruang 5',
-      isAvailable: true,
-    ),
-    // Nintendo VIP — 2 rooms
-    const UnitStatus(
-      unitId: 'NIN-VIP-01',
+    Booking(
+      id: 'ONL-DUMMY9',
+      customerName: 'Fina',
+      phone: '087766554433',
       psType: 'Nintendo VIP',
-      label: 'Ruang 1',
-      isAvailable: true,
-    ),
-    const UnitStatus(
-      unitId: 'NIN-VIP-02',
-      psType: 'Nintendo VIP',
-      label: 'Ruang 2',
-      isAvailable: false,
-      playerName: 'Fina',
-      startTime: '14:30',
-      endTime: '16:30',
-      isWalkIn: false,
+      date: now,
+      time: '14:00', // Adjusted 14:30 to 14:00
+      duration: '2 Jam',
+      assignedUnit: 'Nintendo VIP Ruang 2',
     ),
   ];
 }
