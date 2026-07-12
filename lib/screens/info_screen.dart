@@ -37,14 +37,15 @@ class _InfoScreenState extends State<InfoScreen>
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: NestedScrollView(
+    return NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -86,24 +87,30 @@ class _InfoScreenState extends State<InfoScreen>
                             _buildInfoCard(
                               icon: Icons.location_on_outlined,
                               title: 'ALAMAT',
-                              content: 'Jl. Merdeka No. 123, Bandung',
-                              width: isLarge ? (constraints.maxWidth - 32) / 3 : constraints.maxWidth,
+                              content: 'Jl. Lurus No. 56, Jambi (kiri dikit)',
+                              width: isLarge
+                                  ? (constraints.maxWidth - 32) / 3
+                                  : constraints.maxWidth,
                             ),
                             _buildInfoCard(
                               icon: Icons.phone_outlined,
                               title: 'TELEPON',
                               content: '+62 812 3456 7890',
-                              width: isLarge ? (constraints.maxWidth - 32) / 3 : constraints.maxWidth,
+                              width: isLarge
+                                  ? (constraints.maxWidth - 32) / 3
+                                  : constraints.maxWidth,
                             ),
                             _buildInfoCard(
                               icon: Icons.email_outlined,
                               title: 'EMAIL',
-                              content: 'halo@timeless.id',
-                              width: isLarge ? (constraints.maxWidth - 32) / 3 : constraints.maxWidth,
+                              content: 'timeless@gmail.com',
+                              width: isLarge
+                                  ? (constraints.maxWidth - 32) / 3
+                                  : constraints.maxWidth,
                             ),
                           ],
                         );
-                      }
+                      },
                     ),
                     const SizedBox(height: 32),
                     Text(
@@ -126,29 +133,37 @@ class _InfoScreenState extends State<InfoScreen>
                               icon: Icons.ac_unit,
                               title: 'Ruangan Ber-AC',
                               subtitle: 'Suhu terjaga 22°C sepanjang hari.',
-                              width: isLarge ? (constraints.maxWidth - 48) / 4 : (constraints.maxWidth - 16) / 2,
+                              width: isLarge
+                                  ? (constraints.maxWidth - 48) / 4
+                                  : (constraints.maxWidth - 16) / 2,
                             ),
                             _buildFacilityCard(
                               icon: Icons.wifi,
                               title: 'WiFi 200 Mbps',
                               subtitle: 'Gratis untuk semua pengunjung.',
-                              width: isLarge ? (constraints.maxWidth - 48) / 4 : (constraints.maxWidth - 16) / 2,
+                              width: isLarge
+                                  ? (constraints.maxWidth - 48) / 4
+                                  : (constraints.maxWidth - 16) / 2,
                             ),
                             _buildFacilityCard(
                               icon: Icons.coffee,
                               title: 'Cafe & Snack',
                               subtitle: 'Kopi, mie, dan cemilan siap saji.',
-                              width: isLarge ? (constraints.maxWidth - 48) / 4 : (constraints.maxWidth - 16) / 2,
+                              width: isLarge
+                                  ? (constraints.maxWidth - 48) / 4
+                                  : (constraints.maxWidth - 16) / 2,
                             ),
                             _buildFacilityCard(
                               icon: Icons.shield_outlined,
                               title: 'Konsol Original',
                               subtitle: 'Semua game & konsol resmi.',
-                              width: isLarge ? (constraints.maxWidth - 48) / 4 : (constraints.maxWidth - 16) / 2,
+                              width: isLarge
+                                  ? (constraints.maxWidth - 48) / 4
+                                  : (constraints.maxWidth - 16) / 2,
                             ),
                           ],
                         );
-                      }
+                      },
                     ),
                     const SizedBox(height: 32),
                   ],
@@ -207,11 +222,15 @@ class _InfoScreenState extends State<InfoScreen>
           controller: _mainTabController,
           children: [_buildUnitTab(), _buildGameTab()],
         ),
-      ),
     );
   }
 
-  Widget _buildInfoCard({required IconData icon, required String title, required String content, required double width}) {
+  Widget _buildInfoCard({
+    required IconData icon,
+    required String title,
+    required String content,
+    required double width,
+  }) {
     return Container(
       width: width,
       padding: const EdgeInsets.all(20),
@@ -255,7 +274,12 @@ class _InfoScreenState extends State<InfoScreen>
     );
   }
 
-  Widget _buildFacilityCard({required IconData icon, required String title, required String subtitle, required double width}) {
+  Widget _buildFacilityCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required double width,
+  }) {
     return Container(
       width: width,
       padding: const EdgeInsets.all(16),
@@ -319,8 +343,8 @@ class _InfoScreenState extends State<InfoScreen>
             final color = ps.id == 'ps4'
                 ? AppTheme.accentCyan
                 : ps.id.contains('nintendo')
-                    ? AppTheme.accentRed
-                    : AppTheme.accentMagenta;
+                ? AppTheme.accentRed
+                : AppTheme.accentMagenta;
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 20),
@@ -351,19 +375,19 @@ class _InfoScreenState extends State<InfoScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                  ps.name,
-                                  style: GoogleFonts.pressStart2p(
-                                    fontSize: 14,
-                                    color: color,
-                                  ),
+                                ps.name,
+                                style: GoogleFonts.pressStart2p(
+                                  fontSize: 14,
+                                  color: color,
                                 ),
+                              ),
                               Text(
                                 '${ps.totalUnits} unit tersedia · ${ps.controllersPerUnit} stik/unit',
-                                  style: GoogleFonts.spaceGrotesk(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppTheme.textMuted,
-                                  ),
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.textMuted,
+                                ),
                               ),
                             ],
                           ),
@@ -391,12 +415,13 @@ class _InfoScreenState extends State<InfoScreen>
                     GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 220,
-                        mainAxisExtent: 75,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 220,
+                            mainAxisExtent: 75,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 10,
+                          ),
                       itemCount: units.length,
                       itemBuilder: (context, index) {
                         final unit = units[index];
@@ -404,59 +429,62 @@ class _InfoScreenState extends State<InfoScreen>
                           onTap: () => _showUnitDetails(unit),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: unit.isAvailable
-                                ? AppTheme.accentGreen.withValues(alpha: 0.1)
-                                : AppTheme.accentRed.withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: unit.isAvailable
-                                  ? AppTheme.accentGreen.withValues(alpha: 0.5)
-                                  : AppTheme.dividerColor,
-                              width: 1,
+                              vertical: 10,
+                              horizontal: 6,
                             ),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                unit.isAvailable
-                                    ? Icons.check_circle_outline
-                                    : Icons.block_outlined,
-                                size: 16,
+                            decoration: BoxDecoration(
+                              color: unit.isAvailable
+                                  ? AppTheme.accentGreen.withValues(alpha: 0.1)
+                                  : AppTheme.accentRed.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
                                 color: unit.isAvailable
-                                    ? AppTheme.accentGreen
-                                    : AppTheme.accentRed,
+                                    ? AppTheme.accentGreen.withValues(
+                                        alpha: 0.5,
+                                      )
+                                    : AppTheme.dividerColor,
+                                width: 1,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                unit.label,
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  unit.isAvailable
+                                      ? Icons.check_circle_outline
+                                      : Icons.block_outlined,
+                                  size: 16,
                                   color: unit.isAvailable
                                       ? AppTheme.accentGreen
                                       : AppTheme.accentRed,
                                 ),
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                unit.isAvailable ? 'Kosong' : 'Dipakai',
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 9,
-                                  color: unit.isAvailable
-                                      ? AppTheme.accentGreen
-                                      : AppTheme.textMuted,
+                                const SizedBox(height: 4),
+                                Text(
+                                  unit.label,
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: unit.isAvailable
+                                        ? AppTheme.accentGreen
+                                        : AppTheme.accentRed,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                            ],
+                                Text(
+                                  unit.isAvailable ? 'Kosong' : 'Dipakai',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 9,
+                                    color: unit.isAvailable
+                                        ? AppTheme.accentGreen
+                                        : AppTheme.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ));
+                        );
                       },
                     ),
                   ],
@@ -573,7 +601,9 @@ class _InfoScreenState extends State<InfoScreen>
           border: Border.all(
             color: isActive ? AppTheme.accentCyan : AppTheme.dividerColor,
           ),
-          boxShadow: isActive ? AppTheme.neonShadow(AppTheme.accentCyan, blur: 5) : null,
+          boxShadow: isActive
+              ? AppTheme.neonShadow(AppTheme.accentCyan, blur: 5)
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -632,7 +662,9 @@ class _InfoScreenState extends State<InfoScreen>
           border: Border.all(
             color: isGenreActive ? AppTheme.accentCyan : AppTheme.dividerColor,
           ),
-          boxShadow: isGenreActive ? AppTheme.neonShadow(AppTheme.accentCyan, blur: 5) : null,
+          boxShadow: isGenreActive
+              ? AppTheme.neonShadow(AppTheme.accentCyan, blur: 5)
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -713,7 +745,9 @@ class _InfoScreenState extends State<InfoScreen>
                       decoration: BoxDecoration(
                         color: AppTheme.accentMagenta.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: AppTheme.accentMagenta.withValues(alpha: 0.5)),
+                        border: Border.all(
+                          color: AppTheme.accentMagenta.withValues(alpha: 0.5),
+                        ),
                       ),
                       child: Text(
                         '#${game.popularRank} HOT',
@@ -790,7 +824,9 @@ class _InfoScreenState extends State<InfoScreen>
                 decoration: BoxDecoration(
                   color: AppTheme.accentGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: AppTheme.accentGreen.withValues(alpha: 0.5)),
+                  border: Border.all(
+                    color: AppTheme.accentGreen.withValues(alpha: 0.5),
+                  ),
                   boxShadow: AppTheme.neonShadow(AppTheme.accentGreen, blur: 2),
                 ),
                 child: Text(
@@ -994,9 +1030,12 @@ class _InfoScreenState extends State<InfoScreen>
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: unit.isAvailable 
+                      color: unit.isAvailable
                           ? AppTheme.accentGreen.withValues(alpha: 0.15)
                           : AppTheme.accentRed.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
@@ -1006,7 +1045,9 @@ class _InfoScreenState extends State<InfoScreen>
                       style: GoogleFonts.spaceGrotesk(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: unit.isAvailable ? AppTheme.accentGreen : AppTheme.accentRed,
+                        color: unit.isAvailable
+                            ? AppTheme.accentGreen
+                            : AppTheme.accentRed,
                       ),
                     ),
                   ),
@@ -1023,13 +1064,29 @@ class _InfoScreenState extends State<InfoScreen>
                   ),
                 )
               else ...[
-                _buildDetailRow(Icons.person_outline, 'Pemain', unit.playerName ?? 'Tidak diketahui'),
+                _buildDetailRow(
+                  Icons.person_outline,
+                  'Pemain',
+                  unit.playerName ?? 'Tidak diketahui',
+                ),
                 const SizedBox(height: 12),
-                _buildDetailRow(Icons.access_time, 'Mulai', unit.startTime ?? '-'),
+                _buildDetailRow(
+                  Icons.access_time,
+                  'Mulai',
+                  unit.startTime ?? '-',
+                ),
                 const SizedBox(height: 12),
-                _buildDetailRow(Icons.timer_off_outlined, 'Selesai', unit.endTime ?? '-'),
+                _buildDetailRow(
+                  Icons.timer_off_outlined,
+                  'Selesai',
+                  unit.endTime ?? '-',
+                ),
                 const SizedBox(height: 12),
-                _buildDetailRow(Icons.info_outline, 'Status', unit.isWalkIn ? 'Walk-in (Langsung)' : 'Booking App'),
+                _buildDetailRow(
+                  Icons.info_outline,
+                  'Status',
+                  unit.isWalkIn ? 'Walk-in (Langsung)' : 'Booking App',
+                ),
               ],
               const SizedBox(height: 32),
               SizedBox(
@@ -1084,7 +1141,11 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => _tabBar.preferredSize.height + 28;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       color: AppTheme.backgroundDark,
       child: Container(

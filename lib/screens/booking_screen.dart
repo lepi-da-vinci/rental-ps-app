@@ -189,7 +189,12 @@ class _BookingScreenState extends State<BookingScreen> {
                         children: durationOptions.map((duration) {
                           bool isSelected = _selectedDuration == duration;
                           return InkWell(
-                            onTap: () => setState(() => _selectedDuration = duration),
+                            onTap: () => setState(() {
+                              _selectedDuration = duration;
+                              // Bug 4 fix: reset selected time when duration changes
+                              // so the user must re-pick a valid slot
+                              _selectedTime = null;
+                            }),
                             borderRadius: BorderRadius.circular(24),
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -244,17 +249,24 @@ class _BookingScreenState extends State<BookingScreen> {
                               children: [
                                 _buildLabel('JAM MULAI'),
                                 const SizedBox(height: 8),
-                                DropdownButtonFormField<String>(
-                                  initialValue: _selectedTime,
-                                  dropdownColor: AppTheme.cardDark,
-                                  style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary, fontSize: 13),
-                                  decoration: const InputDecoration(
-                                    hintText: '--:--',
-                                    suffixIcon: Icon(Icons.access_time_outlined, color: AppTheme.textMuted, size: 18),
-                                  ),
-                                  items: timeSlotOptions.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                                  onChanged: (v) => setState(() => _selectedTime = v),
-                                ),
+                                Builder(builder: (context) {
+                                  // Bug 4 fix: only show time slots valid for the chosen duration
+                                  final durHours = _selectedDuration != null
+                                     ? int.tryParse(_selectedDuration!.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1
+                                     : 1;
+                                  final validSlots = getValidTimeSlots(durHours);
+                                  return DropdownButtonFormField<String>(
+                                    initialValue: validSlots.contains(_selectedTime) ? _selectedTime : null,
+                                    dropdownColor: AppTheme.cardDark,
+                                    style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary, fontSize: 13),
+                                    decoration: const InputDecoration(
+                                      hintText: '--:--',
+                                      suffixIcon: Icon(Icons.access_time_outlined, color: AppTheme.textMuted, size: 18),
+                                    ),
+                                    items: validSlots.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                                    onChanged: (v) => setState(() => _selectedTime = v),
+                                  );
+                                }),
                               ],
                             ),
                           ),
@@ -433,6 +445,26 @@ class _BookingScreenState extends State<BookingScreen> {
 
   void _submitBooking() {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppTheme.accentMagenta,
+          content: Text('Pilih tanggal booking', style: GoogleFonts.spaceGrotesk(color: Colors.white)),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    if (_selectedTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppTheme.accentMagenta,
+          content: Text('Pilih jam mulai', style: GoogleFonts.spaceGrotesk(color: Colors.white)),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
 
     final baseType = _selectedPsType == 'PS5 VIP' 
         ? 'PS5 VIP' 
@@ -442,9 +474,67 @@ class _BookingScreenState extends State<BookingScreen> {
     final availableUnits = context.read<BookingProvider>().units
         .where((u) => u.psType == baseType && u.isAvailable)
         .toList();
-    final assignedUnit = availableUnits.isNotEmpty
-        ? '$_selectedPsType ${availableUnits.first.label}'
-        : 'Menunggu Unit Kosong';
+
+    // Bug 5 fix: block booking if no unit is available instead of saving silently
+    if (availableUnits.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (ctx) => Dialog(
+          backgroundColor: AppTheme.surfaceDark,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: AppTheme.accentMagenta.withValues(alpha: 0.5)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentMagenta.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.warning_amber_rounded, size: 28, color: AppTheme.accentMagenta),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'Semua Unit Penuh',
+                  style: GoogleFonts.spaceGrotesk(fontSize: 17, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Saat ini semua unit $_selectedPsType sedang terisi. '
+                  'Silakan pilih tipe konsol lain atau coba di waktu yang berbeda.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.spaceGrotesk(fontSize: 13, color: AppTheme.textSecondary, height: 1.5),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.accentMagenta,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                    ),
+                    child: Text('Mengerti', style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
+    final assignedUnit = '$_selectedPsType ${availableUnits.first.label}';
 
     final booking = Booking(
       id: 'BK-${DateTime.now().millisecondsSinceEpoch}',

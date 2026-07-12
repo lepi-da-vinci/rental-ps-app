@@ -61,13 +61,18 @@ class _MainScreenState extends State<MainScreen> {
         final isLargeScreen = constraints.maxWidth > 800;
 
         return Scaffold(
-          appBar: isLargeScreen ? _buildLargeAppBar() : _buildSmallAppBar(titles[_currentIndex]),
+          appBar: isLargeScreen
+              ? _buildLargeAppBar()
+              : _buildSmallAppBar(titles[_currentIndex]),
           body: isLargeScreen
               ? Row(
                   children: [
                     _buildSidebar(),
                     Expanded(
-                      child: IndexedStack(index: _currentIndex, children: screens),
+                      child: IndexedStack(
+                        index: _currentIndex,
+                        children: screens,
+                      ),
                     ),
                   ],
                 )
@@ -100,7 +105,11 @@ class _MainScreenState extends State<MainScreen> {
               border: Border.all(color: AppTheme.dividerColor),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: const Icon(Icons.splitscreen, size: 16, color: AppTheme.textMuted),
+            child: const Icon(
+              Icons.splitscreen,
+              size: 16,
+              color: AppTheme.textMuted,
+            ),
           ),
           const SizedBox(width: 16),
           Text(
@@ -173,9 +182,15 @@ class _MainScreenState extends State<MainScreen> {
                   decoration: BoxDecoration(
                     color: AppTheme.accentMagenta.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppTheme.accentMagenta.withValues(alpha: 0.5)),
+                    border: Border.all(
+                      color: AppTheme.accentMagenta.withValues(alpha: 0.5),
+                    ),
                   ),
-                  child: const Icon(Icons.gamepad, color: AppTheme.accentMagenta, size: 20),
+                  child: const Icon(
+                    Icons.gamepad,
+                    color: AppTheme.accentMagenta,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Column(
@@ -203,7 +218,7 @@ class _MainScreenState extends State<MainScreen> {
               ],
             ),
           ),
-          
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Text(
@@ -218,12 +233,27 @@ class _MainScreenState extends State<MainScreen> {
 
           // Menu Items
           _buildSidebarItem(0, 'Home', Icons.gamepad_outlined, Icons.gamepad),
-          _buildSidebarItem(1, 'Info', Icons.videogame_asset_outlined, Icons.videogame_asset),
-          _buildSidebarItem(2, 'Harga', Icons.local_play_outlined, Icons.local_play),
-          _buildSidebarItem(3, 'Booking', Icons.confirmation_number_outlined, Icons.confirmation_number),
+          _buildSidebarItem(
+            1,
+            'Info',
+            Icons.videogame_asset_outlined,
+            Icons.videogame_asset,
+          ),
+          _buildSidebarItem(
+            2,
+            'Harga',
+            Icons.local_play_outlined,
+            Icons.local_play,
+          ),
+          _buildSidebarItem(
+            3,
+            'Booking',
+            Icons.confirmation_number_outlined,
+            Icons.confirmation_number,
+          ),
 
           const Spacer(),
-          
+
           // Bottom Info
           Padding(
             padding: const EdgeInsets.all(24),
@@ -275,7 +305,12 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildSidebarItem(int index, String label, IconData icon, IconData activeIcon) {
+  Widget _buildSidebarItem(
+    int index,
+    String label,
+    IconData icon,
+    IconData activeIcon,
+  ) {
     final isActive = _currentIndex == index;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -285,10 +320,14 @@ class _MainScreenState extends State<MainScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: isActive ? AppTheme.accentMagenta.withValues(alpha: 0.1) : Colors.transparent,
+            color: isActive
+                ? AppTheme.accentMagenta.withValues(alpha: 0.1)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isActive ? AppTheme.accentMagenta.withValues(alpha: 0.5) : Colors.transparent,
+              color: isActive
+                  ? AppTheme.accentMagenta.withValues(alpha: 0.5)
+                  : Colors.transparent,
             ),
           ),
           child: Row(
@@ -317,9 +356,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildBottomNav() {
     return Container(
       decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: AppTheme.dividerColor, width: 1),
-        ),
+        border: Border(top: BorderSide(color: AppTheme.dividerColor, width: 1)),
       ),
       child: BottomNavigationBar(
         currentIndex: _currentIndex,

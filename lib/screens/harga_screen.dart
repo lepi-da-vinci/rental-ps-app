@@ -98,7 +98,7 @@ class HargaScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Main 5 jam bayar 4 jam khusus Sabtu-Minggu.',
+                        'Main 5 jam, bayar 4 jam — khusus Sabtu & Minggu saja.\nHarga reguler berlaku di hari biasa.', 
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 13,
                           color: AppTheme.textPrimary,

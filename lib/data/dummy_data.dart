@@ -464,25 +464,52 @@ List<OperatingHour> getOperatingHours() {
 }
 
 // ══════════════════════════════════════════
-//  Stats for Home
+//  Stats for Home  (single source of truth)
 // ══════════════════════════════════════════
 class StatItem {
   final String label;
   final String value;
   final IconData icon;
+  final String sub;
 
   const StatItem({
     required this.label,
     required this.value,
     required this.icon,
+    this.sub = '',
   });
 }
 
-const List<StatItem> homeStats = [
-  StatItem(label: 'Konsol', value: '13', icon: Icons.sports_esports),
-  StatItem(label: 'Game', value: '67', icon: Icons.games_outlined),
-  StatItem(label: 'Pelanggan', value: '1.2K', icon: Icons.people_outline),
-];
+/// Derived from actual unit and game data — never hardcoded separately.
+List<StatItem> getHomeStats() {
+  final totalUnits = dummyPsUnits.fold(0, (sum, u) => sum + u.totalUnits);
+  return [
+    StatItem(
+      label: 'Konsol Aktif',
+      value: '$totalUnits',
+      icon: Icons.sports_esports,
+      sub: 'PS4 · PS5 · Switch',
+    ),
+    StatItem(
+      label: 'Judul Game',
+      value: '${gameCatalog.length}',
+      icon: Icons.auto_awesome,
+      sub: 'Update tiap minggu',
+    ),
+    StatItem(
+      label: 'Pelanggan',
+      value: '1.2K',
+      icon: Icons.people,
+      sub: 'Sejak 2022',
+    ),
+    StatItem(
+      label: 'Rating Rata',
+      value: '4.9',
+      icon: Icons.star,
+      sub: 'Dari 380+ review',
+    ),
+  ];
+}
 
 // ══════════════════════════════════════════
 //  Syarat & Ketentuan
@@ -569,6 +596,24 @@ const List<String> timeSlotOptions = [
   '20:00',
   '21:00',
 ];
+
+/// Returns time slots that are valid for the given [durationHours].
+/// Filters out any slot whose calculated end-time would exceed the
+/// operating closing hour for the current day.
+List<String> getValidTimeSlots(int durationHours) {
+  // Determine today's closing hour from operating hours
+  final todayHours = getOperatingHours().firstWhere(
+    (h) => h.isToday,
+    orElse: () => const OperatingHour(day: '', hours: '10:00 – 22:00'),
+  );
+  final closingHourStr = todayHours.hours.split('–').last.trim().split(':').first;
+  final closingHour = int.tryParse(closingHourStr) ?? 22;
+
+  return timeSlotOptions.where((slot) {
+    final startHour = int.tryParse(slot.split(':').first) ?? 0;
+    return (startHour + durationHours) <= closingHour;
+  }).toList();
+}
 
 // ══════════════════════════════════════════
 //  Helpers
