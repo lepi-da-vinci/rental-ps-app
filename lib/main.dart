@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'data/dummy_data.dart';
 import 'theme/app_theme.dart';
 import 'providers/booking_provider.dart';
 import 'screens/home_screen.dart';
@@ -45,8 +46,37 @@ class _MainScreenState extends State<MainScreen> {
     setState(() => _currentIndex = index);
   }
 
+  // ─── Helpers (pakai jam dari BookingProvider, bukan Timer sendiri) ─────────
+
+  /// Today's OperatingHour entry (null-safe)
+  OperatingHour _todayHours() {
+    final hours = getOperatingHours();
+    return hours.firstWhere((h) => h.isToday, orElse: () => hours.first);
+  }
+
+  /// Whether the venue is currently open based on real wall-clock time
+  bool _isOpenNow(DateTime now, OperatingHour today) {
+    final raw = today.hours; // e.g. "08:00 – 23:00"
+    final parts = raw.split('–');
+    if (parts.length < 2) return false;
+    int parseHour(String s) => int.tryParse(s.trim().split(':').first) ?? 0;
+    final open = parseHour(parts[0]);
+    final close = parseHour(parts[1]);
+    return now.hour >= open && now.hour < close;
+  }
+
+  /// Short label shown in status chip: "Sabtu · 08:00 – 23:00"
+  String _statusLabel(OperatingHour today) => '${today.day} · ${today.hours}';
+
   @override
   Widget build(BuildContext context) {
+    // Satu sumber waktu untuk seluruh app: jam dari BookingProvider.
+    // Provider ini yang pegang Timer.periodic, jadi di sini tinggal "watch" aja.
+    final now = context.watch<BookingProvider>().now;
+    final todayHours = _todayHours();
+    final isOpenNow = _isOpenNow(now, todayHours);
+    final statusLabel = _statusLabel(todayHours);
+
     final screens = [
       HomeScreen(onNavigate: _onNavigate),
       const InfoScreen(),
@@ -62,12 +92,12 @@ class _MainScreenState extends State<MainScreen> {
 
         return Scaffold(
           appBar: isLargeScreen
-              ? _buildLargeAppBar()
+              ? _buildLargeAppBar(isOpenNow, statusLabel)
               : _buildSmallAppBar(titles[_currentIndex]),
           body: isLargeScreen
               ? Row(
                   children: [
-                    _buildSidebar(),
+                    _buildSidebar(isOpenNow, statusLabel),
                     Expanded(
                       child: IndexedStack(
                         index: _currentIndex,
@@ -93,7 +123,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  PreferredSizeWidget _buildLargeAppBar() {
+  PreferredSizeWidget _buildLargeAppBar(bool isOpenNow, String statusLabel) {
     return AppBar(
       elevation: 0,
       backgroundColor: AppTheme.backgroundDark,
@@ -121,12 +151,17 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ),
           const Spacer(),
+          // Live status pill: open / closed
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: AppTheme.cardDark,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppTheme.dividerColor),
+              border: Border.all(
+                color: isOpenNow
+                    ? AppTheme.accentGreen.withValues(alpha: 0.4)
+                    : AppTheme.accentRed.withValues(alpha: 0.4),
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -134,14 +169,16 @@ class _MainScreenState extends State<MainScreen> {
                 Container(
                   width: 6,
                   height: 6,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.accentGreen,
+                  decoration: BoxDecoration(
+                    color: isOpenNow
+                        ? AppTheme.accentGreen
+                        : AppTheme.accentRed,
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Sabtu · 08:00 - 23:00',
+                  statusLabel,
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 11,
                     color: AppTheme.textMuted,
@@ -159,7 +196,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildSidebar() {
+  Widget _buildSidebar(bool isOpenNow, String statusLabel) {
     return Container(
       width: 250,
       decoration: const BoxDecoration(
@@ -262,7 +299,11 @@ class _MainScreenState extends State<MainScreen> {
               decoration: BoxDecoration(
                 color: AppTheme.cardDark,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.dividerColor),
+                border: Border.all(
+                  color: isOpenNow
+                      ? AppTheme.accentGreen.withValues(alpha: 0.3)
+                      : AppTheme.accentRed.withValues(alpha: 0.3),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,25 +313,29 @@ class _MainScreenState extends State<MainScreen> {
                       Container(
                         width: 8,
                         height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppTheme.accentGreen,
+                        decoration: BoxDecoration(
+                          color: isOpenNow
+                              ? AppTheme.accentGreen
+                              : AppTheme.accentRed,
                           shape: BoxShape.circle,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Buka Sekarang',
+                        isOpenNow ? 'Buka Sekarang' : 'Sedang Tutup',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: AppTheme.textPrimary,
+                          color: isOpenNow
+                              ? AppTheme.accentGreen
+                              : AppTheme.accentRed,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Sabtu · 08:00 - 23:00',
+                    statusLabel,
                     style: GoogleFonts.spaceGrotesk(
                       fontSize: 10,
                       color: AppTheme.textMuted,

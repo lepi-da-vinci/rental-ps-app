@@ -74,15 +74,15 @@ class _HomeScreenState extends State<HomeScreen> {
     {'title': 'Elden Ring', 'platform': 'PS5', 'tag': 'RPG', 'hot': false},
   ];
 
-  final List<Map<String, dynamic>> _schedule = [
-    {'day': 'Senin', 'hours': '10:00 – 22:00', 'today': false},
-    {'day': 'Selasa', 'hours': '10:00 – 22:00', 'today': false},
-    {'day': 'Rabu', 'hours': '10:00 – 22:00', 'today': false},
-    {'day': 'Kamis', 'hours': '10:00 – 22:00', 'today': false},
-    {'day': 'Jumat', 'hours': '10:00 – 23:00', 'today': false},
-    {'day': 'Sabtu', 'hours': '08:00 – 23:00', 'today': true},
-    {'day': 'Minggu', 'hours': '08:00 – 22:00', 'today': false},
-  ];
+  /// Always computed from real time — never stale.
+  List<Map<String, dynamic>> get _schedule {
+    return getOperatingHours().map((oh) => {
+      'day': oh.day,
+      'hours': oh.hours,
+      'today': oh.isToday,
+    }).toList();
+  }
+
 
   @override
   Widget build(BuildContext context) {
