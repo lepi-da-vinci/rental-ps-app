@@ -148,7 +148,7 @@ class _AdminScreenState extends State<AdminScreen>
                 ],
               ),
               const SizedBox(height: 32),
-              
+
               // Walk-in Quick Action
               Container(
                 padding: const EdgeInsets.all(20),
@@ -195,7 +195,9 @@ class _AdminScreenState extends State<AdminScreen>
                       child: ElevatedButton(
                         onPressed: _showWalkInDialog,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.accentGreen.withValues(alpha: 0.2),
+                          backgroundColor: AppTheme.accentGreen.withValues(
+                            alpha: 0.2,
+                          ),
                           foregroundColor: AppTheme.accentGreen,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           elevation: 0,
@@ -222,7 +224,12 @@ class _AdminScreenState extends State<AdminScreen>
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: AppTheme.cardDecoration(),
@@ -279,7 +286,7 @@ class _AdminScreenState extends State<AdminScreen>
           itemBuilder: (context, index) {
             final type = grouped.keys.elementAt(index);
             final units = grouped[type]!;
-            
+
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -305,16 +312,20 @@ class _AdminScreenState extends State<AdminScreen>
   Widget _buildTimelineRow(BuildContext context, UnitStatus unit) {
     final provider = context.read<BookingProvider>();
     final todayBookings = provider.bookingsForDate(provider.now);
-    
+
     // Filter bookings specific to this unit.
     // assignedUnit format is typically '$psType ${unit.label}' or similar.
     // We check if it ends with the unit label and contains the base psType.
     final unitBookings = todayBookings.where((b) {
-      return b.assignedUnit.endsWith(unit.label) && b.assignedUnit.contains(unit.psType);
+      return b.assignedUnit.endsWith(unit.label) &&
+          b.assignedUnit.contains(unit.psType);
     }).toList();
 
     // Get today's operating hours
-    final todayHours = getOperatingHours().firstWhere((h) => h.isToday, orElse: () => getOperatingHours().first);
+    final todayHours = getOperatingHours().firstWhere(
+      (h) => h.isToday,
+      orElse: () => getOperatingHours().first,
+    );
     final parts = todayHours.hours.split(RegExp(r'[-–]'));
     int startOpHour = 10;
     int endOpHour = 22;
@@ -330,7 +341,11 @@ class _AdminScreenState extends State<AdminScreen>
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+          childrenPadding: const EdgeInsets.only(
+            left: 16,
+            right: 16,
+            bottom: 16,
+          ),
           title: Row(
             children: [
               Container(
@@ -376,7 +391,9 @@ class _AdminScreenState extends State<AdminScreen>
                           Row(
                             children: [
                               Icon(
-                                unit.isWalkIn ? Icons.directions_walk : Icons.book_online,
+                                unit.isWalkIn
+                                    ? Icons.directions_walk
+                                    : Icons.book_online,
                                 size: 14,
                                 color: AppTheme.textMuted,
                               ),
@@ -395,7 +412,10 @@ class _AdminScreenState extends State<AdminScreen>
               ),
               if (!unit.isAvailable)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppTheme.accentRed.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
@@ -431,7 +451,7 @@ class _AdminScreenState extends State<AdminScreen>
               child: Row(
                 children: List.generate(endOpHour - startOpHour, (index) {
                   final h = startOpHour + index;
-                  
+
                   // Check if any booking overlaps with this hour
                   Booking? matchedBooking;
                   for (final b in unitBookings) {
@@ -446,20 +466,26 @@ class _AdminScreenState extends State<AdminScreen>
                   }
 
                   final isBooked = matchedBooking != null;
-                  final isWalkIn = matchedBooking?.id.startsWith('WI-') ?? false;
-                  
+                  final isWalkIn =
+                      matchedBooking?.id.startsWith('WI-') ?? false;
+
                   String tooltipMsg = 'Kosong';
                   if (matchedBooking != null) {
                     final b = matchedBooking;
                     final startH = int.parse(b.time.split(':')[0]);
-                    final durH = int.parse(b.duration.replaceAll(RegExp(r'[^0-9]'), ''));
-                    tooltipMsg = '${b.customerName} (${b.time} - ${startH + durH}:00)';
+                    final durH = int.parse(
+                      b.duration.replaceAll(RegExp(r'[^0-9]'), ''),
+                    );
+                    tooltipMsg =
+                        '${b.customerName} (${b.time} - ${startH + durH}:00)';
                   }
 
                   Color blockColor = AppTheme.surfaceDark;
                   Color borderColor = AppTheme.dividerColor;
                   if (isBooked) {
-                    final bookingColor = AppTheme.getBookingColor(matchedBooking.id);
+                    final bookingColor = AppTheme.getBookingColor(
+                      matchedBooking.id,
+                    );
                     blockColor = bookingColor.withValues(alpha: 0.15);
                     borderColor = bookingColor;
                   }
@@ -473,10 +499,7 @@ class _AdminScreenState extends State<AdminScreen>
                       decoration: BoxDecoration(
                         color: blockColor,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: borderColor,
-                          width: 1,
-                        ),
+                        border: Border.all(color: borderColor, width: 1),
                       ),
                       child: Column(
                         children: [
@@ -485,14 +508,20 @@ class _AdminScreenState extends State<AdminScreen>
                             style: GoogleFonts.spaceGrotesk(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: isBooked ? AppTheme.textPrimary : AppTheme.textMuted,
+                              color: isBooked
+                                  ? AppTheme.textPrimary
+                                  : AppTheme.textMuted,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Icon(
-                            isBooked ? (isWalkIn ? Icons.directions_walk : Icons.person) : Icons.check_circle_outline,
+                            isBooked
+                                ? (isWalkIn
+                                      ? Icons.directions_walk
+                                      : Icons.person)
+                                : Icons.check_circle_outline,
                             size: 14,
-                            color: isBooked 
+                            color: isBooked
                                 ? AppTheme.getBookingColor(matchedBooking.id)
                                 : AppTheme.textMuted.withValues(alpha: 0.5),
                           ),
@@ -516,7 +545,11 @@ class _AdminScreenState extends State<AdminScreen>
   Widget _buildBookingList() {
     return Consumer<BookingProvider>(
       builder: (context, provider, child) {
-        final onlineBookings = provider.bookings.where((b) => !b.id.startsWith('WI-')).toList().reversed.toList(); // newest first
+        final onlineBookings = provider.bookings
+            .where((b) => !b.id.startsWith('WI-'))
+            .toList()
+            .reversed
+            .toList(); // newest first
         if (onlineBookings.isEmpty) {
           return Center(
             child: Text(
@@ -563,14 +596,18 @@ class _AdminScreenState extends State<AdminScreen>
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isWalkIn 
+                        color: isWalkIn
                             ? AppTheme.accentGreen.withValues(alpha: 0.1)
                             : AppTheme.accentCyan.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
-                        isWalkIn ? Icons.directions_walk : Icons.confirmation_number,
-                        color: isWalkIn ? AppTheme.accentGreen : AppTheme.accentCyan,
+                        isWalkIn
+                            ? Icons.directions_walk
+                            : Icons.confirmation_number,
+                        color: isWalkIn
+                            ? AppTheme.accentGreen
+                            : AppTheme.accentCyan,
                         size: 24,
                       ),
                     ),
@@ -644,7 +681,7 @@ class _AdminScreenState extends State<AdminScreen>
         final allBookings = provider.bookings.toList();
         // Sort by time
         allBookings.sort((a, b) => a.time.compareTo(b.time));
-        
+
         if (allBookings.isEmpty) {
           return Center(
             child: Text(
@@ -702,7 +739,10 @@ class _AdminScreenState extends State<AdminScreen>
                                   ),
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: bookingColor.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(6),
@@ -721,7 +761,11 @@ class _AdminScreenState extends State<AdminScreen>
                             const SizedBox(height: 12),
                             Row(
                               children: [
-                                Icon(Icons.schedule, size: 14, color: AppTheme.textMuted),
+                                Icon(
+                                  Icons.schedule,
+                                  size: 14,
+                                  color: AppTheme.textMuted,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   '${b.time} (${b.duration})',
@@ -731,7 +775,11 @@ class _AdminScreenState extends State<AdminScreen>
                                   ),
                                 ),
                                 const SizedBox(width: 16),
-                                Icon(Icons.phone, size: 14, color: AppTheme.textMuted),
+                                Icon(
+                                  Icons.phone,
+                                  size: 14,
+                                  color: AppTheme.textMuted,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   b.phone,
@@ -746,7 +794,9 @@ class _AdminScreenState extends State<AdminScreen>
                             Row(
                               children: [
                                 Icon(
-                                  isWalkIn ? Icons.directions_walk : Icons.language,
+                                  isWalkIn
+                                      ? Icons.directions_walk
+                                      : Icons.language,
                                   size: 14,
                                   color: AppTheme.textMuted,
                                 ),
@@ -799,11 +849,17 @@ class _AdminScreenState extends State<AdminScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Batal', style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted)),
+            child: Text(
+              'Batal',
+              style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Hapus', style: GoogleFonts.spaceGrotesk(color: AppTheme.accentRed)),
+            child: Text(
+              'Hapus',
+              style: GoogleFonts.spaceGrotesk(color: AppTheme.accentRed),
+            ),
           ),
         ],
       ),
@@ -826,15 +882,18 @@ class _AdminScreenState extends State<AdminScreen>
         return StatefulBuilder(
           builder: (context, setState) {
             final provider = context.read<BookingProvider>();
-            
+
             // Available unit labels for the selected type
             final availableUnitLabels = provider.units
                 .where((u) => u.psType == selectedType && u.isAvailable)
                 .map((u) => u.label)
                 .toList();
 
-            if (selectedUnitLabel == null || !availableUnitLabels.contains(selectedUnitLabel)) {
-              selectedUnitLabel = availableUnitLabels.isNotEmpty ? availableUnitLabels.first : null;
+            if (selectedUnitLabel == null ||
+                !availableUnitLabels.contains(selectedUnitLabel)) {
+              selectedUnitLabel = availableUnitLabels.isNotEmpty
+                  ? availableUnitLabels.first
+                  : null;
             }
 
             return Dialog(
@@ -858,14 +917,18 @@ class _AdminScreenState extends State<AdminScreen>
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Name input
                     TextField(
                       controller: nameCtrl,
-                      style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
+                      style: GoogleFonts.spaceGrotesk(
+                        color: AppTheme.textPrimary,
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Nama Pelanggan',
-                        labelStyle: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
+                        labelStyle: GoogleFonts.spaceGrotesk(
+                          color: AppTheme.textMuted,
+                        ),
                         enabledBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: AppTheme.dividerColor),
                         ),
@@ -875,14 +938,16 @@ class _AdminScreenState extends State<AdminScreen>
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Type Selection
                     DropdownButtonFormField<String>(
                       initialValue: selectedType,
                       dropdownColor: AppTheme.cardDark,
                       decoration: InputDecoration(
                         labelText: 'Tipe PS',
-                        labelStyle: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
+                        labelStyle: GoogleFonts.spaceGrotesk(
+                          color: AppTheme.textMuted,
+                        ),
                         enabledBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: AppTheme.dividerColor),
                         ),
@@ -891,10 +956,17 @@ class _AdminScreenState extends State<AdminScreen>
                         ),
                       ),
                       items: ['PS4', 'PS5', 'PS5 VIP', 'Nintendo VIP']
-                          .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e, style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary)),
-                              ))
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(
+                                e,
+                                style: GoogleFonts.spaceGrotesk(
+                                  color: AppTheme.textPrimary,
+                                ),
+                              ),
+                            ),
+                          )
                           .toList(),
                       onChanged: (val) {
                         setState(() {
@@ -911,7 +983,9 @@ class _AdminScreenState extends State<AdminScreen>
                       dropdownColor: AppTheme.cardDark,
                       decoration: InputDecoration(
                         labelText: 'Pilih Unit',
-                        labelStyle: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
+                        labelStyle: GoogleFonts.spaceGrotesk(
+                          color: AppTheme.textMuted,
+                        ),
                         enabledBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: AppTheme.dividerColor),
                         ),
@@ -919,17 +993,36 @@ class _AdminScreenState extends State<AdminScreen>
                           borderSide: BorderSide(color: AppTheme.accentGreen),
                         ),
                       ),
-                      items: availableUnitLabels.isEmpty 
-                        ? [DropdownMenuItem(value: null, child: Text('Semua Penuh', style: GoogleFonts.spaceGrotesk(color: AppTheme.accentRed)))]
-                        : availableUnitLabels
-                          .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e, style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary)),
-                              ))
-                          .toList(),
-                      onChanged: availableUnitLabels.isEmpty ? null : (val) {
-                        setState(() => selectedUnitLabel = val);
-                      },
+                      items: availableUnitLabels.isEmpty
+                          ? [
+                              DropdownMenuItem(
+                                value: null,
+                                child: Text(
+                                  'Semua Penuh',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    color: AppTheme.accentRed,
+                                  ),
+                                ),
+                              ),
+                            ]
+                          : availableUnitLabels
+                                .map(
+                                  (e) => DropdownMenuItem(
+                                    value: e,
+                                    child: Text(
+                                      e,
+                                      style: GoogleFonts.spaceGrotesk(
+                                        color: AppTheme.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                      onChanged: availableUnitLabels.isEmpty
+                          ? null
+                          : (val) {
+                              setState(() => selectedUnitLabel = val);
+                            },
                     ),
                     const SizedBox(height: 16),
 
@@ -939,7 +1032,9 @@ class _AdminScreenState extends State<AdminScreen>
                       dropdownColor: AppTheme.cardDark,
                       decoration: InputDecoration(
                         labelText: 'Durasi',
-                        labelStyle: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
+                        labelStyle: GoogleFonts.spaceGrotesk(
+                          color: AppTheme.textMuted,
+                        ),
                         enabledBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: AppTheme.dividerColor),
                         ),
@@ -948,31 +1043,52 @@ class _AdminScreenState extends State<AdminScreen>
                         ),
                       ),
                       items: List.generate(5, (index) => '${index + 1} Jam')
-                          .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e, style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary)),
-                              ))
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(
+                                e,
+                                style: GoogleFonts.spaceGrotesk(
+                                  color: AppTheme.textPrimary,
+                                ),
+                              ),
+                            ),
+                          )
                           .toList(),
                       onChanged: (val) {
                         if (val != null) setState(() => selectedDuration = val);
                       },
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx),
-                          child: Text('Batal', style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted)),
+                          child: Text(
+                            'Batal',
+                            style: GoogleFonts.spaceGrotesk(
+                              color: AppTheme.textMuted,
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton(
-                          onPressed: (selectedUnitLabel == null || nameCtrl.text.trim().isEmpty)
+                          onPressed:
+                              (selectedUnitLabel == null ||
+                                  nameCtrl.text.trim().isEmpty)
                               ? null
                               : () {
-                                  final durInt = int.tryParse(selectedDuration.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
+                                  final durInt =
+                                      int.tryParse(
+                                        selectedDuration.replaceAll(
+                                          RegExp(r'[^0-9]'),
+                                          '',
+                                        ),
+                                      ) ??
+                                      1;
                                   provider.addWalkIn(
                                     baseType: selectedType!,
                                     unitLabel: selectedUnitLabel!,
@@ -991,7 +1107,12 @@ class _AdminScreenState extends State<AdminScreen>
                             backgroundColor: AppTheme.accentGreen,
                             foregroundColor: Colors.white,
                           ),
-                          child: Text('Mulai Main', style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.bold)),
+                          child: Text(
+                            'Mulai Main',
+                            style: GoogleFonts.spaceGrotesk(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -999,9 +1120,9 @@ class _AdminScreenState extends State<AdminScreen>
                 ),
               ),
             );
-          }
+          },
         );
-      }
+      },
     );
   }
 }
