@@ -57,7 +57,8 @@ const List<PsUnit> dummyPsUnits = [
   PsUnit(
     id: 'nintendo vip',
     name: 'Nintendo VIP Room',
-    description: 'Ruangan seru dan nyaman untuk mabar bareng teman dengan Nintendo Switch.',
+    description:
+        'Ruangan seru dan nyaman untuk mabar bareng teman dengan Nintendo Switch.',
     imageIcon: '🍄',
     totalUnits: 2,
     controllersPerUnit: 4,
@@ -244,91 +245,357 @@ List<UnitStatus> getDummyUnitStatus() {
 // ══════════════════════════════════════════
 const List<GameItem> gameCatalog = [
   // ── Survival Horror & Thriller (1-10) ──
-  GameItem(title: 'Resident Evil 2 Remake', genre: 'Survival Horror & Thriller', platform: 'PS4 PS5'),
-  GameItem(title: 'Resident Evil 3 Remake', genre: 'Survival Horror & Thriller', platform: 'PS4 PS5'),
-  GameItem(title: 'Resident Evil 4 Remake', genre: 'Survival Horror & Thriller', platform: 'PS4 PS5'),
-  GameItem(title: 'Resident Evil 7', genre: 'Survival Horror & Thriller', platform: 'PS4 PS5'),
-  GameItem(title: 'Resident Evil 8 (Village)', genre: 'Survival Horror & Thriller', platform: 'PS4 PS5'),
-  GameItem(title: 'A Plague Tale: Innocence', genre: 'Survival Horror & Thriller', platform: 'PS4 PS5'),
-  GameItem(title: 'A Plague Tale: Requiem', genre: 'Survival Horror & Thriller', platform: 'PS5'),
-  GameItem(title: 'Little Nightmares II', genre: 'Survival Horror & Thriller', platform: 'PS4 PS5'),
-  GameItem(title: 'Atomic Heart', genre: 'Survival Horror & Thriller', platform: 'PS4 PS5'),
-  GameItem(title: 'Control', genre: 'Survival Horror & Thriller', platform: 'PS4 PS5'),
+  GameItem(
+    title: 'Resident Evil 2 Remake',
+    genre: 'Survival Horror & Thriller',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'Resident Evil 3 Remake',
+    genre: 'Survival Horror & Thriller',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'Resident Evil 4 Remake',
+    genre: 'Survival Horror & Thriller',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'Resident Evil 7',
+    genre: 'Survival Horror & Thriller',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'Resident Evil 8 (Village)',
+    genre: 'Survival Horror & Thriller',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'A Plague Tale: Innocence',
+    genre: 'Survival Horror & Thriller',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'A Plague Tale: Requiem',
+    genre: 'Survival Horror & Thriller',
+    platform: 'PS5',
+  ),
+  GameItem(
+    title: 'Little Nightmares II',
+    genre: 'Survival Horror & Thriller',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'Atomic Heart',
+    genre: 'Survival Horror & Thriller',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'Control',
+    genre: 'Survival Horror & Thriller',
+    platform: 'PS4 PS5',
+  ),
 
   // ── Action / Open World / Adventure (11-31) ──
-  GameItem(title: 'Red Dead Redemption 2 (RDR2)', genre: 'Action / Open World / Adventure', platform: 'PS4'),
-  GameItem(title: 'Grand Theft Auto V (GTA V)', genre: 'Action / Open World / Adventure', platform: 'PS4 PS5', popularRank: 1, imageUrl: 'https://image.api.playstation.com/vulcan/ap/rnd/202202/2816/mYnP2bWXFTTEuoFJNkCOZdQG.png'),
-  GameItem(title: 'Cyberpunk 2077', genre: 'Action / Open World / Adventure', platform: 'PS4 PS5'),
-  GameItem(title: "Marvel's Spider-Man Remastered", genre: 'Action / Open World / Adventure', platform: 'PS5'),
-  GameItem(title: "Marvel's Spider-Man: Miles Morales", genre: 'Action / Open World / Adventure', platform: 'PS4 PS5'),
-  GameItem(title: 'Spider-Man 2', genre: 'Action / Open World / Adventure', platform: 'PS5'),
-  GameItem(title: 'Death Stranding', genre: 'Action / Open World / Adventure', platform: 'PS4 PS5'),
-  GameItem(title: 'Hogwarts Legacy', genre: 'Action / Open World / Adventure', platform: 'PS4 PS5'),
-  GameItem(title: 'Watch Dogs', genre: 'Action / Open World / Adventure', platform: 'PS4'),
-  GameItem(title: 'Watch Dogs 2', genre: 'Action / Open World / Adventure', platform: 'PS4'),
-  GameItem(title: 'Batman: Arkham Origins', genre: 'Action / Open World / Adventure', platform: 'PS4'),
-  GameItem(title: 'Batman: Arkham Knight', genre: 'Action / Open World / Adventure', platform: 'PS4'),
-  GameItem(title: 'Tomb Raider (2013)', genre: 'Action / Open World / Adventure', platform: 'PS4'),
-  GameItem(title: 'Rise of the Tomb Raider', genre: 'Action / Open World / Adventure', platform: 'PS4'),
-  GameItem(title: 'Tomb Raider I-III Remastered', genre: 'Action / Open World / Adventure', platform: 'PS4 PS5'),
-  GameItem(title: "Assassin's Creed IV: Black Flag", genre: 'Action / Open World / Adventure', platform: 'PS4'),
-  GameItem(title: "Assassin's Creed Unity", genre: 'Action / Open World / Adventure', platform: 'PS4'),
-  GameItem(title: "Assassin's Creed Origins", genre: 'Action / Open World / Adventure', platform: 'PS4 PS5'),
-  GameItem(title: "Assassin's Creed Odyssey", genre: 'Action / Open World / Adventure', platform: 'PS4 PS5'),
-  GameItem(title: "Assassin's Creed Mirage", genre: 'Action / Open World / Adventure', platform: 'PS4 PS5'),
-  GameItem(title: "Assassin's Creed Valhalla", genre: 'Action / Open World / Adventure', platform: 'PS4 PS5'),
+  GameItem(
+    title: 'Red Dead Redemption 2 (RDR2)',
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'Grand Theft Auto V (GTA V)',
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4 PS5',
+    popularRank: 1,
+    imageUrl:
+        'https://image.api.playstation.com/vulcan/ap/rnd/202202/2816/mYnP2bWXFTTEuoFJNkCOZdQG.png',
+  ),
+  GameItem(
+    title: 'Cyberpunk 2077',
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: "Marvel's Spider-Man Remastered",
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS5',
+  ),
+  GameItem(
+    title: "Marvel's Spider-Man: Miles Morales",
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'Spider-Man 2',
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS5',
+  ),
+  GameItem(
+    title: 'Death Stranding',
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'Hogwarts Legacy',
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'Watch Dogs',
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'Watch Dogs 2',
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'Batman: Arkham Origins',
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'Batman: Arkham Knight',
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'Tomb Raider (2013)',
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'Rise of the Tomb Raider',
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'Tomb Raider I-III Remastered',
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: "Assassin's Creed IV: Black Flag",
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: "Assassin's Creed Unity",
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: "Assassin's Creed Origins",
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: "Assassin's Creed Odyssey",
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: "Assassin's Creed Mirage",
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: "Assassin's Creed Valhalla",
+    genre: 'Action / Open World / Adventure',
+    platform: 'PS4 PS5',
+  ),
 
   // ── RPG & JRPG (32-44) ──
-  GameItem(title: 'The Witcher 2: Assassins of Kings', genre: 'RPG & JRPG', platform: 'PS4'),
-  GameItem(title: 'The Witcher 3: Wild Hunt', genre: 'RPG & JRPG', platform: 'PS4 PS5'),
+  GameItem(
+    title: 'The Witcher 2: Assassins of Kings',
+    genre: 'RPG & JRPG',
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'The Witcher 3: Wild Hunt',
+    genre: 'RPG & JRPG',
+    platform: 'PS4 PS5',
+  ),
   GameItem(title: 'Elden Ring', genre: 'RPG & JRPG', platform: 'PS4 PS5'),
-  GameItem(title: 'Final Fantasy VII Remake', genre: 'RPG & JRPG', platform: 'PS4 PS5'),
-  GameItem(title: 'Final Fantasy VII Rebirth', genre: 'RPG & JRPG', platform: 'PS5'),
+  GameItem(
+    title: 'Final Fantasy VII Remake',
+    genre: 'RPG & JRPG',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'Final Fantasy VII Rebirth',
+    genre: 'RPG & JRPG',
+    platform: 'PS5',
+  ),
   GameItem(title: 'Final Fantasy XV', genre: 'RPG & JRPG', platform: 'PS4'),
   GameItem(title: 'Final Fantasy XVI', genre: 'RPG & JRPG', platform: 'PS5'),
-  GameItem(title: 'Monster Hunter: World', genre: 'RPG & JRPG', platform: 'PS4'),
-  GameItem(title: 'Monster Hunter Rise', genre: 'RPG & JRPG', platform: 'PS4 PS5'),
+  GameItem(
+    title: 'Monster Hunter: World',
+    genre: 'RPG & JRPG',
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'Monster Hunter Rise',
+    genre: 'RPG & JRPG',
+    platform: 'PS4 PS5',
+  ),
   GameItem(title: 'NieR:Automata', genre: 'RPG & JRPG', platform: 'PS4'),
   GameItem(title: "Baldur's Gate 3", genre: 'RPG & JRPG', platform: 'PS5'),
   GameItem(title: 'Persona 3 Reload', genre: 'RPG & JRPG', platform: 'PS4 PS5'),
-  GameItem(title: 'The Elder Scrolls V: Skyrim', genre: 'RPG & JRPG', platform: 'PS4 PS5'),
+  GameItem(
+    title: 'The Elder Scrolls V: Skyrim',
+    genre: 'RPG & JRPG',
+    platform: 'PS4 PS5',
+  ),
 
   // ── Fighting & Hack 'n Slash (45-54) ──
-  GameItem(title: 'Tekken 7', genre: "Fighting & Hack 'n Slash", platform: 'PS4'),
-  GameItem(title: 'Tekken 8', genre: "Fighting & Hack 'n Slash", platform: 'PS5', popularRank: 2, imageUrl: 'https://image.api.playstation.com/vulcan/ap/rnd/202308/1715/bfd91ebcb4b2ebc4dff48aa1ec1de3fb42880c85c4004940.png'),
-  GameItem(title: 'Street Fighter 6', genre: "Fighting & Hack 'n Slash", platform: 'PS4 PS5'),
-  GameItem(title: 'Mortal Kombat 1', genre: "Fighting & Hack 'n Slash", platform: 'PS5'),
-  GameItem(title: 'Naruto x Boruto Ultimate Ninja Storm Connections', genre: "Fighting & Hack 'n Slash", platform: 'PS4 PS5'),
-  GameItem(title: 'Devil May Cry 5', genre: "Fighting & Hack 'n Slash", platform: 'PS4 PS5'),
-  GameItem(title: 'Stellar Blade', genre: "Fighting & Hack 'n Slash", platform: 'PS5'),
-  GameItem(title: 'Sekiro: Shadows Die Twice', genre: "Fighting & Hack 'n Slash", platform: 'PS4'),
-  GameItem(title: 'Hollow Knight', genre: "Fighting & Hack 'n Slash", platform: 'PS4'),
-  GameItem(title: 'God of War Ragnarok', genre: "Fighting & Hack 'n Slash", platform: 'PS4 PS5'),
+  GameItem(
+    title: 'Tekken 7',
+    genre: "Fighting & Hack 'n Slash",
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'Tekken 8',
+    genre: "Fighting & Hack 'n Slash",
+    platform: 'PS5',
+    popularRank: 2,
+    imageUrl:
+        'https://image.api.playstation.com/vulcan/ap/rnd/202308/1715/bfd91ebcb4b2ebc4dff48aa1ec1de3fb42880c85c4004940.png',
+  ),
+  GameItem(
+    title: 'Street Fighter 6',
+    genre: "Fighting & Hack 'n Slash",
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'Mortal Kombat 1',
+    genre: "Fighting & Hack 'n Slash",
+    platform: 'PS5',
+  ),
+  GameItem(
+    title: 'Naruto x Boruto Ultimate Ninja Storm Connections',
+    genre: "Fighting & Hack 'n Slash",
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'Devil May Cry 5',
+    genre: "Fighting & Hack 'n Slash",
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'Stellar Blade',
+    genre: "Fighting & Hack 'n Slash",
+    platform: 'PS5',
+  ),
+  GameItem(
+    title: 'Sekiro: Shadows Die Twice',
+    genre: "Fighting & Hack 'n Slash",
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'Hollow Knight',
+    genre: "Fighting & Hack 'n Slash",
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'God of War Ragnarok',
+    genre: "Fighting & Hack 'n Slash",
+    platform: 'PS4 PS5',
+  ),
 
   // ── Co-op, Puzzle & Family (55-61) ──
-  GameItem(title: 'It Takes Two', genre: 'Co-op, Puzzle & Family', platform: 'PS4 PS5'),
-  GameItem(title: 'A Way Out', genre: 'Co-op, Puzzle & Family', platform: 'PS4'),
-  GameItem(title: 'Stray', genre: 'Co-op, Puzzle & Family', platform: 'PS4 PS5'),
-  GameItem(title: 'LEGO Batman 3', genre: 'Co-op, Puzzle & Family', platform: 'PS4'),
-  GameItem(title: 'LEGO Star Wars: The Skywalker Saga', genre: 'Co-op, Puzzle & Family', platform: 'PS4 PS5'),
-  GameItem(title: 'LEGO The Hobbit', genre: 'Co-op, Puzzle & Family', platform: 'PS4'),
-  GameItem(title: 'LEGO The Lord of the Rings', genre: 'Co-op, Puzzle & Family', platform: 'PS4'),
+  GameItem(
+    title: 'It Takes Two',
+    genre: 'Co-op, Puzzle & Family',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'A Way Out',
+    genre: 'Co-op, Puzzle & Family',
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'Stray',
+    genre: 'Co-op, Puzzle & Family',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'LEGO Batman 3',
+    genre: 'Co-op, Puzzle & Family',
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'LEGO Star Wars: The Skywalker Saga',
+    genre: 'Co-op, Puzzle & Family',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'LEGO The Hobbit',
+    genre: 'Co-op, Puzzle & Family',
+    platform: 'PS4',
+  ),
+  GameItem(
+    title: 'LEGO The Lord of the Rings',
+    genre: 'Co-op, Puzzle & Family',
+    platform: 'PS4',
+  ),
 
   // ── Racing & Sports (62-67) ──
-  GameItem(title: 'Need for Speed Unbound', genre: 'Racing & Sports', platform: 'PS5'),
+  GameItem(
+    title: 'Need for Speed Unbound',
+    genre: 'Racing & Sports',
+    platform: 'PS5',
+  ),
   GameItem(title: 'MotoGP 23', genre: 'Racing & Sports', platform: 'PS4 PS5'),
   GameItem(title: 'The Crew 2', genre: 'Racing & Sports', platform: 'PS4'),
-  GameItem(title: 'EA Sports FC 24', genre: 'Racing & Sports', platform: 'PS4 PS5'),
-  GameItem(title: 'EA Sports FC 26 (FIFA)', genre: 'Racing & Sports', platform: 'PS4 PS5', popularRank: 3, imageUrl: 'https://image.api.playstation.com/vulcan/ap/rnd/202307/1110/af866f21c2780e9df1dc6ebf77f59d4c7287fcb1745dbd4e.png'),
+  GameItem(
+    title: 'EA Sports FC 24',
+    genre: 'Racing & Sports',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    title: 'EA Sports FC 26 (FIFA)',
+    genre: 'Racing & Sports',
+    platform: 'PS4 PS5',
+    popularRank: 3,
+    imageUrl:
+        'https://image.api.playstation.com/vulcan/ap/rnd/202307/1110/af866f21c2780e9df1dc6ebf77f59d4c7287fcb1745dbd4e.png',
+  ),
   GameItem(title: 'NBA 2K26', genre: 'Racing & Sports', platform: 'PS4 PS5'),
 
   // ── Nintendo Exclusive & Party Games ──
-  GameItem(title: 'Mario Kart 8 Deluxe', genre: 'Co-op, Puzzle & Family', platform: 'Nintendo Switch', popularRank: 4),
-  GameItem(title: 'Super Smash Bros. Ultimate', genre: "Fighting & Hack 'n Slash", platform: 'Nintendo Switch'),
-  GameItem(title: 'The Legend of Zelda: Breath of the Wild', genre: 'Action / Open World / Adventure', platform: 'Nintendo Switch'),
-  GameItem(title: 'Animal Crossing: New Horizons', genre: 'Co-op, Puzzle & Family', platform: 'Nintendo Switch'),
-  GameItem(title: 'Super Mario Odyssey', genre: 'Action / Open World / Adventure', platform: 'Nintendo Switch'),
-  GameItem(title: 'Splatoon 3', genre: 'Action / Open World / Adventure', platform: 'Nintendo Switch'),
+  GameItem(
+    title: 'Mario Kart 8 Deluxe',
+    genre: 'Co-op, Puzzle & Family',
+    platform: 'Nintendo Switch',
+    popularRank: 4,
+  ),
+  GameItem(
+    title: 'Super Smash Bros. Ultimate',
+    genre: "Fighting & Hack 'n Slash",
+    platform: 'Nintendo Switch',
+  ),
+  GameItem(
+    title: 'The Legend of Zelda: Breath of the Wild',
+    genre: 'Action / Open World / Adventure',
+    platform: 'Nintendo Switch',
+  ),
+  GameItem(
+    title: 'Animal Crossing: New Horizons',
+    genre: 'Co-op, Puzzle & Family',
+    platform: 'Nintendo Switch',
+  ),
+  GameItem(
+    title: 'Super Mario Odyssey',
+    genre: 'Action / Open World / Adventure',
+    platform: 'Nintendo Switch',
+  ),
+  GameItem(
+    title: 'Splatoon 3',
+    genre: 'Action / Open World / Adventure',
+    platform: 'Nintendo Switch',
+  ),
 ];
 
 // Extract unique genres for filter
@@ -606,7 +873,12 @@ List<String> getValidTimeSlots(int durationHours) {
     (h) => h.isToday,
     orElse: () => const OperatingHour(day: '', hours: '10:00 – 22:00'),
   );
-  final closingHourStr = todayHours.hours.split('–').last.trim().split(':').first;
+  final closingHourStr = todayHours.hours
+      .split('–')
+      .last
+      .trim()
+      .split(':')
+      .first;
   final closingHour = int.tryParse(closingHourStr) ?? 22;
 
   return timeSlotOptions.where((slot) {
