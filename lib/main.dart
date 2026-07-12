@@ -8,6 +8,7 @@ import 'screens/home_screen.dart';
 import 'screens/info_screen.dart';
 import 'screens/harga_screen.dart';
 import 'screens/booking_screen.dart';
+import 'screens/admin_screen.dart';
 
 void main() {
   runApp(
@@ -89,33 +90,40 @@ class _MainScreenState extends State<MainScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isLargeScreen = constraints.maxWidth > 800;
+        final isAdminMode = context.watch<BookingProvider>().isAdminMode;
 
         return Scaffold(
           appBar: isLargeScreen
-              ? _buildLargeAppBar(isOpenNow, statusLabel)
-              : _buildSmallAppBar(titles[_currentIndex]),
-          body: isLargeScreen
-              ? Row(
-                  children: [
-                    _buildSidebar(isOpenNow, statusLabel),
-                    Expanded(
-                      child: IndexedStack(
-                        index: _currentIndex,
-                        children: screens,
-                      ),
-                    ),
-                  ],
-                )
-              : IndexedStack(index: _currentIndex, children: screens),
-          bottomNavigationBar: isLargeScreen ? null : _buildBottomNav(),
+              ? _buildLargeAppBar(isOpenNow, statusLabel, isAdminMode, context)
+              : _buildSmallAppBar(titles[_currentIndex], isAdminMode, context),
+          body: isAdminMode
+              ? const AdminScreen()
+              : (isLargeScreen
+                  ? Row(
+                      children: [
+                        _buildSidebar(isOpenNow, statusLabel),
+                        Expanded(
+                          child: IndexedStack(
+                            index: _currentIndex,
+                            children: screens,
+                          ),
+                        ),
+                      ],
+                    )
+                  : IndexedStack(index: _currentIndex, children: screens)),
+          bottomNavigationBar: (isLargeScreen || isAdminMode) ? null : _buildBottomNav(),
         );
       },
     );
   }
 
-  PreferredSizeWidget _buildSmallAppBar(String title) {
+  PreferredSizeWidget _buildSmallAppBar(String title, bool isAdminMode, BuildContext context) {
     return AppBar(
-      title: Text(title),
+      title: Text(isAdminMode ? 'ADMIN MODE' : title, 
+          style: isAdminMode ? GoogleFonts.spaceGrotesk(color: AppTheme.accentCyan, fontWeight: FontWeight.bold) : null),
+      actions: [
+        _buildAdminToggle(isAdminMode, context),
+      ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Container(height: 1, color: AppTheme.dividerColor),
@@ -123,7 +131,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  PreferredSizeWidget _buildLargeAppBar(bool isOpenNow, String statusLabel) {
+  PreferredSizeWidget _buildLargeAppBar(bool isOpenNow, String statusLabel, bool isAdminMode, BuildContext context) {
     return AppBar(
       elevation: 0,
       backgroundColor: AppTheme.backgroundDark,
@@ -143,14 +151,16 @@ class _MainScreenState extends State<MainScreen> {
           ),
           const SizedBox(width: 16),
           Text(
-            'TIMELESS',
+            isAdminMode ? 'TIMELESS (ADMIN)' : 'TIMELESS',
             style: GoogleFonts.pressStart2p(
               fontSize: 14,
-              color: AppTheme.textPrimary,
+              color: isAdminMode ? AppTheme.accentCyan : AppTheme.textPrimary,
               letterSpacing: 2,
             ),
           ),
           const Spacer(),
+          _buildAdminToggle(isAdminMode, context),
+          const SizedBox(width: 16),
           // Live status pill: open / closed
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -193,6 +203,19 @@ class _MainScreenState extends State<MainScreen> {
         preferredSize: const Size.fromHeight(1),
         child: Container(height: 1, color: AppTheme.dividerColor),
       ),
+    );
+  }
+
+  Widget _buildAdminToggle(bool isAdminMode, BuildContext context) {
+    return IconButton(
+      icon: Icon(
+        isAdminMode ? Icons.admin_panel_settings : Icons.admin_panel_settings_outlined,
+        color: isAdminMode ? AppTheme.accentCyan : AppTheme.textMuted,
+      ),
+      tooltip: 'Toggle Admin Mode',
+      onPressed: () {
+        context.read<BookingProvider>().toggleAdminMode();
+      },
     );
   }
 
