@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/ps_unit.dart';
 import '../models/price_package.dart';
+import '../models/booking.dart';
 
 // ══════════════════════════════════════════
 //  PlayStation Units (PS4 & PS5 only)
@@ -74,171 +75,17 @@ const List<PsUnit> dummyPsUnits = [
 // ══════════════════════════════════════════
 //  Unit Availability Status (dummy/simulasi)
 // ══════════════════════════════════════════
+
 List<UnitStatus> getDummyUnitStatus() {
-  // Simulate: some units in use, some available
   return [
-    // PS4 — 5 units
-    const UnitStatus(
-      unitId: 'PS4-01',
-      psType: 'PS4',
-      label: 'Unit 1',
-      isAvailable: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS4-02',
-      psType: 'PS4',
-      label: 'Unit 2',
-      isAvailable: false,
-      playerName: 'Budi (Walk-in)',
-      startTime: '14:00',
-      endTime: '16:00',
-      isWalkIn: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS4-03',
-      psType: 'PS4',
-      label: 'Unit 3',
-      isAvailable: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS4-04',
-      psType: 'PS4',
-      label: 'Unit 4',
-      isAvailable: false,
-      playerName: 'Sandi',
-      startTime: '13:00',
-      endTime: '17:00',
-      isWalkIn: false,
-    ),
-    const UnitStatus(
-      unitId: 'PS4-05',
-      psType: 'PS4',
-      label: 'Unit 5',
-      isAvailable: true,
-    ),
-    // PS5 — 8 units
-    const UnitStatus(
-      unitId: 'PS5-01',
-      psType: 'PS5',
-      label: 'Unit 1',
-      isAvailable: false,
-      playerName: 'Riki (Walk-in)',
-      startTime: '11:00',
-      endTime: '13:00',
-      isWalkIn: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-02',
-      psType: 'PS5',
-      label: 'Unit 2',
-      isAvailable: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-03',
-      psType: 'PS5',
-      label: 'Unit 3',
-      isAvailable: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-04',
-      psType: 'PS5',
-      label: 'Unit 4',
-      isAvailable: false,
-      playerName: 'Siska',
-      startTime: '12:00',
-      endTime: '16:00',
-      isWalkIn: false,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-05',
-      psType: 'PS5',
-      label: 'Unit 5',
-      isAvailable: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-06',
-      psType: 'PS5',
-      label: 'Unit 6',
-      isAvailable: false,
-      playerName: 'Adit (Walk-in)',
-      startTime: '10:30',
-      endTime: '12:30',
-      isWalkIn: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-07',
-      psType: 'PS5',
-      label: 'Unit 7',
-      isAvailable: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-08',
-      psType: 'PS5',
-      label: 'Unit 8',
-      isAvailable: false,
-      playerName: 'Dimas',
-      startTime: '09:00',
-      endTime: '14:00',
-      isWalkIn: false,
-    ),
-    // PS5 VIP — 3 rooms
-    const UnitStatus(
-      unitId: 'PS5-VIP-01',
-      psType: 'PS5 VIP',
-      label: 'Ruang 1',
-      isAvailable: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-VIP-02',
-      psType: 'PS5 VIP',
-      label: 'Ruang 2',
-      isAvailable: false,
-      playerName: 'Anton (Walk-in)',
-      startTime: '10:00',
-      endTime: '15:00',
-      isWalkIn: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-VIP-03',
-      psType: 'PS5 VIP',
-      label: 'Ruang 3',
-      isAvailable: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-VIP-04',
-      psType: 'PS5 VIP',
-      label: 'Ruang 4',
-      isAvailable: false,
-      playerName: 'Joko (Walk-in)',
-      startTime: '08:00',
-      endTime: '12:00',
-      isWalkIn: true,
-    ),
-    const UnitStatus(
-      unitId: 'PS5-VIP-05',
-      psType: 'PS5 VIP',
-      label: 'Ruang 5',
-      isAvailable: true,
-    ),
-    // Nintendo VIP — 2 rooms
-    const UnitStatus(
-      unitId: 'NIN-VIP-01',
-      psType: 'Nintendo VIP',
-      label: 'Ruang 1',
-      isAvailable: true,
-    ),
-    const UnitStatus(
-      unitId: 'NIN-VIP-02',
-      psType: 'Nintendo VIP',
-      label: 'Ruang 2',
-      isAvailable: false,
-      playerName: 'Fina',
-      startTime: '14:30',
-      endTime: '16:30',
-      isWalkIn: false,
-    ),
+    for (int i = 1; i <= 5; i++) UnitStatus(unitId: 'PS4-0$i', psType: 'PS4', label: 'Unit $i', isAvailable: true),
+    for (int i = 1; i <= 8; i++) UnitStatus(unitId: 'PS5-0$i', psType: 'PS5', label: 'Unit $i', isAvailable: true),
+    for (int i = 1; i <= 5; i++) UnitStatus(unitId: 'PS5-VIP-0$i', psType: 'PS5 VIP', label: 'Ruang $i', isAvailable: true),
+    for (int i = 1; i <= 2; i++) UnitStatus(unitId: 'NIN-VIP-0$i', psType: 'Nintendo VIP', label: 'Ruang $i', isAvailable: true),
   ];
 }
+
+
 
 // ══════════════════════════════════════════
 //  Game Catalog

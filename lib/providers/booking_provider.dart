@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/booking.dart';
 import '../models/ps_unit.dart';
 import '../data/dummy_data.dart';
+import '../data/dummy_bookings.dart';
 
 class BookingProvider extends ChangeNotifier {
   final List<Booking> _bookings = [];
@@ -15,6 +16,9 @@ class BookingProvider extends ChangeNotifier {
   Timer? _clockTimer;
 
   BookingProvider() {
+    // Muat data booking dummy awal
+    _bookings.addAll(getDummyBookings(_now));
+
     _clockTimer = Timer.periodic(const Duration(seconds: 60), (_) {
       _now = DateTime.now();
       notifyListeners();
@@ -24,6 +28,77 @@ class BookingProvider extends ChangeNotifier {
   DateTime get now => _now;
   List<Booking> get bookings => List.unmodifiable(_bookings);
   int get bookingCount => _bookings.length;
+
+  // ════════════════════════════════════════════════════════
+  //  ADMIN MODE STATE
+  // ════════════════════════════════════════════════════════
+  
+  bool _isAdminMode = false;
+  bool get isAdminMode => _isAdminMode;
+
+  void toggleAdminMode() {
+    _isAdminMode = !_isAdminMode;
+    notifyListeners();
+  }
+
+  // ════════════════════════════════════════════════════════
+  //  ADMIN STATS & HELPERS
+  // ════════════════════════════════════════════════════════
+
+  List<Booking> bookingsForDate(DateTime date) {
+    return _bookings.where((b) => _isSameDay(b.date, date)).toList();
+  }
+
+  int get todayRevenue {
+    int total = 0;
+    final todayBookings = bookingsForDate(_now);
+    for (final b in todayBookings) {
+      final hours = _durationHoursOf(b);
+      final pkg = dummyPricePackages
+          .firstWhere((p) => p.name == b.psType, orElse: () => dummyPricePackages.first);
+      final priceTier = pkg.prices.firstWhere((t) => t.duration == '1 Jam', orElse: () => pkg.prices.first);
+      final price = priceTier.price;
+      total += price * hours;
+    }
+    return total;
+  }
+
+  Map<String, int> get todayStats {
+    final todayBookings = bookingsForDate(_now);
+    int inUse = 0;
+    final liveUnits = units;
+    for (var unit in liveUnits) {
+      if (!unit.isAvailable) inUse++;
+    }
+    return {
+      'totalBookings': todayBookings.length,
+      'unitsInUse': inUse,
+      'unitsAvailable': liveUnits.length - inUse,
+    };
+  }
+
+  void addWalkIn({
+    required String baseType,
+    required String unitLabel,
+    required String playerName,
+    required int durationHours,
+  }) {
+    final startTime = '${_now.hour.toString().padLeft(2, '0')}:${_now.minute.toString().padLeft(2, '0')}';
+    final assignedUnit = '$baseType $unitLabel';
+    
+    // Create a booking record for the walk-in
+    final booking = Booking(
+      id: 'WI-${DateTime.now().millisecondsSinceEpoch}',
+      customerName: playerName,
+      phone: '-', // Walk-in might not have phone
+      psType: displayNameForBaseType(baseType),
+      date: _now,
+      time: startTime,
+      duration: '$durationHours Jam',
+      assignedUnit: assignedUnit,
+    );
+    addBooking(booking);
+  }
 
   // ════════════════════════════════════════════════════════
   //  STATUS LIVE (buat ditampilin di layar Info/Home)
