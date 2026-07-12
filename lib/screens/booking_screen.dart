@@ -445,97 +445,58 @@ class _BookingScreenState extends State<BookingScreen> {
 
   void _submitBooking() {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedDate == null) {
+    if (_selectedDate == null || _selectedTime == null || _selectedDuration == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: AppTheme.accentMagenta,
-          content: Text('Pilih tanggal booking', style: GoogleFonts.spaceGrotesk(color: Colors.white)),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-    if (_selectedTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: AppTheme.accentMagenta,
-          content: Text('Pilih jam mulai', style: GoogleFonts.spaceGrotesk(color: Colors.white)),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
-    final baseType = _selectedPsType == 'PS5 VIP' 
-        ? 'PS5 VIP' 
-        : _selectedPsType == 'Nintendo VIP'
-            ? 'Nintendo VIP'
-            : (_selectedPsType!.contains('PS4') ? 'PS4' : 'PS5');
-    final availableUnits = context.read<BookingProvider>().units
-        .where((u) => u.psType == baseType && u.isAvailable)
-        .toList();
-
-    // Bug 5 fix: block booking if no unit is available instead of saving silently
-    if (availableUnits.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (ctx) => Dialog(
-          backgroundColor: AppTheme.surfaceDark,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: AppTheme.accentMagenta.withValues(alpha: 0.5)),
+          content: Text(
+            'Lengkapi tanggal, jam mulai, dan durasi dulu ya',
+            style: GoogleFonts.spaceGrotesk(),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentMagenta.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.warning_amber_rounded, size: 28, color: AppTheme.accentMagenta),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  'Semua Unit Penuh',
-                  style: GoogleFonts.spaceGrotesk(fontSize: 17, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Saat ini semua unit $_selectedPsType sedang terisi. '
-                  'Silakan pilih tipe konsol lain atau coba di waktu yang berbeda.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.spaceGrotesk(fontSize: 13, color: AppTheme.textSecondary, height: 1.5),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accentMagenta,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      elevation: 0,
-                    ),
-                    child: Text('Mengerti', style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700)),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          backgroundColor: AppTheme.accentRed,
         ),
       );
       return;
     }
 
-    final assignedUnit = '$_selectedPsType ${availableUnits.first.label}';
+    final baseType = baseTypeOf(_selectedPsType!);
+    final durationHours =
+        int.tryParse(_selectedDuration!.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
+    final provider = context.read<BookingProvider>();
 
+    // 1) Coba cari unit yang BENERAN kosong buat jam+tanggal+durasi ini
+    final freeUnit = provider.findAvailableUnit(
+      baseType: baseType,
+      date: _selectedDate!,
+      startTime: _selectedTime!,
+      durationHours: durationHours,
+    );
+
+    if (freeUnit != null) {
+      _createBookingAndShowConfirmation(freeUnit.label, durationHours);
+      return;
+    }
+
+    // 2) Gak ada unit yang kosong penuh -> cari solusi buat ditawarin ke user
+    final maxDuration = provider.maxAvailableDurationHours(
+      baseType: baseType,
+      date: _selectedDate!,
+      startTime: _selectedTime!,
+    );
+    final alternatives = provider.findAlternativeTypesForFullDuration(
+      excludeType: baseType,
+      date: _selectedDate!,
+      startTime: _selectedTime!,
+      durationHours: durationHours,
+    );
+
+    _showConflictDialog(
+      requestedDuration: durationHours,
+      maxDuration: maxDuration,
+      alternatives: alternatives,
+    );
+  }
+
+  void _createBookingAndShowConfirmation(String unitLabel, int durationHours) {
     final booking = Booking(
       id: 'BK-${DateTime.now().millisecondsSinceEpoch}',
       customerName: _nameController.text.trim(),
@@ -543,12 +504,177 @@ class _BookingScreenState extends State<BookingScreen> {
       psType: _selectedPsType!,
       date: _selectedDate!,
       time: _selectedTime!,
-      duration: _selectedDuration!,
-      assignedUnit: assignedUnit,
+      duration: '$durationHours Jam',
+      assignedUnit: '$_selectedPsType $unitLabel',
     );
-
     _showConfirmationDialog(booking);
   }
+
+  /// Dialog kalau slot yang diminta gak muat — kasih 2 opsi ke user.
+  void _showConflictDialog({
+    required int requestedDuration,
+    required int maxDuration,
+    required List<String> alternatives,
+  }) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: AppTheme.surfaceDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppTheme.dividerColor),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentRed.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.event_busy, color: AppTheme.accentRed, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Slot Lagi Penuh',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          '$_selectedPsType jam $_selectedTime buat $requestedDuration jam gak ada unit kosong.',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 12,
+                            color: AppTheme.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Opsi 1: tetap booking, durasi dipangkas
+              if (maxDuration > 0)
+                _conflictOptionTile(
+                  icon: Icons.timer_outlined,
+                  color: AppTheme.accentCyan,
+                  title: 'Tetap $_selectedPsType, durasi $maxDuration jam',
+                  subtitle: 'Jam mulai tetap $_selectedTime, cuma durasinya disesuaikan.',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    setState(() => _selectedDuration = '$maxDuration Jam');
+                    _submitBooking();
+                  },
+                ),
+
+              // Opsi 2..N: pindah ke tipe lain yang muat durasi penuh
+              for (final alt in alternatives) ...[
+                const SizedBox(height: 10),
+                _conflictOptionTile(
+                  icon: Icons.swap_horiz,
+                  color: AppTheme.accentMagenta,
+                  title: 'Pindah ke ${displayNameForBaseType(alt)}',
+                  subtitle: 'Tetap main $requestedDuration jam penuh mulai $_selectedTime.',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    setState(() => _selectedPsType = displayNameForBaseType(alt));
+                    _submitBooking();
+                  },
+                ),
+              ],
+
+              if (maxDuration == 0 && alternatives.isEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Semua tipe konsol lagi padat di jam segini. Coba pilih jam lain ya.',
+                  style: GoogleFonts.spaceGrotesk(fontSize: 13, color: AppTheme.textSecondary),
+                ),
+              ],
+
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppTheme.dividerColor),
+                    foregroundColor: AppTheme.textSecondary,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: Text('Batal', style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _conflictOptionTile({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.spaceGrotesk(fontSize: 11, color: AppTheme.textMuted),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: color, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   void _showConfirmationDialog(Booking booking) {
     showDialog(
