@@ -206,6 +206,84 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  void _showLoginDialog(BuildContext context) {
+    final usernameCtrl = TextEditingController();
+    final passwordCtrl = TextEditingController();
+    bool obscureText = true;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: AppTheme.surfaceDark,
+              title: Text('Admin Login', style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: usernameCtrl,
+                    style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      labelStyle: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
+                      enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppTheme.dividerColor)),
+                      focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppTheme.accentCyan)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: passwordCtrl,
+                    obscureText: obscureText,
+                    style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      labelStyle: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
+                      enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppTheme.dividerColor)),
+                      focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppTheme.accentCyan)),
+                      suffixIcon: IconButton(
+                        icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility, color: AppTheme.textMuted),
+                        onPressed: () {
+                          setState(() {
+                            obscureText = !obscureText;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Batal', style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentCyan),
+                  onPressed: () {
+                    if (usernameCtrl.text == 'admin' && passwordCtrl.text == 'admin1234') {
+                      Navigator.pop(context);
+                      context.read<BookingProvider>().toggleAdminMode();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Login berhasil!'), backgroundColor: AppTheme.accentGreen),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Username atau Password salah!'), backgroundColor: AppTheme.accentRed),
+                      );
+                    }
+                  },
+                  child: Text('Login', style: GoogleFonts.spaceGrotesk(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildAdminToggle(bool isAdminMode, BuildContext context) {
     return IconButton(
       icon: Icon(
@@ -214,7 +292,11 @@ class _MainScreenState extends State<MainScreen> {
       ),
       tooltip: 'Toggle Admin Mode',
       onPressed: () {
-        context.read<BookingProvider>().toggleAdminMode();
+        if (isAdminMode) {
+          context.read<BookingProvider>().toggleAdminMode();
+        } else {
+          _showLoginDialog(context);
+        }
       },
     );
   }

@@ -545,12 +545,8 @@ class _AdminScreenState extends State<AdminScreen>
   Widget _buildBookingList() {
     return Consumer<BookingProvider>(
       builder: (context, provider, child) {
-        final onlineBookings = provider.bookings
-            .where((b) => !b.id.startsWith('WI-'))
-            .toList()
-            .reversed
-            .toList(); // newest first
-        if (onlineBookings.isEmpty) {
+        final allBookings = provider.bookings.reversed.toList(); // newest first
+        if (allBookings.isEmpty) {
           return Center(
             child: Text(
               'Belum ada booking',
@@ -561,11 +557,11 @@ class _AdminScreenState extends State<AdminScreen>
 
         return ListView.separated(
           padding: const EdgeInsets.all(24),
-          itemCount: onlineBookings.length,
+          itemCount: allBookings.length,
           separatorBuilder: (context, index) => const SizedBox(height: 16),
           itemBuilder: (context, index) {
-            final b = onlineBookings[index];
-            final isWalkIn = false; // By definition these are online bookings
+            final b = allBookings[index];
+            final isWalkIn = b.id.startsWith('WI-');
             return Dismissible(
               key: Key(b.id),
               direction: DismissDirection.endToStart,
