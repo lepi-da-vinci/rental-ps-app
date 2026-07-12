@@ -63,8 +63,8 @@ class _AdminScreenState extends State<AdminScreen>
             tabs: const [
               Tab(text: 'Dashboard'),
               Tab(text: 'Timeline Unit'),
-              Tab(text: 'Semua Booking'),
-              Tab(text: 'Data Jadwal'),
+              Tab(text: 'Data Booking'),
+              Tab(text: 'Data Booking Hari Ini'),
             ],
           ),
         ),
@@ -76,7 +76,7 @@ class _AdminScreenState extends State<AdminScreen>
               _buildDashboard(),
               _buildUnitTimeline(),
               _buildBookingList(),
-              _buildDataJadwal(),
+              _buildTodayBookings(),
             ],
           ),
         ),
@@ -545,7 +545,7 @@ class _AdminScreenState extends State<AdminScreen>
   Widget _buildBookingList() {
     return Consumer<BookingProvider>(
       builder: (context, provider, child) {
-        final allBookings = provider.bookings.reversed.toList(); // newest first
+        final allBookings = provider.bookings.toList();
         if (allBookings.isEmpty) {
           return Center(
             child: Text(
@@ -555,109 +555,88 @@ class _AdminScreenState extends State<AdminScreen>
           );
         }
 
+        // Group by date string 'yyyy-MM-dd'
+        final grouped = <String, List<Booking>>{};
+        for (var b in allBookings) {
+          final dateStr = '${b.date.year}-${b.date.month.toString().padLeft(2, '0')}-${b.date.day.toString().padLeft(2, '0')}';
+          grouped.putIfAbsent(dateStr, () => []).add(b);
+        }
+
+        final sortedDates = grouped.keys.toList()..sort((a, b) => b.compareTo(a)); // newest first
+
         return ListView.separated(
           padding: const EdgeInsets.all(24),
-          itemCount: allBookings.length,
+          itemCount: sortedDates.length,
           separatorBuilder: (context, index) => const SizedBox(height: 16),
           itemBuilder: (context, index) {
-            final b = allBookings[index];
-            final isWalkIn = b.id.startsWith('WI-');
-            return Dismissible(
-              key: Key(b.id),
-              direction: DismissDirection.endToStart,
-              background: Container(
-                padding: const EdgeInsets.only(right: 20),
-                alignment: Alignment.centerRight,
-                decoration: BoxDecoration(
-                  color: AppTheme.accentRed,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.delete_outline, color: Colors.white),
-              ),
-              confirmDismiss: (direction) => _confirmDeleteDialog(context),
-              onDismissed: (direction) {
-                provider.removeBooking(b.id);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Booking ${b.customerName} dihapus'),
-                    backgroundColor: AppTheme.accentRed,
+            final dateStr = sortedDates[index];
+            final bookings = grouped[dateStr]!;
+            
+            // Just for display formatting
+            final parts = dateStr.split('-');
+            final displayDate = '${parts[2]}/${parts[1]}/${parts[0]}';
+
+            return Container(
+              decoration: AppTheme.cardDecoration(),
+              child: Theme(
+                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                child: ExpansionTile(
+                  title: Text(
+                    'Tanggal: $displayDate',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.accentCyan,
+                    ),
                   ),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: AppTheme.cardDecoration(),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isWalkIn
-                            ? AppTheme.accentGreen.withValues(alpha: 0.1)
-                            : AppTheme.accentCyan.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        isWalkIn
-                            ? Icons.directions_walk
-                            : Icons.confirmation_number,
-                        color: isWalkIn
-                            ? AppTheme.accentGreen
-                            : AppTheme.accentCyan,
-                        size: 24,
-                      ),
+                  subtitle: Text(
+                    '${bookings.length} Booking',
+                    style: GoogleFonts.spaceGrotesk(
+                      color: AppTheme.textMuted,
+                      fontSize: 12,
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  b.customerName,
-                                  style: GoogleFonts.spaceGrotesk(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.textPrimary,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              Text(
-                                '${b.date.day}/${b.date.month}/${b.date.year}',
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 11,
-                                  color: AppTheme.textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            '${b.assignedUnit} • ${b.time} (${b.duration})',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 13,
-                              color: AppTheme.textSecondary,
-                            ),
-                          ),
-                          if (!isWalkIn && b.phone != '-') ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              b.phone,
-                              style: GoogleFonts.spaceGrotesk(
-                                fontSize: 12,
-                                color: AppTheme.textMuted,
-                              ),
-                            ),
-                          ],
-                        ],
+                  ),
+                  children: bookings.map((b) {
+                    final isWalkIn = b.id.startsWith('WI-');
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      leading: Icon(
+                        isWalkIn ? Icons.directions_walk : Icons.language,
+                        color: isWalkIn ? AppTheme.accentGreen : AppTheme.accentCyan,
                       ),
-                    ),
-                  ],
+                      title: Text(
+                        b.customerName,
+                        style: GoogleFonts.spaceGrotesk(
+                          color: AppTheme.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '${b.assignedUnit} • ${b.time} (${b.duration})',
+                        style: GoogleFonts.spaceGrotesk(
+                          color: AppTheme.textMuted,
+                          fontSize: 12,
+                        ),
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline, color: AppTheme.accentRed, size: 20),
+                        onPressed: () async {
+                          final confirm = await _confirmDeleteDialog(context);
+                          if (confirm == true) {
+                            provider.removeBooking(b.id);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Booking ${b.customerName} dihapus'),
+                                  backgroundColor: AppTheme.accentRed,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
             );
@@ -668,13 +647,13 @@ class _AdminScreenState extends State<AdminScreen>
   }
 
   // ════════════════════════════════════════════════════════
-  //  TAB 4: DATA JADWAL (Detailed View)
+  //  TAB 4: DATA BOOKING HARI INI
   // ════════════════════════════════════════════════════════
 
-  Widget _buildDataJadwal() {
+  Widget _buildTodayBookings() {
     return Consumer<BookingProvider>(
       builder: (context, provider, child) {
-        final allBookings = provider.bookings.toList();
+        final allBookings = provider.bookingsForDate(provider.now);
         // Sort by time
         allBookings.sort((a, b) => a.time.compareTo(b.time));
 

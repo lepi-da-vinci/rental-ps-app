@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/booking.dart';
 import '../models/ps_unit.dart';
 import '../data/dummy_data.dart';
+import '../data/dummy_bookings.dart';
 
 class BookingProvider extends ChangeNotifier {
   final List<Booking> _bookings = [];
@@ -16,7 +17,7 @@ class BookingProvider extends ChangeNotifier {
 
   BookingProvider() {
     // Muat data booking dummy awal
-    _bookings.addAll(getDummyBookings());
+    _bookings.addAll(getDummyBookings(_now));
 
     _clockTimer = Timer.periodic(const Duration(seconds: 60), (_) {
       _now = DateTime.now();
