@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/ps_unit.dart';
 import '../models/price_package.dart';
 
-
 // ══════════════════════════════════════════
 //  PlayStation Units (PS4 & PS5 only)
 // ══════════════════════════════════════════
@@ -78,14 +77,36 @@ const List<PsUnit> dummyPsUnits = [
 
 List<UnitStatus> getDummyUnitStatus() {
   return [
-    for (int i = 1; i <= 5; i++) UnitStatus(unitId: 'PS4-0$i', psType: 'PS4', label: 'Unit $i', isAvailable: true),
-    for (int i = 1; i <= 8; i++) UnitStatus(unitId: 'PS5-0$i', psType: 'PS5', label: 'Unit $i', isAvailable: true),
-    for (int i = 1; i <= 5; i++) UnitStatus(unitId: 'PS5-VIP-0$i', psType: 'PS5 VIP', label: 'Ruang $i', isAvailable: true),
-    for (int i = 1; i <= 2; i++) UnitStatus(unitId: 'NIN-VIP-0$i', psType: 'Nintendo VIP', label: 'Ruang $i', isAvailable: true),
+    for (int i = 1; i <= 5; i++)
+      UnitStatus(
+        unitId: 'PS4-0$i',
+        psType: 'PS4',
+        label: 'Unit $i',
+        isAvailable: true,
+      ),
+    for (int i = 1; i <= 8; i++)
+      UnitStatus(
+        unitId: 'PS5-0$i',
+        psType: 'PS5',
+        label: 'Unit $i',
+        isAvailable: true,
+      ),
+    for (int i = 1; i <= 5; i++)
+      UnitStatus(
+        unitId: 'PS5-VIP-0$i',
+        psType: 'PS5 VIP',
+        label: 'Ruang $i',
+        isAvailable: true,
+      ),
+    for (int i = 1; i <= 2; i++)
+      UnitStatus(
+        unitId: 'NIN-VIP-0$i',
+        psType: 'Nintendo VIP',
+        label: 'Ruang $i',
+        isAvailable: true,
+      ),
   ];
 }
-
-
 
 // ══════════════════════════════════════════
 //  Game Catalog
@@ -567,11 +588,11 @@ class OperatingHour {
 List<OperatingHour> getOperatingHours() {
   final today = DateTime.now().weekday;
   return [
-    OperatingHour(day: 'Senin', hours: '10:00 – 22:00', isToday: today == 1),
-    OperatingHour(day: 'Selasa', hours: '10:00 – 22:00', isToday: today == 2),
-    OperatingHour(day: 'Rabu', hours: '10:00 – 22:00', isToday: today == 3),
-    OperatingHour(day: 'Kamis', hours: '10:00 – 22:00', isToday: today == 4),
-    OperatingHour(day: 'Jumat', hours: '10:00 – 23:00', isToday: today == 5),
+    OperatingHour(day: 'Senin', hours: '08:00 – 22:00', isToday: today == 1),
+    OperatingHour(day: 'Selasa', hours: '08:00 – 22:00', isToday: today == 2),
+    OperatingHour(day: 'Rabu', hours: '08:00 – 22:00', isToday: today == 3),
+    OperatingHour(day: 'Kamis', hours: '08:00 – 22:00', isToday: today == 4),
+    OperatingHour(day: 'Jumat', hours: '08:00 – 23:00', isToday: today == 5),
     OperatingHour(day: 'Sabtu', hours: '08:00 – 23:00', isToday: today == 6),
     OperatingHour(day: 'Minggu', hours: '08:00 – 22:00', isToday: today == 7),
   ];
