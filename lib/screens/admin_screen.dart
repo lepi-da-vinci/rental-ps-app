@@ -414,26 +414,9 @@ class _AdminScreenState extends State<AdminScreen>
                         ],
                       ),
               ),
-              if (!unit.isAvailable)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentRed.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: UnitTimelineView(
-                    unitBookings: unitBookings,
-                    startOpHour: startOpHour,
-                    endOpHour: endOpHour,
-                    dateTitle: todayHours.hours,
-                  ),
-                ),
-              ],
-            ),
-            children: [
+            ],
+          ),
+          children: [
             const Divider(color: AppTheme.dividerColor),
             const SizedBox(height: 12),
             UnitTimelineView(
