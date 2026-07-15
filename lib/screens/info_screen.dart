@@ -336,7 +336,7 @@ class _InfoScreenState extends State<InfoScreen>
           // PS type cards
           ...dummyPsUnits.map((ps) {
             final units = unitStatuses
-                .where((u) => u.psType.toLowerCase() == ps.id)
+                .where((u) => u.psType.displayName.toLowerCase() == ps.id.toLowerCase())
                 .toList();
             final available = units.where((u) => u.isAvailable).length;
             final inUse = units.length - available;

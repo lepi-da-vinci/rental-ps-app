@@ -6,6 +6,7 @@ import '../models/booking.dart';
 import '../providers/booking_provider.dart';
 import '../data/dummy_data.dart';
 import '../models/ps_unit.dart';
+import '../models/enums.dart';
 import '../widgets/section_title.dart';
 
 class AdminScreen extends StatefulWidget {
@@ -275,7 +276,7 @@ class _AdminScreenState extends State<AdminScreen>
       builder: (context, provider, child) {
         final liveUnits = provider.units;
         // Group by baseType
-        final grouped = <String, List<UnitStatus>>{};
+        final grouped = <ConsoleType, List<UnitStatus>>{};
         for (var u in liveUnits) {
           grouped.putIfAbsent(u.psType, () => []).add(u);
         }
@@ -292,7 +293,7 @@ class _AdminScreenState extends State<AdminScreen>
               children: [
                 if (index > 0) const SizedBox(height: 24),
                 Text(
-                  type,
+                  type.displayName,
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -318,7 +319,7 @@ class _AdminScreenState extends State<AdminScreen>
     // We check if it ends with the unit label and contains the base psType.
     final unitBookings = todayBookings.where((b) {
       return b.assignedUnit.endsWith(unit.label) &&
-          b.assignedUnit.contains(unit.psType);
+          b.assignedUnit.contains(unit.psType.displayName);
     }).toList();
 
     // Get today's operating hours
@@ -454,11 +455,10 @@ class _AdminScreenState extends State<AdminScreen>
 
                   // Check if any booking overlaps with this hour
                   Booking? matchedBooking;
-                  for (final b in unitBookings) {
-                    final bStart = int.tryParse(b.time.split(':')[0]) ?? 0;
-                    final durStr = b.duration.replaceAll(RegExp(r'[^0-9]'), '');
-                    final dur = int.tryParse(durStr) ?? 1;
-                    final bEnd = bStart + dur;
+                    for (final b in unitBookings) {
+                      final bStart = int.tryParse(b.time.split(':')[0]) ?? 0;
+                      final dur = b.durationHours;
+                      final bEnd = bStart + dur;
                     if (h >= bStart && h < bEnd) {
                       matchedBooking = b;
                       break;
@@ -473,9 +473,7 @@ class _AdminScreenState extends State<AdminScreen>
                   if (matchedBooking != null) {
                     final b = matchedBooking;
                     final startH = int.parse(b.time.split(':')[0]);
-                    final durH = int.parse(
-                      b.duration.replaceAll(RegExp(r'[^0-9]'), ''),
-                    );
+                    final durH = b.durationHours;
                     tooltipMsg =
                         '${b.customerName} (${b.time} - ${startH + durH}:00)';
                   }
@@ -695,7 +693,7 @@ class _AdminScreenState extends State<AdminScreen>
   Widget _buildTodayBookings() {
     return Consumer<BookingProvider>(
       builder: (context, provider, child) {
-        final allBookings = provider.bookingsForDate(provider.now);
+        final allBookings = provider.bookingsForDate(provider.now).where((b) => !b.isWalkIn).toList();
         // Sort by time
         allBookings.sort((a, b) => a.time.compareTo(b.time));
 
@@ -889,9 +887,9 @@ class _AdminScreenState extends State<AdminScreen>
 
   void _showWalkInDialog() {
     final nameCtrl = TextEditingController();
-    String? selectedType = 'PS5';
+    ConsoleType? selectedType = ConsoleType.ps5;
     String? selectedUnitLabel;
-    String selectedDuration = '1 Jam';
+    SessionDuration selectedDuration = SessionDuration.jam1;
 
     showDialog(
       context: context,
@@ -957,7 +955,7 @@ class _AdminScreenState extends State<AdminScreen>
                     const SizedBox(height: 16),
 
                     // Type Selection
-                    DropdownButtonFormField<String>(
+                    DropdownButtonFormField<ConsoleType>(
                       initialValue: selectedType,
                       dropdownColor: AppTheme.cardDark,
                       decoration: InputDecoration(
@@ -972,12 +970,12 @@ class _AdminScreenState extends State<AdminScreen>
                           borderSide: BorderSide(color: AppTheme.accentGreen),
                         ),
                       ),
-                      items: ['PS4', 'PS5', 'PS5 VIP', 'Nintendo VIP']
+                      items: ConsoleType.values
                           .map(
                             (e) => DropdownMenuItem(
                               value: e,
                               child: Text(
-                                e,
+                                e.displayName,
                                 style: GoogleFonts.spaceGrotesk(
                                   color: AppTheme.textPrimary,
                                 ),
@@ -1044,7 +1042,7 @@ class _AdminScreenState extends State<AdminScreen>
                     const SizedBox(height: 16),
 
                     // Duration Selection
-                    DropdownButtonFormField<String>(
+                    DropdownButtonFormField<SessionDuration>(
                       initialValue: selectedDuration,
                       dropdownColor: AppTheme.cardDark,
                       decoration: InputDecoration(
@@ -1059,12 +1057,12 @@ class _AdminScreenState extends State<AdminScreen>
                           borderSide: BorderSide(color: AppTheme.accentGreen),
                         ),
                       ),
-                      items: List.generate(5, (index) => '${index + 1} Jam')
+                      items: SessionDuration.values
                           .map(
                             (e) => DropdownMenuItem(
                               value: e,
                               child: Text(
-                                e,
+                                e.displayName,
                                 style: GoogleFonts.spaceGrotesk(
                                   color: AppTheme.textPrimary,
                                 ),
@@ -1098,19 +1096,11 @@ class _AdminScreenState extends State<AdminScreen>
                                   nameCtrl.text.trim().isEmpty)
                               ? null
                               : () {
-                                  final durInt =
-                                      int.tryParse(
-                                        selectedDuration.replaceAll(
-                                          RegExp(r'[^0-9]'),
-                                          '',
-                                        ),
-                                      ) ??
-                                      1;
                                   provider.addWalkIn(
                                     baseType: selectedType!,
                                     unitLabel: selectedUnitLabel!,
                                     playerName: nameCtrl.text.trim(),
-                                    durationHours: durInt,
+                                    duration: selectedDuration,
                                   );
                                   Navigator.pop(ctx);
                                   ScaffoldMessenger.of(context).showSnackBar(

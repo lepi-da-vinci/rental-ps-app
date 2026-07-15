@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/ps_unit.dart';
 import '../models/price_package.dart';
+import '../models/enums.dart';
 
 
 // ══════════════════════════════════════════
@@ -78,10 +79,10 @@ const List<PsUnit> dummyPsUnits = [
 
 List<UnitStatus> getDummyUnitStatus() {
   return [
-    for (int i = 1; i <= 5; i++) UnitStatus(unitId: 'PS4-0$i', psType: 'PS4', label: 'Unit $i', isAvailable: true),
-    for (int i = 1; i <= 8; i++) UnitStatus(unitId: 'PS5-0$i', psType: 'PS5', label: 'Unit $i', isAvailable: true),
-    for (int i = 1; i <= 5; i++) UnitStatus(unitId: 'PS5-VIP-0$i', psType: 'PS5 VIP', label: 'Ruang $i', isAvailable: true),
-    for (int i = 1; i <= 2; i++) UnitStatus(unitId: 'NIN-VIP-0$i', psType: 'Nintendo VIP', label: 'Ruang $i', isAvailable: true),
+    for (int i = 1; i <= 5; i++) UnitStatus(unitId: 'PS4-0$i', psType: ConsoleType.ps4, label: 'Unit $i', isAvailable: true),
+    for (int i = 1; i <= 8; i++) UnitStatus(unitId: 'PS5-0$i', psType: ConsoleType.ps5, label: 'Unit $i', isAvailable: true),
+    for (int i = 1; i <= 5; i++) UnitStatus(unitId: 'PS5-VIP-0$i', psType: ConsoleType.ps5Vip, label: 'Ruang $i', isAvailable: true),
+    for (int i = 1; i <= 2; i++) UnitStatus(unitId: 'NIN-VIP-0$i', psType: ConsoleType.nintendoVip, label: 'Ruang $i', isAvailable: true),
   ];
 }
 
@@ -748,25 +749,12 @@ String formatRupiah(int price) {
 }
 
 // ══════════════════════════════════════════
-//  PS Type Helpers
+//  PS Type Helpers (DEPRECATED — use ConsoleType enum instead)
 // ══════════════════════════════════════════
 
-/// Ubah pilihan user (mis. 'PS4 Reguler') jadi kategori unit fisik (mis. 'PS4')
-String baseTypeOf(String psType) {
-  if (psType == 'PS5 VIP') return 'PS5 VIP';
-  if (psType == 'Nintendo VIP') return 'Nintendo VIP';
-  if (psType.contains('PS4')) return 'PS4';
-  return 'PS5';
-}
+/// @deprecated Use [ConsoleType.fromDisplayName] instead.
+ConsoleType baseTypeOf(String psType) => ConsoleType.fromDisplayName(psType);
 
-/// Kebalikannya: dari kategori fisik balik ke nama paket yang tampil di form booking
-String displayNameForBaseType(String baseType) {
-  switch (baseType) {
-    case 'PS4':
-      return 'PS4 Reguler';
-    case 'PS5':
-      return 'PS5 Reguler';
-    default:
-      return baseType; // 'PS5 VIP' & 'Nintendo VIP' udah sama persis
-  }
-}
+/// @deprecated Use [ConsoleType.bookingDisplayName] instead.
+String displayNameForBaseType(String baseType) =>
+    ConsoleType.fromDisplayName(baseType).bookingDisplayName;

@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'data/dummy_data.dart';
 import 'theme/app_theme.dart';
+import 'providers/clock_service.dart';
+import 'providers/admin_provider.dart';
 import 'providers/booking_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/info_screen.dart';
@@ -12,8 +14,15 @@ import 'screens/admin_screen.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => BookingProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ClockService()),
+        ChangeNotifierProvider(create: (_) => AdminProvider()),
+        ChangeNotifierProxyProvider<ClockService, BookingProvider>(
+          create: (_) => BookingProvider(),
+          update: (_, clock, booking) => booking!..updateClock(clock.now),
+        ),
+      ],
       child: const TimelessApp(),
     ),
   );
@@ -90,7 +99,7 @@ class _MainScreenState extends State<MainScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isLargeScreen = constraints.maxWidth > 800;
-        final isAdminMode = context.watch<BookingProvider>().isAdminMode;
+        final isAdminMode = context.watch<AdminProvider>().isAdminMode;
 
         return Scaffold(
           appBar: isLargeScreen
@@ -264,7 +273,7 @@ class _MainScreenState extends State<MainScreen> {
                   onPressed: () {
                     if (usernameCtrl.text == 'admin' && passwordCtrl.text == 'admin1234') {
                       Navigator.pop(context);
-                      context.read<BookingProvider>().toggleAdminMode();
+                      context.read<AdminProvider>().toggleAdminMode();
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Login berhasil!'), backgroundColor: AppTheme.accentGreen),
                       );
@@ -293,7 +302,7 @@ class _MainScreenState extends State<MainScreen> {
       tooltip: 'Toggle Admin Mode',
       onPressed: () {
         if (isAdminMode) {
-          context.read<BookingProvider>().toggleAdminMode();
+          context.read<AdminProvider>().toggleAdminMode();
         } else {
           _showLoginDialog(context);
         }

@@ -1,28 +1,34 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/booking.dart';
+import '../models/enums.dart';
 import '../models/ps_unit.dart';
 import '../data/dummy_data.dart';
 import '../data/dummy_bookings.dart';
 
+/// Manages all booking-related state: CRUD, scheduling, live unit status.
+///
+/// No longer owns a Timer or admin state — those responsibilities
+/// have been moved to [ClockService] and [AdminProvider] respectively.
 class BookingProvider extends ChangeNotifier {
   final List<Booking> _bookings = [];
 
-  /// "Jadwal dummy" — dianggap tetap (template), BUKAN status final.
-  /// startTime/endTime di sini artinya "kalau HARI INI jam segini, unit ini dipakai".
+  /// Template units — static layout of all physical units.
   final List<UnitStatus> _templateUnits = getDummyUnitStatus();
 
+  /// Current wall-clock time, updated externally by [ClockService].
   DateTime _now = DateTime.now();
-  Timer? _clockTimer;
 
   BookingProvider() {
     // Muat data booking dummy awal
     _bookings.addAll(getDummyBookings(_now));
+  }
 
-    _clockTimer = Timer.periodic(const Duration(seconds: 60), (_) {
-      _now = DateTime.now();
+  /// Called by ProxyProvider when [ClockService] ticks.
+  void updateClock(DateTime newNow) {
+    if (_now.minute != newNow.minute || _now.hour != newNow.hour) {
+      _now = newNow;
       notifyListeners();
-    });
+    }
   }
 
   DateTime get now => _now;
@@ -30,19 +36,7 @@ class BookingProvider extends ChangeNotifier {
   int get bookingCount => _bookings.length;
 
   // ════════════════════════════════════════════════════════
-  //  ADMIN MODE STATE
-  // ════════════════════════════════════════════════════════
-  
-  bool _isAdminMode = false;
-  bool get isAdminMode => _isAdminMode;
-
-  void toggleAdminMode() {
-    _isAdminMode = !_isAdminMode;
-    notifyListeners();
-  }
-
-  // ════════════════════════════════════════════════════════
-  //  ADMIN STATS & HELPERS
+  //  STATS & HELPERS
   // ════════════════════════════════════════════════════════
 
   List<Booking> bookingsForDate(DateTime date) {
@@ -53,12 +47,15 @@ class BookingProvider extends ChangeNotifier {
     int total = 0;
     final todayBookings = bookingsForDate(_now);
     for (final b in todayBookings) {
-      final hours = _durationHoursOf(b);
-      final pkg = dummyPricePackages
-          .firstWhere((p) => p.name == b.psType, orElse: () => dummyPricePackages.first);
-      final priceTier = pkg.prices.firstWhere((t) => t.duration == '1 Jam', orElse: () => pkg.prices.first);
-      final price = priceTier.price;
-      total += price * hours;
+      final pkg = dummyPricePackages.firstWhere(
+        (p) => p.name == b.psType.bookingDisplayName,
+        orElse: () => dummyPricePackages.first,
+      );
+      final priceTier = pkg.prices.firstWhere(
+        (t) => t.duration == b.duration.displayName,
+        orElse: () => pkg.prices.first,
+      );
+      total += priceTier.price * b.durationHours;
     }
     return total;
   }
@@ -78,23 +75,23 @@ class BookingProvider extends ChangeNotifier {
   }
 
   void addWalkIn({
-    required String baseType,
+    required ConsoleType baseType,
     required String unitLabel,
     required String playerName,
-    required int durationHours,
+    required SessionDuration duration,
   }) {
-    final startTime = '${_now.hour.toString().padLeft(2, '0')}:${_now.minute.toString().padLeft(2, '0')}';
-    final assignedUnit = '$baseType $unitLabel';
-    
-    // Create a booking record for the walk-in
+    final startTime =
+        '${_now.hour.toString().padLeft(2, '0')}:${_now.minute.toString().padLeft(2, '0')}';
+    final assignedUnit = '${baseType.displayName} $unitLabel';
+
     final booking = Booking(
       id: 'WI-${DateTime.now().millisecondsSinceEpoch}',
       customerName: playerName,
-      phone: '-', // Walk-in might not have phone
-      psType: displayNameForBaseType(baseType),
+      phone: '-',
+      psType: baseType,
       date: _now,
       time: startTime,
-      duration: '$durationHours Jam',
+      duration: duration,
       assignedUnit: assignedUnit,
     );
     addBooking(booking);
@@ -109,15 +106,12 @@ class BookingProvider extends ChangeNotifier {
   UnitStatus _resolveStatus(UnitStatus template) {
     final activeBooking = _activeBookingRightNowFor(template);
     if (activeBooking != null) {
-      return UnitStatus(
-        unitId: template.unitId,
-        psType: template.psType,
-        label: template.label,
+      return template.copyWith(
         isAvailable: false,
         playerName: activeBooking.customerName,
         startTime: activeBooking.time,
-        endTime: _endTimeOf(activeBooking),
-        isWalkIn: false,
+        endTime: activeBooking.endTime,
+        isWalkIn: activeBooking.isWalkIn,
       );
     }
     if (template.startTime != null && template.endTime != null) {
@@ -125,39 +119,33 @@ class BookingProvider extends ChangeNotifier {
       final dStart = _toMinutes(template.startTime!);
       final dEnd = _toMinutes(template.endTime!);
       final withinWindow = dEnd <= dStart
-          ? (nowMin >= dStart || nowMin < dEnd) // sesi nyebrang tengah malam
+          ? (nowMin >= dStart || nowMin < dEnd)
           : (nowMin >= dStart && nowMin < dEnd);
       if (withinWindow) return template;
     }
-    return UnitStatus(
-      unitId: template.unitId,
-      psType: template.psType,
-      label: template.label,
-      isAvailable: true,
-    );
+    return template.copyWith(isAvailable: true);
   }
 
   Booking? _activeBookingRightNowFor(UnitStatus template) {
     final nowMin = _now.hour * 60 + _now.minute;
     for (final b in _bookings) {
       if (!_isSameDay(b.date, _now)) continue;
-      if (baseTypeOf(b.psType) != template.psType) continue;
+      if (b.psType != template.psType) continue;
       if (!b.assignedUnit.endsWith(template.label)) continue;
       final start = _toMinutes(b.time);
-      final end = start + _durationHoursOf(b) * 60;
+      final end = start + b.durationHours * 60;
       if (nowMin >= start && nowMin < end) return b;
     }
     return null;
   }
 
   // ════════════════════════════════════════════════════════
-  //  SCHEDULING — dipakai pas user mau BOOKING (bukan status live)
+  //  SCHEDULING — dipakai pas user mau BOOKING
   // ════════════════════════════════════════════════════════
 
-  /// Cari 1 unit yang BENERAN kosong buat tipe + tanggal + jam + durasi tsb.
-  /// Return null kalau semua unit tipe itu bentrok.
+  /// Cari 1 unit yang kosong buat tipe + tanggal + jam + durasi.
   UnitStatus? findAvailableUnit({
-    required String baseType,
+    required ConsoleType baseType,
     required DateTime date,
     required String startTime,
     required int durationHours,
@@ -171,10 +159,9 @@ class BookingProvider extends ChangeNotifier {
     return null;
   }
 
-  /// Durasi maksimum (jam bulat) yang beneran bisa didapat untuk tipe ini
-  /// pada jam mulai tsb — dicari unit paling longgar.
+  /// Durasi maksimum (jam bulat) yang bisa didapat untuk tipe ini.
   int maxAvailableDurationHours({
-    required String baseType,
+    required ConsoleType baseType,
     required DateTime date,
     required String startTime,
     int maxHours = 5,
@@ -192,16 +179,20 @@ class BookingProvider extends ChangeNotifier {
     return best;
   }
 
-  /// Cari tipe PS LAIN (selain yang diminta) yang unitnya kosong buat durasi PENUH.
-  /// Urutan prioritas: yang paling "mirip" duluan.
-  List<String> findAlternativeTypesForFullDuration({
-    required String excludeType,
+  /// Cari tipe PS LAIN yang unitnya kosong buat durasi penuh.
+  List<ConsoleType> findAlternativeTypesForFullDuration({
+    required ConsoleType excludeType,
     required DateTime date,
     required String startTime,
     required int durationHours,
   }) {
-    const priority = ['PS5', 'PS5 VIP', 'PS4', 'Nintendo VIP'];
-    final result = <String>[];
+    const priority = [
+      ConsoleType.ps5,
+      ConsoleType.ps5Vip,
+      ConsoleType.ps4,
+      ConsoleType.nintendoVip,
+    ];
+    final result = <ConsoleType>[];
     for (final t in priority) {
       if (t == excludeType) continue;
       final unit = findAvailableUnit(
@@ -217,7 +208,7 @@ class BookingProvider extends ChangeNotifier {
 
   bool _isUnitFreeForRange(
     UnitStatus unit,
-    String baseType,
+    ConsoleType baseType,
     DateTime date,
     String startTime,
     int durationHours,
@@ -225,13 +216,13 @@ class BookingProvider extends ChangeNotifier {
     final reqStart = _toMinutes(startTime);
     final reqEnd = reqStart + durationHours * 60;
 
-    // 1) Bentrok sama booking ASLI lain di unit yang sama & tanggal yang sama?
+    // 1) Bentrok sama booking lain di unit yang sama & tanggal yang sama?
     for (final b in _bookings) {
       if (!_isSameDay(b.date, date)) continue;
-      if (baseTypeOf(b.psType) != baseType) continue;
+      if (b.psType != baseType) continue;
       if (!b.assignedUnit.endsWith(unit.label)) continue;
       final bStart = _toMinutes(b.time);
-      final bEnd = bStart + _durationHoursOf(b) * 60;
+      final bEnd = bStart + b.durationHours * 60;
       if (_overlaps(reqStart, reqEnd, bStart, bEnd)) return false;
     }
 
@@ -250,16 +241,6 @@ class BookingProvider extends ChangeNotifier {
   // ════════════════════════════════════════════════════════
   //  Helpers umum
   // ════════════════════════════════════════════════════════
-
-  int _durationHoursOf(Booking b) =>
-      int.tryParse(b.duration.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
-
-  String _endTimeOf(Booking b) {
-    final durHours = _durationHoursOf(b);
-    final parts = b.time.split(':');
-    final endHour = (int.parse(parts[0]) + durHours) % 24;
-    return '${endHour.toString().padLeft(2, '0')}:${parts[1]}';
-  }
 
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
@@ -292,11 +273,5 @@ class BookingProvider extends ChangeNotifier {
     } catch (_) {
       return null;
     }
-  }
-
-  @override
-  void dispose() {
-    _clockTimer?.cancel();
-    super.dispose();
   }
 }

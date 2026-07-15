@@ -1,5 +1,6 @@
 import 'dart:math';
 import '../models/booking.dart';
+import '../models/enums.dart';
 
 List<Booking> getDummyBookings(DateTime now) {
   final random = Random(42); // fixed seed for consistent dummy data
@@ -15,8 +16,8 @@ List<Booking> getDummyBookings(DateTime now) {
     'Anton',
     'Joko',
     'Kayes',
-    'Alep'
-        'Fina',
+    'Alep',
+    'Fina',
     'Agus',
     'Lina',
     'Bayu',
@@ -33,7 +34,7 @@ List<Booking> getDummyBookings(DateTime now) {
     'Maya',
     'Nisa',
   ];
-  final psTypes = ['PS4', 'PS5', 'PS5 VIP', 'Nintendo VIP'];
+  const psTypes = ConsoleType.values;
 
   // Helper to generate a realistic time
   String randomTime() {
@@ -53,19 +54,21 @@ List<Booking> getDummyBookings(DateTime now) {
       String name = names[random.nextInt(names.length)];
       if (isWalkIn) name += ' (Walk-in)';
 
-      String type = psTypes[random.nextInt(psTypes.length)];
+      ConsoleType type = psTypes[random.nextInt(psTypes.length)];
       String unitLabel;
-      if (type == 'PS4') {
-        unitLabel = 'PS4 Unit ${1 + random.nextInt(5)}';
-      } else if (type == 'PS5') {
-        unitLabel = 'PS5 Unit ${1 + random.nextInt(8)}';
-      } else if (type == 'PS5 VIP') {
-        unitLabel = 'PS5 VIP Ruang ${1 + random.nextInt(5)}';
-      } else {
-        unitLabel = 'Nintendo VIP Ruang ${1 + random.nextInt(2)}';
+      switch (type) {
+        case ConsoleType.ps4:
+          unitLabel = 'PS4 Unit ${1 + random.nextInt(5)}';
+        case ConsoleType.ps5:
+          unitLabel = 'PS5 Unit ${1 + random.nextInt(8)}';
+        case ConsoleType.ps5Vip:
+          unitLabel = 'PS5 VIP Ruang ${1 + random.nextInt(5)}';
+        case ConsoleType.nintendoVip:
+          unitLabel = 'Nintendo VIP Ruang ${1 + random.nextInt(2)}';
       }
 
-      int duration = 1 + random.nextInt(5); // 1 to 5 hours
+      int durationHours = 1 + random.nextInt(5); // 1 to 5 hours
+      final duration = SessionDuration.values[durationHours - 1];
 
       String id = isWalkIn ? 'WI-DUMMY-$i-$j' : 'ONL-DUMMY-$i-$j';
 
@@ -77,7 +80,7 @@ List<Booking> getDummyBookings(DateTime now) {
           psType: type,
           date: targetDate,
           time: randomTime(),
-          duration: '$duration Jam',
+          duration: duration,
           assignedUnit: unitLabel,
         ),
       );
