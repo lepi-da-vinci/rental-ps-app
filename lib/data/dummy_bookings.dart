@@ -30,8 +30,8 @@ List<Booking> getDummyBookings(DateTime now) {
     'Hadi',
     'Indra',
     'Jawir',
-    'Leo',
-    'Maya',
+    'Leon',
+    'sir toro',
     'Nisa',
   ];
   const psTypes = ConsoleType.values;

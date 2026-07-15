@@ -568,13 +568,13 @@ class OperatingHour {
 List<OperatingHour> getOperatingHours() {
   final today = DateTime.now().weekday;
   return [
-    OperatingHour(day: 'Senin', hours: '10:00 – 22:00', isToday: today == 1),
-    OperatingHour(day: 'Selasa', hours: '10:00 – 22:00', isToday: today == 2),
-    OperatingHour(day: 'Rabu', hours: '10:00 – 22:00', isToday: today == 3),
-    OperatingHour(day: 'Kamis', hours: '10:00 – 22:00', isToday: today == 4),
-    OperatingHour(day: 'Jumat', hours: '10:00 – 23:00', isToday: today == 5),
-    OperatingHour(day: 'Sabtu', hours: '08:00 – 23:00', isToday: today == 6),
-    OperatingHour(day: 'Minggu', hours: '08:00 – 22:00', isToday: today == 7),
+    OperatingHour(day: 'Senin', hours: '08:00 – 24:00', isToday: today == 1),
+    OperatingHour(day: 'Selasa', hours: '08:00 – 24:00', isToday: today == 2),
+    OperatingHour(day: 'Rabu', hours: '08:00 – 24:00', isToday: today == 3),
+    OperatingHour(day: 'Kamis', hours: '08:00 – 24:00', isToday: today == 4),
+    OperatingHour(day: 'Jumat', hours: '08:00 – 24:00', isToday: today == 5),
+    OperatingHour(day: 'Sabtu', hours: '08:00 – 24:00', isToday: today == 6),
+    OperatingHour(day: 'Minggu', hours: '08:00 – 24:00', isToday: today == 7),
   ];
 }
 

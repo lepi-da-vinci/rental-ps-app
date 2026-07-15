@@ -7,6 +7,7 @@ import '../models/ps_unit.dart';
 import '../widgets/section_title.dart';
 import '../widgets/retro_button.dart';
 import '../providers/booking_provider.dart';
+import '../widgets/unit_timeline_view.dart';
 
 class InfoScreen extends StatefulWidget {
   const InfoScreen({super.key});
@@ -940,8 +941,10 @@ class _InfoScreenState extends State<InfoScreen>
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.dividerColor),
       ),
-      child: Theme(
-        data: ThemeData(dividerColor: Colors.transparent),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Theme(
+          data: ThemeData(dividerColor: Colors.transparent),
         child: ExpansionTile(
           tilePadding: EdgeInsets.zero,
           childrenPadding: const EdgeInsets.only(top: 8),
@@ -998,10 +1001,32 @@ class _InfoScreenState extends State<InfoScreen>
           }).toList(),
         ),
       ),
+      ),
     );
   }
 
   void _showUnitDetails(UnitStatus unit) {
+    // Get bookings for timeline
+    final provider = context.read<BookingProvider>();
+    final todayBookings = provider.bookingsForDate(provider.now);
+    final unitBookings = todayBookings.where((b) {
+      return b.assignedUnit.endsWith(unit.label) &&
+          b.assignedUnit.contains(unit.psType.displayName);
+    }).toList();
+
+    // Get today's operating hours
+    final todayHours = getOperatingHours().firstWhere(
+      (h) => h.isToday,
+      orElse: () => getOperatingHours().first,
+    );
+    final parts = todayHours.hours.split(RegExp(r'[-–]'));
+    int startOpHour = 10;
+    int endOpHour = 22;
+    if (parts.length == 2) {
+      startOpHour = int.tryParse(parts[0].split(':')[0].trim()) ?? 10;
+      endOpHour = int.tryParse(parts[1].split(':')[0].trim()) ?? 22;
+    }
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1088,6 +1113,15 @@ class _InfoScreenState extends State<InfoScreen>
                   unit.isWalkIn ? 'Walk-in (Langsung)' : 'Booking App',
                 ),
               ],
+              const SizedBox(height: 24),
+              const Divider(color: AppTheme.dividerColor),
+              const SizedBox(height: 16),
+              UnitTimelineView(
+                unitBookings: unitBookings,
+                startOpHour: startOpHour,
+                endOpHour: endOpHour,
+                dateTitle: todayHours.hours,
+              ),
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,

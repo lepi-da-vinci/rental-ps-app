@@ -268,11 +268,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                'Booking Sekarang',
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                              Flexible(
+                                child: Text(
+                                  'Booking Sekarang',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -417,18 +420,26 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildStatsGrid() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent:
-            200, // so on phone width ~350, it divides into 2 (175 each)
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        mainAxisExtent: 120, // fixed height prevents stretching on wide screens
-      ),
-      itemCount: _stats.length,
-      itemBuilder: (context, index) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        int crossAxisCount = 2;
+        if (constraints.maxWidth >= 800) {
+          crossAxisCount = 4;
+        } else if (constraints.maxWidth >= 600) {
+          crossAxisCount = 3; // Though we have 4 items, it will wrap
+        }
+        
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            mainAxisExtent: 140, // fixed height prevents stretching on wide screens
+          ),
+          itemCount: _stats.length,
+          itemBuilder: (context, index) {
         final stat = _stats[index];
         return Container(
           padding: const EdgeInsets.all(16),
@@ -477,7 +488,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              const Spacer(),
+              const SizedBox(height: 8),
               Text(
                 stat['value'],
                 style: GoogleFonts.pressStart2p(
@@ -496,6 +507,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         );
+      },
+    );
       },
     );
   }

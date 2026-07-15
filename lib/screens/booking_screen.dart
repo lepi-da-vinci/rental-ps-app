@@ -459,7 +459,41 @@ class _BookingScreenState extends State<BookingScreen> {
     }
 
     final baseType = _selectedPsType!;
-    final durationHours = _selectedDuration!.hours;
+    int durationHours = _selectedDuration!.hours;
+    SessionDuration effectiveDuration = _selectedDuration!;
+    
+    // Check if booking exceeds closing time (24:00 / 1440 mins)
+    final p = _selectedTime!.split(':');
+    final startMins = int.parse(p[0]) * 60 + int.parse(p[1]);
+    final closingMins = 24 * 60;
+    
+    if (startMins + durationHours * 60 > closingMins) {
+      final maxAllowedHours = (closingMins - startMins) ~/ 60;
+      if (maxAllowedHours <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Maaf, sudah terlalu dekat dengan jam tutup (24:00)', style: GoogleFonts.spaceGrotesk()),
+            backgroundColor: AppTheme.accentRed,
+          ),
+        );
+        return;
+      }
+      
+      durationHours = maxAllowedHours;
+      effectiveDuration = SessionDuration.values.firstWhere(
+        (d) => d.hours == maxAllowedHours,
+        orElse: () => SessionDuration.jam1,
+      );
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Batas tutup jam 24:00. Booking otomatis disesuaikan menjadi $maxAllowedHours Jam.', style: GoogleFonts.spaceGrotesk()),
+          backgroundColor: AppTheme.accentCyan,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
+
     final provider = context.read<BookingProvider>();
 
     // 1) Coba cari unit yang BENERAN kosong buat jam+tanggal+durasi ini
@@ -471,7 +505,7 @@ class _BookingScreenState extends State<BookingScreen> {
     );
 
     if (freeUnit != null) {
-      _createBookingAndShowConfirmation(freeUnit.label, _selectedDuration!);
+      _createBookingAndShowConfirmation(freeUnit.label, effectiveDuration);
       return;
     }
 

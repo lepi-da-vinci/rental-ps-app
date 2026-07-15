@@ -8,6 +8,7 @@ import '../data/dummy_data.dart';
 import '../models/ps_unit.dart';
 import '../models/enums.dart';
 import '../widgets/section_title.dart';
+import '../widgets/unit_timeline_view.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -338,7 +339,9 @@ class _AdminScreenState extends State<AdminScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: AppTheme.cardDecoration(),
-      child: Theme(
+      child: Material(
+        type: MaterialType.transparency,
+        child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -421,158 +424,26 @@ class _AdminScreenState extends State<AdminScreen>
                     color: AppTheme.accentRed.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Text(
-                    'IN USE',
-                    style: GoogleFonts.spaceGrotesk(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.accentRed,
-                    ),
+                  child: UnitTimelineView(
+                    unitBookings: unitBookings,
+                    startOpHour: startOpHour,
+                    endOpHour: endOpHour,
+                    dateTitle: todayHours.hours,
                   ),
                 ),
-            ],
-          ),
-          children: [
+              ],
+            ),
+            children: [
             const Divider(color: AppTheme.dividerColor),
             const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Jadwal Hari Ini (${todayHours.hours})',
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.textMuted,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: List.generate(endOpHour - startOpHour, (index) {
-                  final h = startOpHour + index;
-
-                  // Check if any booking overlaps with this hour
-                  Booking? matchedBooking;
-                    for (final b in unitBookings) {
-                      final bStart = int.tryParse(b.time.split(':')[0]) ?? 0;
-                      final dur = b.durationHours;
-                      final bEnd = bStart + dur;
-                    if (h >= bStart && h < bEnd) {
-                      matchedBooking = b;
-                      break;
-                    }
-                  }
-
-                  final isBooked = matchedBooking != null;
-                  final isWalkIn =
-                      matchedBooking?.id.startsWith('WI-') ?? false;
-
-                  String tooltipMsg = 'Kosong';
-                  if (matchedBooking != null) {
-                    final b = matchedBooking;
-                    final startH = int.parse(b.time.split(':')[0]);
-                    final durH = b.durationHours;
-                    tooltipMsg =
-                        '${b.customerName} (${b.time} - ${startH + durH}:00)';
-                  }
-
-                  Color blockColor = AppTheme.surfaceDark;
-                  Color borderColor = AppTheme.dividerColor;
-                  if (isBooked) {
-                    final bookingColor = AppTheme.getBookingColor(
-                      matchedBooking.id,
-                    );
-                    blockColor = bookingColor.withValues(alpha: 0.15);
-                    borderColor = bookingColor;
-                  }
-
-                  return GestureDetector(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      if (isBooked) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Sesi disewa oleh: $tooltipMsg',
-                              style: GoogleFonts.spaceGrotesk(color: Colors.white),
-                            ),
-                            backgroundColor: AppTheme.cardDark,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              side: const BorderSide(color: AppTheme.dividerColor),
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            action: SnackBarAction(
-                              label: 'OK',
-                              textColor: AppTheme.accentCyan,
-                              onPressed: () {},
-                            ),
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Jam ini kosong / tersedia',
-                              style: GoogleFonts.spaceGrotesk(color: Colors.white),
-                            ),
-                            backgroundColor: AppTheme.cardDark,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              side: const BorderSide(color: AppTheme.dividerColor),
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
-                      }
-                    },
-                    child: Tooltip(
-                      message: tooltipMsg,
-                    child: Container(
-                      width: 50,
-                      margin: const EdgeInsets.only(right: 8),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: blockColor,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: borderColor, width: 1),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            '${h.toString().padLeft(2, '0')}:00',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: isBooked
-                                  ? AppTheme.textPrimary
-                                  : AppTheme.textMuted,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Icon(
-                            isBooked
-                                ? (isWalkIn
-                                      ? Icons.directions_walk
-                                      : Icons.person)
-                                : Icons.check_circle_outline,
-                            size: 14,
-                            color: isBooked
-                                ? AppTheme.getBookingColor(matchedBooking.id)
-                                : AppTheme.textMuted.withValues(alpha: 0.5),
-                          ),
-                        ],
-                      ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
+            UnitTimelineView(
+              unitBookings: unitBookings,
+              startOpHour: startOpHour,
+              endOpHour: endOpHour,
+              dateTitle: todayHours.hours,
             ),
           ],
+        ),
         ),
       ),
     );
@@ -617,10 +488,13 @@ class _AdminScreenState extends State<AdminScreen>
             final displayDate = '${parts[2]}/${parts[1]}/${parts[0]}';
 
             return Container(
+              margin: const EdgeInsets.only(bottom: 12),
               decoration: AppTheme.cardDecoration(),
-              child: Theme(
-                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                child: ExpansionTile(
+              child: Material(
+                type: MaterialType.transparency,
+                child: Theme(
+                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
                   title: Text(
                     'Tanggal: $displayDate',
                     style: GoogleFonts.spaceGrotesk(
@@ -637,8 +511,10 @@ class _AdminScreenState extends State<AdminScreen>
                   ),
                   children: bookings.map((b) {
                     final isWalkIn = b.id.startsWith('WI-');
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    return Material(
+                      type: MaterialType.transparency,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       leading: Icon(
                         isWalkIn ? Icons.directions_walk : Icons.language,
                         color: isWalkIn ? AppTheme.accentGreen : AppTheme.accentCyan,
@@ -675,9 +551,10 @@ class _AdminScreenState extends State<AdminScreen>
                           }
                         },
                       ),
-                    );
+                    ));
                   }).toList(),
                 ),
+              ),
               ),
             );
           },

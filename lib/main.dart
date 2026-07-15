@@ -108,31 +108,42 @@ class _MainScreenState extends State<MainScreen> {
           body: isAdminMode
               ? const AdminScreen()
               : (isLargeScreen
-                  ? Row(
-                      children: [
-                        _buildSidebar(isOpenNow, statusLabel),
-                        Expanded(
-                          child: IndexedStack(
-                            index: _currentIndex,
-                            children: screens,
+                    ? Row(
+                        children: [
+                          _buildSidebar(isOpenNow, statusLabel),
+                          Expanded(
+                            child: IndexedStack(
+                              index: _currentIndex,
+                              children: screens,
+                            ),
                           ),
-                        ),
-                      ],
-                    )
-                  : IndexedStack(index: _currentIndex, children: screens)),
-          bottomNavigationBar: (isLargeScreen || isAdminMode) ? null : _buildBottomNav(),
+                        ],
+                      )
+                    : IndexedStack(index: _currentIndex, children: screens)),
+          bottomNavigationBar: (isLargeScreen || isAdminMode)
+              ? null
+              : _buildBottomNav(),
         );
       },
     );
   }
 
-  PreferredSizeWidget _buildSmallAppBar(String title, bool isAdminMode, BuildContext context) {
+  PreferredSizeWidget _buildSmallAppBar(
+    String title,
+    bool isAdminMode,
+    BuildContext context,
+  ) {
     return AppBar(
-      title: Text(isAdminMode ? 'ADMIN MODE' : title, 
-          style: isAdminMode ? GoogleFonts.spaceGrotesk(color: AppTheme.accentCyan, fontWeight: FontWeight.bold) : null),
-      actions: [
-        _buildAdminToggle(isAdminMode, context),
-      ],
+      title: Text(
+        isAdminMode ? 'ADMIN MODE' : title,
+        style: isAdminMode
+            ? GoogleFonts.spaceGrotesk(
+                color: AppTheme.accentCyan,
+                fontWeight: FontWeight.bold,
+              )
+            : null,
+      ),
+      actions: [_buildAdminToggle(isAdminMode, context)],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Container(height: 1, color: AppTheme.dividerColor),
@@ -140,7 +151,12 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  PreferredSizeWidget _buildLargeAppBar(bool isOpenNow, String statusLabel, bool isAdminMode, BuildContext context) {
+  PreferredSizeWidget _buildLargeAppBar(
+    bool isOpenNow,
+    String statusLabel,
+    bool isAdminMode,
+    BuildContext context,
+  ) {
     return AppBar(
       elevation: 0,
       backgroundColor: AppTheme.backgroundDark,
@@ -227,32 +243,57 @@ class _MainScreenState extends State<MainScreen> {
           builder: (context, setState) {
             return AlertDialog(
               backgroundColor: AppTheme.surfaceDark,
-              title: Text('Admin Login', style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+              title: Text(
+                'Admin Login',
+                style: GoogleFonts.spaceGrotesk(
+                  color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: usernameCtrl,
-                    style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
+                    style: GoogleFonts.spaceGrotesk(
+                      color: AppTheme.textPrimary,
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Username',
-                      labelStyle: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
-                      enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppTheme.dividerColor)),
-                      focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppTheme.accentCyan)),
+                      labelStyle: GoogleFonts.spaceGrotesk(
+                        color: AppTheme.textMuted,
+                      ),
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: AppTheme.dividerColor),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: AppTheme.accentCyan),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: passwordCtrl,
                     obscureText: obscureText,
-                    style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
+                    style: GoogleFonts.spaceGrotesk(
+                      color: AppTheme.textPrimary,
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      labelStyle: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
-                      enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppTheme.dividerColor)),
-                      focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppTheme.accentCyan)),
+                      labelStyle: GoogleFonts.spaceGrotesk(
+                        color: AppTheme.textMuted,
+                      ),
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: AppTheme.dividerColor),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: AppTheme.accentCyan),
+                      ),
                       suffixIcon: IconButton(
-                        icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility, color: AppTheme.textMuted),
+                        icon: Icon(
+                          obscureText ? Icons.visibility_off : Icons.visibility,
+                          color: AppTheme.textMuted,
+                        ),
                         onPressed: () {
                           setState(() {
                             obscureText = !obscureText;
@@ -266,24 +307,42 @@ class _MainScreenState extends State<MainScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('Batal', style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted)),
+                  child: Text(
+                    'Batal',
+                    style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
+                  ),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentCyan),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.accentCyan,
+                  ),
                   onPressed: () {
-                    if (usernameCtrl.text == 'admin' && passwordCtrl.text == 'admin1234') {
+                    if (usernameCtrl.text == 'admin' &&
+                        passwordCtrl.text == 'admin123') {
                       Navigator.pop(context);
                       context.read<AdminProvider>().toggleAdminMode();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Login berhasil!'), backgroundColor: AppTheme.accentGreen),
+                        const SnackBar(
+                          content: Text('Login berhasil!'),
+                          backgroundColor: AppTheme.accentGreen,
+                        ),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Username atau Password salah!'), backgroundColor: AppTheme.accentRed),
+                        const SnackBar(
+                          content: Text('Username atau Password salah!'),
+                          backgroundColor: AppTheme.accentRed,
+                        ),
                       );
                     }
                   },
-                  child: Text('Login', style: GoogleFonts.spaceGrotesk(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    'Login',
+                    style: GoogleFonts.spaceGrotesk(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             );
@@ -296,7 +355,9 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildAdminToggle(bool isAdminMode, BuildContext context) {
     return IconButton(
       icon: Icon(
-        isAdminMode ? Icons.admin_panel_settings : Icons.admin_panel_settings_outlined,
+        isAdminMode
+            ? Icons.admin_panel_settings
+            : Icons.admin_panel_settings_outlined,
         color: isAdminMode ? AppTheme.accentCyan : AppTheme.textMuted,
       ),
       tooltip: 'Toggle Admin Mode',
