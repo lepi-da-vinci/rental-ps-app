@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../data/dummy_data.dart';
+import '../models/enums.dart';
 import '../models/booking.dart';
 import '../providers/booking_provider.dart';
 import '../widgets/section_title.dart';
@@ -21,12 +22,12 @@ class _BookingScreenState extends State<BookingScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
 
-  String? _selectedPsType;
+  ConsoleType? _selectedPsType;
   DateTime? _selectedDate;
   String? _selectedTime;
-  String? _selectedDuration;
+  SessionDuration? _selectedDuration;
 
-  List<String> get _psTypes => ['PS4 Reguler', 'PS5 Reguler', 'PS5 VIP', 'Nintendo VIP'];
+  List<ConsoleType> get _psTypes => ConsoleType.values;
 
 
   @override
@@ -39,11 +40,10 @@ class _BookingScreenState extends State<BookingScreen> {
   // Get estimated price based on selection
   String? get _estimatedPrice {
     if (_selectedPsType == null || _selectedDuration == null) return null;
-    final durHours =
-        int.tryParse(_selectedDuration!.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
+    final durHours = _selectedDuration!.hours;
     // Find matching package tier
     final match = dummyPricePackages
-        .where((p) => p.name == _selectedPsType)
+        .where((p) => p.name == _selectedPsType!.bookingDisplayName)
         .toList();
     if (match.isEmpty) return null;
     // Find exact duration match in prices list
@@ -160,12 +160,12 @@ class _BookingScreenState extends State<BookingScreen> {
                               child: Column(
                                 children: [
                                   Icon(
-                                    type.contains('Nintendo') ? Icons.gamepad : Icons.sports_esports,
+                                    type == ConsoleType.nintendoVip ? Icons.gamepad : Icons.sports_esports,
                                     color: isSelected ? AppTheme.textPrimary : AppTheme.textMuted,
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    type,
+                                    type.bookingDisplayName,
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.spaceGrotesk(
                                       fontSize: 12,
@@ -186,7 +186,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       Wrap(
                         spacing: 12,
                         runSpacing: 12,
-                        children: durationOptions.map((duration) {
+                        children: SessionDuration.values.map((duration) {
                           bool isSelected = _selectedDuration == duration;
                           return InkWell(
                             onTap: () => setState(() {
@@ -206,7 +206,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                 ),
                               ),
                               child: Text(
-                                duration,
+                                duration.displayName,
                                 style: GoogleFonts.spaceGrotesk(
                                   fontSize: 12,
                                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
@@ -252,7 +252,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                 Builder(builder: (context) {
                                   // Bug 4 fix: only show time slots valid for the chosen duration
                                   final durHours = _selectedDuration != null
-                                     ? int.tryParse(_selectedDuration!.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1
+                                     ? _selectedDuration!.hours
                                      : 1;
                                   final validSlots = getValidTimeSlots(durHours);
                                   return DropdownButtonFormField<String>(
@@ -296,9 +296,9 @@ class _BookingScreenState extends State<BookingScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      _buildSummaryRow('Konsol', _selectedPsType ?? '-'),
+                      _buildSummaryRow('Konsol', _selectedPsType?.bookingDisplayName ?? '-'),
                       const SizedBox(height: 16),
-                      _buildSummaryRow('Durasi', _selectedDuration ?? '-'),
+                      _buildSummaryRow('Durasi', _selectedDuration?.displayName ?? '-'),
                       const SizedBox(height: 16),
                       _buildSummaryRow('Estimasi', _estimatedPrice ?? '-'),
                       const SizedBox(height: 24),
@@ -458,9 +458,42 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
-    final baseType = baseTypeOf(_selectedPsType!);
-    final durationHours =
-        int.tryParse(_selectedDuration!.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
+    final baseType = _selectedPsType!;
+    int durationHours = _selectedDuration!.hours;
+    SessionDuration effectiveDuration = _selectedDuration!;
+    
+    // Check if booking exceeds closing time (24:00 / 1440 mins)
+    final p = _selectedTime!.split(':');
+    final startMins = int.parse(p[0]) * 60 + int.parse(p[1]);
+    final closingMins = 24 * 60;
+    
+    if (startMins + durationHours * 60 > closingMins) {
+      final maxAllowedHours = (closingMins - startMins) ~/ 60;
+      if (maxAllowedHours <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Maaf, sudah terlalu dekat dengan jam tutup (24:00)', style: GoogleFonts.spaceGrotesk()),
+            backgroundColor: AppTheme.accentRed,
+          ),
+        );
+        return;
+      }
+      
+      durationHours = maxAllowedHours;
+      effectiveDuration = SessionDuration.values.firstWhere(
+        (d) => d.hours == maxAllowedHours,
+        orElse: () => SessionDuration.jam1,
+      );
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Batas tutup jam 24:00. Booking otomatis disesuaikan menjadi $maxAllowedHours Jam.', style: GoogleFonts.spaceGrotesk()),
+          backgroundColor: AppTheme.accentCyan,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
+
     final provider = context.read<BookingProvider>();
 
     // 1) Coba cari unit yang BENERAN kosong buat jam+tanggal+durasi ini
@@ -472,7 +505,7 @@ class _BookingScreenState extends State<BookingScreen> {
     );
 
     if (freeUnit != null) {
-      _createBookingAndShowConfirmation(freeUnit.label, durationHours);
+      _createBookingAndShowConfirmation(freeUnit.label, effectiveDuration);
       return;
     }
 
@@ -496,7 +529,7 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  void _createBookingAndShowConfirmation(String unitLabel, int durationHours) {
+  void _createBookingAndShowConfirmation(String unitLabel, SessionDuration duration) {
     final booking = Booking(
       id: 'BK-${DateTime.now().millisecondsSinceEpoch}',
       customerName: _nameController.text.trim(),
@@ -504,8 +537,8 @@ class _BookingScreenState extends State<BookingScreen> {
       psType: _selectedPsType!,
       date: _selectedDate!,
       time: _selectedTime!,
-      duration: '$durationHours Jam',
-      assignedUnit: '$_selectedPsType $unitLabel',
+      duration: duration,
+      assignedUnit: '${_selectedPsType!.displayName} $unitLabel',
     );
     _showConfirmationDialog(booking);
   }
@@ -514,7 +547,7 @@ class _BookingScreenState extends State<BookingScreen> {
   void _showConflictDialog({
     required int requestedDuration,
     required int maxDuration,
-    required List<String> alternatives,
+    required List<ConsoleType> alternatives,
   }) {
     showDialog(
       context: context,
@@ -555,7 +588,7 @@ class _BookingScreenState extends State<BookingScreen> {
                           ),
                         ),
                         Text(
-                          '$_selectedPsType jam $_selectedTime buat $requestedDuration jam gak ada unit kosong.',
+                          '${_selectedPsType?.bookingDisplayName} jam $_selectedTime buat $requestedDuration jam gak ada unit kosong.',
                           style: GoogleFonts.spaceGrotesk(
                             fontSize: 12,
                             color: AppTheme.textMuted,
@@ -573,11 +606,11 @@ class _BookingScreenState extends State<BookingScreen> {
                 _conflictOptionTile(
                   icon: Icons.timer_outlined,
                   color: AppTheme.accentCyan,
-                  title: 'Tetap $_selectedPsType, durasi $maxDuration jam',
+                  title: 'Tetap ${_selectedPsType?.bookingDisplayName}, durasi $maxDuration jam',
                   subtitle: 'Jam mulai tetap $_selectedTime, cuma durasinya disesuaikan.',
                   onTap: () {
                     Navigator.pop(ctx);
-                    setState(() => _selectedDuration = '$maxDuration Jam');
+                    setState(() => _selectedDuration = SessionDuration.values.firstWhere((e) => e.hours == maxDuration));
                     _submitBooking();
                   },
                 ),
@@ -588,11 +621,11 @@ class _BookingScreenState extends State<BookingScreen> {
                 _conflictOptionTile(
                   icon: Icons.swap_horiz,
                   color: AppTheme.accentMagenta,
-                  title: 'Pindah ke ${displayNameForBaseType(alt)}',
+                  title: 'Pindah ke ${alt.bookingDisplayName}',
                   subtitle: 'Tetap main $requestedDuration jam penuh mulai $_selectedTime.',
                   onTap: () {
                     Navigator.pop(ctx);
-                    setState(() => _selectedPsType = displayNameForBaseType(alt));
+                    setState(() => _selectedPsType = alt);
                     _submitBooking();
                   },
                 ),
@@ -732,7 +765,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   children: [
                     _dialogRow('Nama', booking.customerName),
                     _dialogRow('No. HP', booking.phone),
-                    _dialogRow('Tipe', booking.psType),
+                    _dialogRow('Tipe', booking.psType.bookingDisplayName),
                     _dialogRow(
                       'Unit',
                       booking.assignedUnit,
@@ -743,7 +776,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       DateFormat('dd MMM yyyy').format(booking.date),
                     ),
                     _dialogRow('Jam', booking.time),
-                    _dialogRow('Durasi', booking.duration),
+                    _dialogRow('Durasi', booking.duration.displayName),
                     const Divider(color: AppTheme.dividerColor, height: 16),
                     _dialogRow(
                       'ID',
@@ -874,7 +907,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   children: [
                     _dialogRow('Nama', booking.customerName),
                     _dialogRow('No. HP', booking.phone),
-                    _dialogRow('Tipe', booking.psType),
+                    _dialogRow('Tipe', booking.psType.bookingDisplayName),
                     _dialogRow(
                       'Unit',
                       booking.assignedUnit,
@@ -885,7 +918,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       DateFormat('dd MMM yyyy').format(booking.date),
                     ),
                     _dialogRow('Jam', booking.time),
-                    _dialogRow('Durasi', booking.duration),
+                    _dialogRow('Durasi', booking.duration.displayName),
                     const Divider(color: AppTheme.dividerColor, height: 16),
                     _dialogRow(
                       'ID',
@@ -1046,11 +1079,12 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
   
-  String _getShortPsType(String psType) {
-    if (psType.toLowerCase().contains('nintendo')) return 'NIN';
-    if (psType.toLowerCase().contains('ps5 vip')) return 'PS5V';
-    if (psType.toLowerCase().contains('ps5')) return 'PS5';
-    if (psType.toLowerCase().contains('ps4')) return 'PS4';
-    return psType;
+  String _getShortPsType(ConsoleType psType) {
+    switch (psType) {
+      case ConsoleType.ps4: return 'PS4';
+      case ConsoleType.ps5: return 'PS5';
+      case ConsoleType.ps5Vip: return 'PS5V';
+      case ConsoleType.nintendoVip: return 'NIN';
+    }
   }
 }

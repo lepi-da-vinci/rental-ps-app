@@ -6,7 +6,9 @@ import '../models/booking.dart';
 import '../providers/booking_provider.dart';
 import '../data/dummy_data.dart';
 import '../models/ps_unit.dart';
+import '../models/enums.dart';
 import '../widgets/section_title.dart';
+import '../widgets/unit_timeline_view.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -275,7 +277,7 @@ class _AdminScreenState extends State<AdminScreen>
       builder: (context, provider, child) {
         final liveUnits = provider.units;
         // Group by baseType
-        final grouped = <String, List<UnitStatus>>{};
+        final grouped = <ConsoleType, List<UnitStatus>>{};
         for (var u in liveUnits) {
           grouped.putIfAbsent(u.psType, () => []).add(u);
         }
@@ -292,7 +294,7 @@ class _AdminScreenState extends State<AdminScreen>
               children: [
                 if (index > 0) const SizedBox(height: 24),
                 Text(
-                  type,
+                  type.displayName,
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -318,7 +320,7 @@ class _AdminScreenState extends State<AdminScreen>
     // We check if it ends with the unit label and contains the base psType.
     final unitBookings = todayBookings.where((b) {
       return b.assignedUnit.endsWith(unit.label) &&
-          b.assignedUnit.contains(unit.psType);
+          b.assignedUnit.contains(unit.psType.displayName);
     }).toList();
 
     // Get today's operating hours
@@ -337,7 +339,9 @@ class _AdminScreenState extends State<AdminScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: AppTheme.cardDecoration(),
-      child: Theme(
+      child: Material(
+        type: MaterialType.transparency,
+        child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -410,129 +414,19 @@ class _AdminScreenState extends State<AdminScreen>
                         ],
                       ),
               ),
-              if (!unit.isAvailable)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentRed.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    'IN USE',
-                    style: GoogleFonts.spaceGrotesk(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.accentRed,
-                    ),
-                  ),
-                ),
             ],
           ),
           children: [
             const Divider(color: AppTheme.dividerColor),
             const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Jadwal Hari Ini (${todayHours.hours})',
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.textMuted,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: List.generate(endOpHour - startOpHour, (index) {
-                  final h = startOpHour + index;
-
-                  // Check if any booking overlaps with this hour
-                  Booking? matchedBooking;
-                  for (final b in unitBookings) {
-                    final bStart = int.tryParse(b.time.split(':')[0]) ?? 0;
-                    final durStr = b.duration.replaceAll(RegExp(r'[^0-9]'), '');
-                    final dur = int.tryParse(durStr) ?? 1;
-                    final bEnd = bStart + dur;
-                    if (h >= bStart && h < bEnd) {
-                      matchedBooking = b;
-                      break;
-                    }
-                  }
-
-                  final isBooked = matchedBooking != null;
-                  final isWalkIn =
-                      matchedBooking?.id.startsWith('WI-') ?? false;
-
-                  String tooltipMsg = 'Kosong';
-                  if (matchedBooking != null) {
-                    final b = matchedBooking;
-                    final startH = int.parse(b.time.split(':')[0]);
-                    final durH = int.parse(
-                      b.duration.replaceAll(RegExp(r'[^0-9]'), ''),
-                    );
-                    tooltipMsg =
-                        '${b.customerName} (${b.time} - ${startH + durH}:00)';
-                  }
-
-                  Color blockColor = AppTheme.surfaceDark;
-                  Color borderColor = AppTheme.dividerColor;
-                  if (isBooked) {
-                    final bookingColor = AppTheme.getBookingColor(
-                      matchedBooking.id,
-                    );
-                    blockColor = bookingColor.withValues(alpha: 0.15);
-                    borderColor = bookingColor;
-                  }
-
-                  return Tooltip(
-                    message: tooltipMsg,
-                    child: Container(
-                      width: 50,
-                      margin: const EdgeInsets.only(right: 8),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: blockColor,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: borderColor, width: 1),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            '${h.toString().padLeft(2, '0')}:00',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: isBooked
-                                  ? AppTheme.textPrimary
-                                  : AppTheme.textMuted,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Icon(
-                            isBooked
-                                ? (isWalkIn
-                                      ? Icons.directions_walk
-                                      : Icons.person)
-                                : Icons.check_circle_outline,
-                            size: 14,
-                            color: isBooked
-                                ? AppTheme.getBookingColor(matchedBooking.id)
-                                : AppTheme.textMuted.withValues(alpha: 0.5),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-              ),
+            UnitTimelineView(
+              unitBookings: unitBookings,
+              startOpHour: startOpHour,
+              endOpHour: endOpHour,
+              dateTitle: todayHours.hours,
             ),
           ],
+        ),
         ),
       ),
     );
@@ -577,10 +471,13 @@ class _AdminScreenState extends State<AdminScreen>
             final displayDate = '${parts[2]}/${parts[1]}/${parts[0]}';
 
             return Container(
+              margin: const EdgeInsets.only(bottom: 12),
               decoration: AppTheme.cardDecoration(),
-              child: Theme(
-                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                child: ExpansionTile(
+              child: Material(
+                type: MaterialType.transparency,
+                child: Theme(
+                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
                   title: Text(
                     'Tanggal: $displayDate',
                     style: GoogleFonts.spaceGrotesk(
@@ -597,8 +494,10 @@ class _AdminScreenState extends State<AdminScreen>
                   ),
                   children: bookings.map((b) {
                     final isWalkIn = b.id.startsWith('WI-');
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    return Material(
+                      type: MaterialType.transparency,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       leading: Icon(
                         isWalkIn ? Icons.directions_walk : Icons.language,
                         color: isWalkIn ? AppTheme.accentGreen : AppTheme.accentCyan,
@@ -635,9 +534,10 @@ class _AdminScreenState extends State<AdminScreen>
                           }
                         },
                       ),
-                    );
+                    ));
                   }).toList(),
                 ),
+              ),
               ),
             );
           },
@@ -653,7 +553,7 @@ class _AdminScreenState extends State<AdminScreen>
   Widget _buildTodayBookings() {
     return Consumer<BookingProvider>(
       builder: (context, provider, child) {
-        final allBookings = provider.bookingsForDate(provider.now);
+        final allBookings = provider.bookingsForDate(provider.now).where((b) => !b.isWalkIn).toList();
         // Sort by time
         allBookings.sort((a, b) => a.time.compareTo(b.time));
 
@@ -847,9 +747,9 @@ class _AdminScreenState extends State<AdminScreen>
 
   void _showWalkInDialog() {
     final nameCtrl = TextEditingController();
-    String? selectedType = 'PS5';
+    ConsoleType? selectedType = ConsoleType.ps5;
     String? selectedUnitLabel;
-    String selectedDuration = '1 Jam';
+    SessionDuration selectedDuration = SessionDuration.jam1;
 
     showDialog(
       context: context,
@@ -915,7 +815,7 @@ class _AdminScreenState extends State<AdminScreen>
                     const SizedBox(height: 16),
 
                     // Type Selection
-                    DropdownButtonFormField<String>(
+                    DropdownButtonFormField<ConsoleType>(
                       initialValue: selectedType,
                       dropdownColor: AppTheme.cardDark,
                       decoration: InputDecoration(
@@ -930,12 +830,12 @@ class _AdminScreenState extends State<AdminScreen>
                           borderSide: BorderSide(color: AppTheme.accentGreen),
                         ),
                       ),
-                      items: ['PS4', 'PS5', 'PS5 VIP', 'Nintendo VIP']
+                      items: ConsoleType.values
                           .map(
                             (e) => DropdownMenuItem(
                               value: e,
                               child: Text(
-                                e,
+                                e.displayName,
                                 style: GoogleFonts.spaceGrotesk(
                                   color: AppTheme.textPrimary,
                                 ),
@@ -1002,7 +902,7 @@ class _AdminScreenState extends State<AdminScreen>
                     const SizedBox(height: 16),
 
                     // Duration Selection
-                    DropdownButtonFormField<String>(
+                    DropdownButtonFormField<SessionDuration>(
                       initialValue: selectedDuration,
                       dropdownColor: AppTheme.cardDark,
                       decoration: InputDecoration(
@@ -1017,12 +917,12 @@ class _AdminScreenState extends State<AdminScreen>
                           borderSide: BorderSide(color: AppTheme.accentGreen),
                         ),
                       ),
-                      items: List.generate(5, (index) => '${index + 1} Jam')
+                      items: SessionDuration.values
                           .map(
                             (e) => DropdownMenuItem(
                               value: e,
                               child: Text(
-                                e,
+                                e.displayName,
                                 style: GoogleFonts.spaceGrotesk(
                                   color: AppTheme.textPrimary,
                                 ),
@@ -1056,19 +956,11 @@ class _AdminScreenState extends State<AdminScreen>
                                   nameCtrl.text.trim().isEmpty)
                               ? null
                               : () {
-                                  final durInt =
-                                      int.tryParse(
-                                        selectedDuration.replaceAll(
-                                          RegExp(r'[^0-9]'),
-                                          '',
-                                        ),
-                                      ) ??
-                                      1;
                                   provider.addWalkIn(
                                     baseType: selectedType!,
                                     unitLabel: selectedUnitLabel!,
                                     playerName: nameCtrl.text.trim(),
-                                    durationHours: durInt,
+                                    duration: selectedDuration,
                                   );
                                   Navigator.pop(ctx);
                                   ScaffoldMessenger.of(context).showSnackBar(

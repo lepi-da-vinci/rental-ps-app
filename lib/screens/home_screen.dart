@@ -16,12 +16,16 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   // Stats derived from real data (single source of truth)
   List<Map<String, dynamic>> get _stats {
-    return getHomeStats().map((s) => {
-      'label': s.label,
-      'value': s.value,
-      'icon': s.icon,
-      'sub': s.sub,
-    }).toList();
+    return getHomeStats()
+        .map(
+          (s) => {
+            'label': s.label,
+            'value': s.value,
+            'icon': s.icon,
+            'sub': s.sub,
+          },
+        )
+        .toList();
   }
 
   final List<Map<String, dynamic>> _menuCards = [
@@ -45,44 +49,12 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
-  final List<Map<String, dynamic>> _games = [
-    {
-      'title': 'Grand Theft Auto VI',
-      'platform': 'PS5',
-      'tag': 'Open World',
-      'hot': true,
-    },
-    {
-      'title': 'EA Sports FC 24',
-      'platform': 'PS4 · PS5',
-      'tag': 'Sports',
-      'hot': false,
-    },
-    {'title': 'Tekken 8', 'platform': 'PS5', 'tag': 'Fighting', 'hot': false},
-    {
-      'title': 'Mario Kart 8 Deluxe',
-      'platform': 'Switch',
-      'tag': 'Family',
-      'hot': true,
-    },
-    {
-      'title': 'Resident Evil 4 Remake',
-      'platform': 'PS4 · PS5',
-      'tag': 'Horror',
-      'hot': false,
-    },
-    {'title': 'Elden Ring', 'platform': 'PS5', 'tag': 'RPG', 'hot': false},
-  ];
-
   /// Always computed from real time — never stale.
   List<Map<String, dynamic>> get _schedule {
-    return getOperatingHours().map((oh) => {
-      'day': oh.day,
-      'hours': oh.hours,
-      'today': oh.isToday,
-    }).toList();
+    return getOperatingHours()
+        .map((oh) => {'day': oh.day, 'hours': oh.hours, 'today': oh.isToday})
+        .toList();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -268,11 +240,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                'Booking Sekarang',
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                              Flexible(
+                                child: Text(
+                                  'Booking Sekarang',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -417,84 +392,96 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildStatsGrid() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent:
-            200, // so on phone width ~350, it divides into 2 (175 each)
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        mainAxisExtent: 120, // fixed height prevents stretching on wide screens
-      ),
-      itemCount: _stats.length,
-      itemBuilder: (context, index) {
-        final stat = _stats[index];
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppTheme.cardDark,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.dividerColor),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppTheme.accentCyan.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        int crossAxisCount = 2;
+        if (constraints.maxWidth >= 800) {
+          crossAxisCount = 4;
+        } else if (constraints.maxWidth >= 600) {
+          crossAxisCount = 3;
+        }
+
+        final double spacing = 12.0;
+        final double itemWidth =
+            (constraints.maxWidth - ((crossAxisCount - 1) * spacing)) /
+            crossAxisCount;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: _stats.map((stat) {
+            return SizedBox(
+              width: itemWidth,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.cardDark,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.dividerColor),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
                     ),
-                    child: Icon(
-                      stat['icon'],
-                      size: 16,
-                      color: AppTheme.accentCyan,
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accentCyan.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            stat['icon'],
+                            size: 16,
+                            color: AppTheme.accentCyan,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            stat['label'],
+                            textAlign: TextAlign.right,
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.5,
+                              color: AppTheme.textMuted,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      stat['label'],
-                      textAlign: TextAlign.right,
+                    const SizedBox(height: 16),
+                    Text(
+                      stat['value'],
+                      style: GoogleFonts.pressStart2p(
+                        fontSize: 16,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      stat['sub'],
                       style: GoogleFonts.spaceGrotesk(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
+                        fontSize: 10,
                         color: AppTheme.textMuted,
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Text(
-                stat['value'],
-                style: GoogleFonts.pressStart2p(
-                  fontSize: 16,
-                  color: AppTheme.textPrimary,
+                  ],
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                stat['sub'],
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 10,
-                  color: AppTheme.textMuted,
-                ),
-              ),
-            ],
-          ),
+            );
+          }).toList(),
         );
       },
     );
@@ -576,9 +563,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPopularGames() {
+    // Ambil game populer dari gameCatalog (yang punya popularRank)
+    final popularGames = gameCatalog
+        .where((g) => g.popularRank != null)
+        .toList();
+    popularGames.sort((a, b) => a.popularRank!.compareTo(b.popularRank!));
+    // Ambil maksimal 4 game
+    final displayGames = popularGames.take(4).toList();
+
     return Column(
-      children: _games.map((game) {
-        final isHot = game['hot'] == true;
+      children: displayGames.map((game) {
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(12),
@@ -589,17 +583,54 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: Row(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppTheme.accentCyan.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.sports_esports,
-                  size: 20,
-                  color: AppTheme.accentCyan,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Builder(
+                  builder: (context) {
+                    final placeholderUrl =
+                        'https://placehold.co/120x120/1e1e2e/00d2ff/png?text=${Uri.encodeComponent(game.title.split(" ").take(2).join(" "))}';
+                    final errorWidget = Container(
+                      width: 40,
+                      height: 40,
+                      color: AppTheme.accentCyan.withValues(alpha: 0.15),
+                      child: const Icon(
+                        Icons.sports_esports,
+                        size: 20,
+                        color: AppTheme.accentCyan,
+                      ),
+                    );
+
+                    if (game.imageUrl != null) {
+                      if (game.imageUrl!.startsWith('http')) {
+                        return Image.network(
+                          game.imageUrl!,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              errorWidget,
+                        );
+                      } else {
+                        return Image.asset(
+                          game.imageUrl!,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              errorWidget,
+                        );
+                      }
+                    } else {
+                      return Image.network(
+                        placeholderUrl,
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            errorWidget,
+                      );
+                    }
+                  },
                 ),
               ),
               const SizedBox(width: 12),
@@ -608,7 +639,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      game['title'],
+                      game.title,
                       style: GoogleFonts.spaceGrotesk(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -630,7 +661,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            game['platform'],
+                            game.platform,
                             style: GoogleFonts.spaceGrotesk(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
@@ -639,11 +670,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          game['tag'],
-                          style: GoogleFonts.spaceGrotesk(
-                            fontSize: 10,
-                            color: AppTheme.textMuted,
+                        Expanded(
+                          child: Text(
+                            game.genre,
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 10,
+                              color: AppTheme.textMuted,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -651,26 +686,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              if (isHot)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentRed.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'HOT',
-                    style: GoogleFonts.spaceGrotesk(
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                      color: AppTheme.accentRed,
-                    ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentRed.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'HOT',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                    color: AppTheme.accentRed,
                   ),
                 ),
+              ),
             ],
           ),
         );

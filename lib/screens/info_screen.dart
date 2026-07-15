@@ -7,6 +7,7 @@ import '../models/ps_unit.dart';
 import '../widgets/section_title.dart';
 import '../widgets/retro_button.dart';
 import '../providers/booking_provider.dart';
+import '../widgets/unit_timeline_view.dart';
 
 class InfoScreen extends StatefulWidget {
   const InfoScreen({super.key});
@@ -21,6 +22,7 @@ class _InfoScreenState extends State<InfoScreen>
 
   // Game filter state
   String _gameFilter = 'semua'; // 'semua', 'populer', or a genre string
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -336,7 +338,7 @@ class _InfoScreenState extends State<InfoScreen>
           // PS type cards
           ...dummyPsUnits.map((ps) {
             final units = unitStatuses
-                .where((u) => u.psType.toLowerCase() == ps.id)
+                .where((u) => u.psType.displayName.toLowerCase() == ps.id.toLowerCase())
                 .toList();
             final available = units.where((u) => u.isAvailable).length;
             final inUse = units.length - available;
@@ -554,22 +556,64 @@ class _InfoScreenState extends State<InfoScreen>
       filtered = gameCatalog.where((g) => g.genre == _gameFilter).toList();
     }
 
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered.where((g) => g.title.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+    }
+
     return Column(
       children: [
         // Filter chips
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            children: [
-              _buildFilterChip('Semua Game', 'semua', Icons.apps_outlined),
-              const SizedBox(width: 8),
-              _buildFilterChip('Paling Populer', 'populer', Icons.star_outline),
-              const SizedBox(width: 8),
-              _buildGenreDropdownChip(),
-            ],
+        Padding(
+          padding: const EdgeInsets.only(top: 24),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                _buildFilterChip('Semua Game', 'semua', Icons.apps_outlined),
+                const SizedBox(width: 8),
+                _buildFilterChip('Paling Populer', 'populer', Icons.star_outline),
+                const SizedBox(width: 8),
+                _buildGenreDropdownChip(),
+              ],
+            ),
           ),
         ),
+        
+        // Search Input
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+          child: TextField(
+            onChanged: (value) {
+              setState(() {
+                _searchQuery = value;
+              });
+            },
+            style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary, fontSize: 14),
+            decoration: InputDecoration(
+              hintText: 'Cari nama game...',
+              hintStyle: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted, fontSize: 14),
+              prefixIcon: const Icon(Icons.search, color: AppTheme.textMuted, size: 20),
+              filled: true,
+              fillColor: AppTheme.cardDark,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.dividerColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.dividerColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.accentCyan),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            ),
+          ),
+        ),
+        
+
         const SizedBox(height: 12),
 
         // Game list
@@ -706,13 +750,9 @@ class _InfoScreenState extends State<InfoScreen>
             // Game Image
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                game.imageUrl ??
-                    'https://placehold.co/120x120/1e1e2e/00d2ff/png?text=${Uri.encodeComponent(game.title.split(" ").take(2).join(" "))}',
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
+              child: Builder(builder: (context) {
+                final placeholderUrl = 'https://placehold.co/120x120/1e1e2e/00d2ff/png?text=${Uri.encodeComponent(game.title.split(" ").take(2).join(" "))}';
+                final errorWidget = Container(
                   width: 60,
                   height: 60,
                   color: isPopular
@@ -725,8 +765,36 @@ class _InfoScreenState extends State<InfoScreen>
                         : AppTheme.accentCyan,
                     size: 24,
                   ),
-                ),
-              ),
+                );
+                
+                if (game.imageUrl != null) {
+                  if (game.imageUrl!.startsWith('http')) {
+                    return Image.network(
+                      game.imageUrl!,
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => errorWidget,
+                    );
+                  } else {
+                    return Image.asset(
+                      game.imageUrl!,
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => errorWidget,
+                    );
+                  }
+                } else {
+                  return Image.network(
+                    placeholderUrl,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => errorWidget,
+                  );
+                }
+              }),
             ),
             const SizedBox(width: 14),
             // Info
@@ -817,27 +885,7 @@ class _InfoScreenState extends State<InfoScreen>
                 ],
               ),
             ),
-            // Status
-            if (!isPopular)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppTheme.accentGreen.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: AppTheme.accentGreen.withValues(alpha: 0.5),
-                  ),
-                  boxShadow: AppTheme.neonShadow(AppTheme.accentGreen, blur: 2),
-                ),
-                child: Text(
-                  'TERSEDIA',
-                  style: GoogleFonts.pressStart2p(
-                    fontSize: 7,
-                    color: AppTheme.accentGreen,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
+
           ],
         ),
       ),
@@ -940,8 +988,10 @@ class _InfoScreenState extends State<InfoScreen>
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.dividerColor),
       ),
-      child: Theme(
-        data: ThemeData(dividerColor: Colors.transparent),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Theme(
+          data: ThemeData(dividerColor: Colors.transparent),
         child: ExpansionTile(
           tilePadding: EdgeInsets.zero,
           childrenPadding: const EdgeInsets.only(top: 8),
@@ -998,10 +1048,32 @@ class _InfoScreenState extends State<InfoScreen>
           }).toList(),
         ),
       ),
+      ),
     );
   }
 
   void _showUnitDetails(UnitStatus unit) {
+    // Get bookings for timeline
+    final provider = context.read<BookingProvider>();
+    final todayBookings = provider.bookingsForDate(provider.now);
+    final unitBookings = todayBookings.where((b) {
+      return b.assignedUnit.endsWith(unit.label) &&
+          b.assignedUnit.contains(unit.psType.displayName);
+    }).toList();
+
+    // Get today's operating hours
+    final todayHours = getOperatingHours().firstWhere(
+      (h) => h.isToday,
+      orElse: () => getOperatingHours().first,
+    );
+    final parts = todayHours.hours.split(RegExp(r'[-–]'));
+    int startOpHour = 10;
+    int endOpHour = 22;
+    if (parts.length == 2) {
+      startOpHour = int.tryParse(parts[0].split(':')[0].trim()) ?? 10;
+      endOpHour = int.tryParse(parts[1].split(':')[0].trim()) ?? 22;
+    }
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1088,6 +1160,15 @@ class _InfoScreenState extends State<InfoScreen>
                   unit.isWalkIn ? 'Walk-in (Langsung)' : 'Booking App',
                 ),
               ],
+              const SizedBox(height: 24),
+              const Divider(color: AppTheme.dividerColor),
+              const SizedBox(height: 16),
+              UnitTimelineView(
+                unitBookings: unitBookings,
+                startOpHour: startOpHour,
+                endOpHour: endOpHour,
+                dateTitle: todayHours.hours,
+              ),
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,

@@ -1,17 +1,41 @@
 import 'dart:math';
 import '../models/booking.dart';
+import '../models/enums.dart';
 
 List<Booking> getDummyBookings(DateTime now) {
   final random = Random(42); // fixed seed for consistent dummy data
   final bookings = <Booking>[];
 
   final names = [
-    'Budi', 'Sandi', 'Riki', 'Siska', 'Adit', 'Dimas', 'Anton', 'Joko', 
-    'Fina', 'Agus', 'Lina', 'Bayu', 'Rangga', 'Caca', 'Dina', 'Eko', 
-    'Faris', 'Gita', 'Hadi', 'Indra', 'Kiki', 'Leo', 'Maya', 'Nisa'
+    'Budi',
+    'Sandi',
+    'Riki',
+    'Siska',
+    'Adit',
+    'Dimas',
+    'Anton',
+    'Joko',
+    'Kayes',
+    'Alep',
+    'Fina',
+    'Agus',
+    'Lina',
+    'Bayu',
+    'Angga',
+    'Caca',
+    'Dina',
+    'Wira',
+    'Faris',
+    'Gita',
+    'Hadi',
+    'Indra',
+    'Jawir',
+    'Leon',
+    'sir toro',
+    'Nisa',
   ];
-  final psTypes = ['PS4', 'PS5', 'PS5 VIP', 'Nintendo VIP'];
-  
+  const psTypes = ConsoleType.values;
+
   // Helper to generate a realistic time
   String randomTime() {
     int hour = 9 + random.nextInt(14); // 09:00 to 22:00
@@ -21,7 +45,7 @@ List<Booking> getDummyBookings(DateTime now) {
   // Generate for the last 14 days (including today)
   for (int i = 0; i < 14; i++) {
     DateTime targetDate = now.subtract(Duration(days: i));
-    
+
     // Determine how many bookings on this day (make it look busy)
     int bookingsCount = 15 + random.nextInt(15); // 15 to 29 bookings per day
 
@@ -29,24 +53,24 @@ List<Booking> getDummyBookings(DateTime now) {
       bool isWalkIn = random.nextBool();
       String name = names[random.nextInt(names.length)];
       if (isWalkIn) name += ' (Walk-in)';
-      
-      String type = psTypes[random.nextInt(psTypes.length)];
+
+      ConsoleType type = psTypes[random.nextInt(psTypes.length)];
       String unitLabel;
-      if (type == 'PS4') {
-        unitLabel = 'PS4 Unit ${1 + random.nextInt(5)}';
-      } else if (type == 'PS5') {
-        unitLabel = 'PS5 Unit ${1 + random.nextInt(8)}';
-      } else if (type == 'PS5 VIP') {
-        unitLabel = 'PS5 VIP Ruang ${1 + random.nextInt(5)}';
-      } else {
-        unitLabel = 'Nintendo VIP Ruang ${1 + random.nextInt(2)}';
+      switch (type) {
+        case ConsoleType.ps4:
+          unitLabel = 'PS4 Unit ${1 + random.nextInt(5)}';
+        case ConsoleType.ps5:
+          unitLabel = 'PS5 Unit ${1 + random.nextInt(8)}';
+        case ConsoleType.ps5Vip:
+          unitLabel = 'PS5 VIP Ruang ${1 + random.nextInt(5)}';
+        case ConsoleType.nintendoVip:
+          unitLabel = 'Nintendo VIP Ruang ${1 + random.nextInt(2)}';
       }
 
-      int duration = 1 + random.nextInt(5); // 1 to 5 hours
-      
-      String id = isWalkIn 
-          ? 'WI-DUMMY-$i-$j'
-          : 'ONL-DUMMY-$i-$j';
+      int durationHours = 1 + random.nextInt(5); // 1 to 5 hours
+      final duration = SessionDuration.values[durationHours - 1];
+
+      String id = isWalkIn ? 'WI-DUMMY-$i-$j' : 'ONL-DUMMY-$i-$j';
 
       bookings.add(
         Booking(
@@ -56,9 +80,9 @@ List<Booking> getDummyBookings(DateTime now) {
           psType: type,
           date: targetDate,
           time: randomTime(),
-          duration: '$duration Jam',
+          duration: duration,
           assignedUnit: unitLabel,
-        )
+        ),
       );
     }
   }

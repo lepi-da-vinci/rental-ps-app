@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/ps_unit.dart';
 import '../models/price_package.dart';
+import '../models/enums.dart';
 
 // ══════════════════════════════════════════
 //  PlayStation Units (PS4 & PS5 only)
@@ -80,28 +81,28 @@ List<UnitStatus> getDummyUnitStatus() {
     for (int i = 1; i <= 5; i++)
       UnitStatus(
         unitId: 'PS4-0$i',
-        psType: 'PS4',
+        psType: ConsoleType.ps4,
         label: 'Unit $i',
         isAvailable: true,
       ),
     for (int i = 1; i <= 8; i++)
       UnitStatus(
         unitId: 'PS5-0$i',
-        psType: 'PS5',
+        psType: ConsoleType.ps5,
         label: 'Unit $i',
         isAvailable: true,
       ),
     for (int i = 1; i <= 5; i++)
       UnitStatus(
         unitId: 'PS5-VIP-0$i',
-        psType: 'PS5 VIP',
+        psType: ConsoleType.ps5Vip,
         label: 'Ruang $i',
         isAvailable: true,
       ),
     for (int i = 1; i <= 2; i++)
       UnitStatus(
         unitId: 'NIN-VIP-0$i',
-        psType: 'Nintendo VIP',
+        psType: ConsoleType.nintendoVip,
         label: 'Ruang $i',
         isAvailable: true,
       ),
@@ -114,51 +115,62 @@ List<UnitStatus> getDummyUnitStatus() {
 const List<GameItem> gameCatalog = [
   // ── Survival Horror & Thriller (1-10) ──
   GameItem(
+    imageUrl: 'assets/gambar/resident-evil-2-remake.jpg',
     title: 'Resident Evil 2 Remake',
     genre: 'Survival Horror & Thriller',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/resident-evil-3-remake.jpg',
     title: 'Resident Evil 3 Remake',
     genre: 'Survival Horror & Thriller',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/resident-evil-4-remake.jpg',
     title: 'Resident Evil 4 Remake',
     genre: 'Survival Horror & Thriller',
     platform: 'PS4 PS5',
   ),
+
   GameItem(
+    imageUrl: 'assets/gambar/resident-evil-7.jpg',
     title: 'Resident Evil 7',
     genre: 'Survival Horror & Thriller',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/resident-evil-village.png',
     title: 'Resident Evil 8 (Village)',
     genre: 'Survival Horror & Thriller',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/A-Plague-Tale-Innocence.jpg',
     title: 'A Plague Tale: Innocence',
     genre: 'Survival Horror & Thriller',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/A-Plague-Tale-Requiem.jpg',
     title: 'A Plague Tale: Requiem',
     genre: 'Survival Horror & Thriller',
     platform: 'PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Little-Nightmares-II.jpg',
     title: 'Little Nightmares II',
     genre: 'Survival Horror & Thriller',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Atomic-Heart.jpg',
     title: 'Atomic Heart',
     genre: 'Survival Horror & Thriller',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Control.jpg',
     title: 'Control',
     genre: 'Survival Horror & Thriller',
     platform: 'PS4 PS5',
@@ -166,109 +178,123 @@ const List<GameItem> gameCatalog = [
 
   // ── Action / Open World / Adventure (11-31) ──
   GameItem(
+    imageUrl: 'assets/gambar/Red-Dead-Redemption-2.jpg',
     title: 'Red Dead Redemption 2 (RDR2)',
     genre: 'Action / Open World / Adventure',
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/grand-theft-auto-v.png',
     title: 'Grand Theft Auto V (GTA V)',
     genre: 'Action / Open World / Adventure',
     platform: 'PS4 PS5',
     popularRank: 1,
-    imageUrl:
-        'https://image.api.playstation.com/vulcan/ap/rnd/202202/2816/mYnP2bWXFTTEuoFJNkCOZdQG.png',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/cyberpunk-2077.jpg',
     title: 'Cyberpunk 2077',
     genre: 'Action / Open World / Adventure',
     platform: 'PS4 PS5',
   ),
   GameItem(
-    title: "Marvel's Spider-Man Remastered",
+    imageUrl: 'assets/gambar/spider-man-remastered.jpg',
+      title: "Marvel's Spider-Man Remastered",
     genre: 'Action / Open World / Adventure',
     platform: 'PS5',
   ),
   GameItem(
-    title: "Marvel's Spider-Man: Miles Morales",
+    imageUrl: 'assets/gambar/spider-man-miles-morales.jpg',
+      title: "Marvel's Spider-Man: Miles Morales",
     genre: 'Action / Open World / Adventure',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/spider-man-2.jpg',
     title: 'Spider-Man 2',
     genre: 'Action / Open World / Adventure',
     platform: 'PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/death-stranding.jpg',
     title: 'Death Stranding',
     genre: 'Action / Open World / Adventure',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Hogwarts-Legacy.jpg',
     title: 'Hogwarts Legacy',
     genre: 'Action / Open World / Adventure',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Watch-Dogs-2.jpg',
     title: 'Watch Dogs',
     genre: 'Action / Open World / Adventure',
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Watch-Dogs-2.jpg',
     title: 'Watch Dogs 2',
     genre: 'Action / Open World / Adventure',
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Batman-Arkham-Origins.jpg',
     title: 'Batman: Arkham Origins',
     genre: 'Action / Open World / Adventure',
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Batman-Arkham-Knight.jpg',
     title: 'Batman: Arkham Knight',
     genre: 'Action / Open World / Adventure',
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Tomb-Raider.jpg',
     title: 'Tomb Raider (2013)',
     genre: 'Action / Open World / Adventure',
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Rise-of-the-Tomb-Raider.jpg',
     title: 'Rise of the Tomb Raider',
     genre: 'Action / Open World / Adventure',
     platform: 'PS4',
   ),
+
   GameItem(
-    title: 'Tomb Raider I-III Remastered',
-    genre: 'Action / Open World / Adventure',
-    platform: 'PS4 PS5',
-  ),
-  GameItem(
+    imageUrl: "assets/gambar/Assassin's-Creed-IV-Black-Flag.jpg",
     title: "Assassin's Creed IV: Black Flag",
     genre: 'Action / Open World / Adventure',
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: "assets/gambar/Assassin's-Creed-Unity.jpg",
     title: "Assassin's Creed Unity",
     genre: 'Action / Open World / Adventure',
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: "assets/gambar/Assassin's-Creed-origins.jpg",
     title: "Assassin's Creed Origins",
     genre: 'Action / Open World / Adventure',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: "assets/gambar/Assassin's-Creed-odyssey.jpg",
     title: "Assassin's Creed Odyssey",
     genre: 'Action / Open World / Adventure',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: "assets/gambar/Assassin's-Creed-Mirage.jpg",
     title: "Assassin's Creed Mirage",
     genre: 'Action / Open World / Adventure',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: "assets/gambar/Assassin's-Creed-Valhalla.jpg",
     title: "Assassin's Creed Valhalla",
     genre: 'Action / Open World / Adventure',
     platform: 'PS4 PS5',
@@ -276,42 +302,69 @@ const List<GameItem> gameCatalog = [
 
   // ── RPG & JRPG (32-44) ──
   GameItem(
+    imageUrl: 'assets/gambar/The-Witcher-2-Assassins-of-Kings.jpg',
     title: 'The Witcher 2: Assassins of Kings',
     genre: 'RPG & JRPG',
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/the-whicher-3-wild-hunt.jpg',
     title: 'The Witcher 3: Wild Hunt',
     genre: 'RPG & JRPG',
     platform: 'PS4 PS5',
   ),
-  GameItem(title: 'Elden Ring', genre: 'RPG & JRPG', platform: 'PS4 PS5'),
   GameItem(
+    imageUrl: 'assets/gambar/Elden-Ring.jpg',
+    title: 'Elden Ring',
+    genre: 'RPG & JRPG',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    imageUrl: 'assets/gambar/final-fantasy-vii-remake.jpg',
     title: 'Final Fantasy VII Remake',
     genre: 'RPG & JRPG',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/final-fantasi-vii-rebirth.jpg',
     title: 'Final Fantasy VII Rebirth',
     genre: 'RPG & JRPG',
     platform: 'PS5',
   ),
-  GameItem(title: 'Final Fantasy XV', genre: 'RPG & JRPG', platform: 'PS4'),
-  GameItem(title: 'Final Fantasy XVI', genre: 'RPG & JRPG', platform: 'PS5'),
+  GameItem(imageUrl: 'assets/gambar/Final-Fantasy-XV.jpg', title: 'Final Fantasy XV', genre: 'RPG & JRPG', platform: 'PS4'),
+  GameItem(imageUrl: 'assets/gambar/Final-Fantasy-XVI.png', title: 'Final Fantasy XVI', genre: 'RPG & JRPG', platform: 'PS5'),
   GameItem(
+    imageUrl: 'assets/gambar/Monster-Hunter-World.jpg',
     title: 'Monster Hunter: World',
     genre: 'RPG & JRPG',
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Monster-Hunter-Rise.jpg',
     title: 'Monster Hunter Rise',
     genre: 'RPG & JRPG',
     platform: 'PS4 PS5',
   ),
-  GameItem(title: 'NieR:Automata', genre: 'RPG & JRPG', platform: 'PS4'),
-  GameItem(title: "Baldur's Gate 3", genre: 'RPG & JRPG', platform: 'PS5'),
-  GameItem(title: 'Persona 3 Reload', genre: 'RPG & JRPG', platform: 'PS4 PS5'),
   GameItem(
+    imageUrl: 'assets/gambar/NieR-Automata.jpg',
+    title: 'NieR:Automata',
+    genre: 'RPG & JRPG',
+    platform: 'PS4',
+  ),
+  GameItem(
+    imageUrl: "assets/gambar/baldur's-gate-3.jpg",
+    title: "Baldur's Gate 3",
+    genre: 'RPG & JRPG',
+    platform: 'PS5',
+  ),
+  GameItem(
+    imageUrl: 'assets/gambar/Persona-3-Reload.jpg',
+    title: 'Persona 3 Reload',
+    genre: 'RPG & JRPG',
+    platform: 'PS4 PS5',
+  ),
+  GameItem(
+    imageUrl: 'assets/gambar/The-Elder-Scrolls-V-Skyrim.png',
     title: 'The Elder Scrolls V: Skyrim',
     genre: 'RPG & JRPG',
     platform: 'PS4 PS5',
@@ -319,54 +372,63 @@ const List<GameItem> gameCatalog = [
 
   // ── Fighting & Hack 'n Slash (45-54) ──
   GameItem(
+    imageUrl: 'assets/gambar/tekken-7.jpg',
     title: 'Tekken 7',
     genre: "Fighting & Hack 'n Slash",
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/tekken-8.jpg',
     title: 'Tekken 8',
     genre: "Fighting & Hack 'n Slash",
     platform: 'PS5',
     popularRank: 2,
-    imageUrl:
-        'https://image.api.playstation.com/vulcan/ap/rnd/202308/1715/bfd91ebcb4b2ebc4dff48aa1ec1de3fb42880c85c4004940.png',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Street-Fighter-6.jpg',
     title: 'Street Fighter 6',
     genre: "Fighting & Hack 'n Slash",
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Mortal-Kombat-1.jpeg',
     title: 'Mortal Kombat 1',
     genre: "Fighting & Hack 'n Slash",
     platform: 'PS5',
   ),
   GameItem(
+    imageUrl:
+        'assets/gambar/Naruto-x-Boruto-Ultimate-Ninja-Storm-Connections.jpg',
     title: 'Naruto x Boruto Ultimate Ninja Storm Connections',
     genre: "Fighting & Hack 'n Slash",
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Devil-May-Cry-5.jpg',
     title: 'Devil May Cry 5',
     genre: "Fighting & Hack 'n Slash",
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Stellar-Blade.jpg',
     title: 'Stellar Blade',
     genre: "Fighting & Hack 'n Slash",
     platform: 'PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/sekiro-shadows-die-twice.jpg',
     title: 'Sekiro: Shadows Die Twice',
     genre: "Fighting & Hack 'n Slash",
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Hollow-Knight-silksong.jpg',
     title: 'Hollow Knight',
     genre: "Fighting & Hack 'n Slash",
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/god-of-war-ragnarok.jpg',
     title: 'God of War Ragnarok',
     genre: "Fighting & Hack 'n Slash",
     platform: 'PS4 PS5',
@@ -374,36 +436,43 @@ const List<GameItem> gameCatalog = [
 
   // ── Co-op, Puzzle & Family (55-61) ──
   GameItem(
+    imageUrl: 'assets/gambar/It-Takes-Two.jpg',
     title: 'It Takes Two',
     genre: 'Co-op, Puzzle & Family',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/A-Way-Out.jpg',
     title: 'A Way Out',
     genre: 'Co-op, Puzzle & Family',
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Stray.jpg',
     title: 'Stray',
     genre: 'Co-op, Puzzle & Family',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Lego-Batman-3-Beyond-Gotham.jpg',
     title: 'LEGO Batman 3',
     genre: 'Co-op, Puzzle & Family',
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Lego-Star-Wars-The-Skywalker-Saga.jpg',
     title: 'LEGO Star Wars: The Skywalker Saga',
     genre: 'Co-op, Puzzle & Family',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/LEGO-The -Hobbit.jpg',
     title: 'LEGO The Hobbit',
     genre: 'Co-op, Puzzle & Family',
     platform: 'PS4',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/LEGO-The-Lord-of the-Rings.jpg',
     title: 'LEGO The Lord of the Rings',
     genre: 'Co-op, Puzzle & Family',
     platform: 'PS4',
@@ -411,56 +480,67 @@ const List<GameItem> gameCatalog = [
 
   // ── Racing & Sports (62-67) ──
   GameItem(
+    imageUrl: 'assets/gambar/Need-for-Speed-Unbound.jpg',
     title: 'Need for Speed Unbound',
     genre: 'Racing & Sports',
     platform: 'PS5',
   ),
-  GameItem(title: 'MotoGP 23', genre: 'Racing & Sports', platform: 'PS4 PS5'),
-  GameItem(title: 'The Crew 2', genre: 'Racing & Sports', platform: 'PS4'),
   GameItem(
-    title: 'EA Sports FC 24',
+    imageUrl: 'assets/gambar/MotoGP-26.jpg',
+    title: 'MotoGP 26',
     genre: 'Racing & Sports',
     platform: 'PS4 PS5',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/The-Crew-2.jpg',
+    title: 'The Crew 2',
+    genre: 'Racing & Sports',
+    platform: 'PS4',
+  ),
+
+  GameItem(
+    imageUrl: 'assets/gambar/ea-sports-fc-26-fifa.jpg',
     title: 'EA Sports FC 26 (FIFA)',
     genre: 'Racing & Sports',
     platform: 'PS4 PS5',
     popularRank: 3,
-    imageUrl:
-        'https://image.api.playstation.com/vulcan/ap/rnd/202307/1110/af866f21c2780e9df1dc6ebf77f59d4c7287fcb1745dbd4e.png',
   ),
-  GameItem(title: 'NBA 2K26', genre: 'Racing & Sports', platform: 'PS4 PS5'),
+  GameItem(
+    imageUrl: 'assets/gambar/nba-2k26.jpg',
+    title: 'NBA 2K26',
+    genre: 'Racing & Sports',
+    platform: 'PS4 PS5',
+  ),
 
   // ── Nintendo Exclusive & Party Games ──
   GameItem(
+    imageUrl: 'assets/gambar/Mario-Kart-8-Deluxe.jpg',
     title: 'Mario Kart 8 Deluxe',
     genre: 'Co-op, Puzzle & Family',
     platform: 'Nintendo Switch',
     popularRank: 4,
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Super-Smash-Bros-Ultimate.jpg',
     title: 'Super Smash Bros. Ultimate',
     genre: "Fighting & Hack 'n Slash",
     platform: 'Nintendo Switch',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/The-Legend-of-Zelda-Breath-of-the-Wild.jpg',
     title: 'The Legend of Zelda: Breath of the Wild',
     genre: 'Action / Open World / Adventure',
     platform: 'Nintendo Switch',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Animal-Crossing-New-Horizons.jpg',
     title: 'Animal Crossing: New Horizons',
     genre: 'Co-op, Puzzle & Family',
     platform: 'Nintendo Switch',
   ),
   GameItem(
+    imageUrl: 'assets/gambar/Super-Mario-Odyssey.jpg',
     title: 'Super Mario Odyssey',
-    genre: 'Action / Open World / Adventure',
-    platform: 'Nintendo Switch',
-  ),
-  GameItem(
-    title: 'Splatoon 3',
     genre: 'Action / Open World / Adventure',
     platform: 'Nintendo Switch',
   ),
@@ -588,13 +668,13 @@ class OperatingHour {
 List<OperatingHour> getOperatingHours() {
   final today = DateTime.now().weekday;
   return [
-    OperatingHour(day: 'Senin', hours: '08:00 – 22:00', isToday: today == 1),
-    OperatingHour(day: 'Selasa', hours: '08:00 – 22:00', isToday: today == 2),
-    OperatingHour(day: 'Rabu', hours: '08:00 – 22:00', isToday: today == 3),
-    OperatingHour(day: 'Kamis', hours: '08:00 – 22:00', isToday: today == 4),
-    OperatingHour(day: 'Jumat', hours: '08:00 – 23:00', isToday: today == 5),
-    OperatingHour(day: 'Sabtu', hours: '08:00 – 23:00', isToday: today == 6),
-    OperatingHour(day: 'Minggu', hours: '08:00 – 22:00', isToday: today == 7),
+    OperatingHour(day: 'Senin', hours: '08:00 – 24:00', isToday: today == 1),
+    OperatingHour(day: 'Selasa', hours: '08:00 – 24:00', isToday: today == 2),
+    OperatingHour(day: 'Rabu', hours: '08:00 – 24:00', isToday: today == 3),
+    OperatingHour(day: 'Kamis', hours: '08:00 – 24:00', isToday: today == 4),
+    OperatingHour(day: 'Jumat', hours: '08:00 – 24:00', isToday: today == 5),
+    OperatingHour(day: 'Sabtu', hours: '08:00 – 24:00', isToday: today == 6),
+    OperatingHour(day: 'Minggu', hours: '08:00 – 24:00', isToday: today == 7),
   ];
 }
 
@@ -769,25 +849,12 @@ String formatRupiah(int price) {
 }
 
 // ══════════════════════════════════════════
-//  PS Type Helpers
+//  PS Type Helpers (DEPRECATED — use ConsoleType enum instead)
 // ══════════════════════════════════════════
 
-/// Ubah pilihan user (mis. 'PS4 Reguler') jadi kategori unit fisik (mis. 'PS4')
-String baseTypeOf(String psType) {
-  if (psType == 'PS5 VIP') return 'PS5 VIP';
-  if (psType == 'Nintendo VIP') return 'Nintendo VIP';
-  if (psType.contains('PS4')) return 'PS4';
-  return 'PS5';
-}
+/// @deprecated Use [ConsoleType.fromDisplayName] instead.
+ConsoleType baseTypeOf(String psType) => ConsoleType.fromDisplayName(psType);
 
-/// Kebalikannya: dari kategori fisik balik ke nama paket yang tampil di form booking
-String displayNameForBaseType(String baseType) {
-  switch (baseType) {
-    case 'PS4':
-      return 'PS4 Reguler';
-    case 'PS5':
-      return 'PS5 Reguler';
-    default:
-      return baseType; // 'PS5 VIP' & 'Nintendo VIP' udah sama persis
-  }
-}
+/// @deprecated Use [ConsoleType.bookingDisplayName] instead.
+String displayNameForBaseType(String baseType) =>
+    ConsoleType.fromDisplayName(baseType).bookingDisplayName;
