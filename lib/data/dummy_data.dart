@@ -668,13 +668,13 @@ class OperatingHour {
 List<OperatingHour> getOperatingHours() {
   final today = DateTime.now().weekday;
   return [
-    OperatingHour(day: 'Senin', hours: '08:00 – 24:00', isToday: today == 1),
-    OperatingHour(day: 'Selasa', hours: '08:00 – 24:00', isToday: today == 2),
-    OperatingHour(day: 'Rabu', hours: '08:00 – 24:00', isToday: today == 3),
-    OperatingHour(day: 'Kamis', hours: '08:00 – 24:00', isToday: today == 4),
-    OperatingHour(day: 'Jumat', hours: '08:00 – 24:00', isToday: today == 5),
-    OperatingHour(day: 'Sabtu', hours: '08:00 – 24:00', isToday: today == 6),
-    OperatingHour(day: 'Minggu', hours: '08:00 – 24:00', isToday: today == 7),
+    OperatingHour(day: 'Senin', hours: '08:00 – 00:00', isToday: today == 1),
+    OperatingHour(day: 'Selasa', hours: '08:00 – 00:00', isToday: today == 2),
+    OperatingHour(day: 'Rabu', hours: '08:00 – 00:00', isToday: today == 3),
+    OperatingHour(day: 'Kamis', hours: '08:00 – 00:00', isToday: today == 4),
+    OperatingHour(day: 'Jumat', hours: '08:00 – 00:00', isToday: today == 5),
+    OperatingHour(day: 'Sabtu', hours: '08:00 – 00:00', isToday: today == 6),
+    OperatingHour(day: 'Minggu', hours: '08:00 – 00:00', isToday: today == 7),
   ];
 }
 
@@ -822,12 +822,15 @@ List<String> getValidTimeSlots(int durationHours) {
     orElse: () => const OperatingHour(day: '', hours: '10:00 – 22:00'),
   );
   final closingHourStr = todayHours.hours
-      .split('–')
+      .split(RegExp(r'[-–]'))
       .last
       .trim()
       .split(':')
       .first;
-  final closingHour = int.tryParse(closingHourStr) ?? 22;
+  int closingHour = int.tryParse(closingHourStr) ?? 22;
+  if (closingHour == 0) {
+    closingHour = 24;
+  }
 
   return timeSlotOptions.where((slot) {
     final startHour = int.tryParse(slot.split(':').first) ?? 0;

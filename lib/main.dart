@@ -67,9 +67,12 @@ class _MainScreenState extends State<MainScreen> {
   /// Whether the venue is currently open based on real wall-clock time
   bool _isOpenNow(DateTime now, OperatingHour today) {
     final raw = today.hours; // e.g. "08:00 – 23:00"
-    final parts = raw.split('–');
+    final parts = raw.split(RegExp(r'[-–]'));
     if (parts.length < 2) return false;
-    int parseHour(String s) => int.tryParse(s.trim().split(':').first) ?? 0;
+    int parseHour(String s) {
+      final h = int.tryParse(s.trim().split(':').first) ?? 0;
+      return h == 0 ? 24 : h;
+    }
     final open = parseHour(parts[0]);
     final close = parseHour(parts[1]);
     return now.hour >= open && now.hour < close;

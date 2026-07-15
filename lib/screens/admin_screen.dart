@@ -21,10 +21,21 @@ class _AdminScreenState extends State<AdminScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
+  // Calendar state for Data Booking
+  late DateTime _bookingCalendarMonth;
+  DateTime? _selectedBookingDate;
+
+  // Calendar state for Data Pendapatan
+  late DateTime _revenueCalendarMonth;
+  DateTime? _selectedRevenueDate;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
+    final now = DateTime.now();
+    _bookingCalendarMonth = DateTime(now.year, now.month);
+    _revenueCalendarMonth = DateTime(now.year, now.month);
   }
 
   @override
@@ -66,7 +77,8 @@ class _AdminScreenState extends State<AdminScreen>
               Tab(text: 'Dashboard'),
               Tab(text: 'Timeline Unit'),
               Tab(text: 'Data Booking'),
-              Tab(text: 'Data Booking Hari Ini'),
+              Tab(text: 'Data Pendapatan'),
+              Tab(text: 'Booking Hari Ini'),
             ],
           ),
         ),
@@ -77,7 +89,8 @@ class _AdminScreenState extends State<AdminScreen>
             children: [
               _buildDashboard(),
               _buildUnitTimeline(),
-              _buildBookingList(),
+              _buildBookingCalendar(),
+              _buildRevenueCalendar(),
               _buildTodayBookings(),
             ],
           ),
@@ -141,7 +154,7 @@ class _AdminScreenState extends State<AdminScreen>
                   const SizedBox(width: 16),
                   Expanded(
                     child: _buildStatCard(
-                      'Estimasi Pemasukan',
+                      'Pemasukan Hari Ini',
                       formatRupiah(revenue),
                       Icons.payments_outlined,
                       AppTheme.accentTeal,
@@ -334,6 +347,9 @@ class _AdminScreenState extends State<AdminScreen>
     if (parts.length == 2) {
       startOpHour = int.tryParse(parts[0].split(':')[0].trim()) ?? 10;
       endOpHour = int.tryParse(parts[1].split(':')[0].trim()) ?? 22;
+      if (endOpHour == 0) {
+        endOpHour = 24;
+      }
     }
 
     return Container(
@@ -433,118 +449,674 @@ class _AdminScreenState extends State<AdminScreen>
   }
 
   // ════════════════════════════════════════════════════════
-  //  TAB 3: BOOKINGS
+  //  TAB 3: DATA BOOKING (Calendar)
   // ════════════════════════════════════════════════════════
 
-  Widget _buildBookingList() {
+  static const _monthNames = [
+    '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+  ];
+  static const _dayHeaders = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+
+  Widget _buildBookingCalendar() {
     return Consumer<BookingProvider>(
       builder: (context, provider, child) {
-        final allBookings = provider.bookings.toList();
-        if (allBookings.isEmpty) {
-          return Center(
-            child: Text(
-              'Belum ada booking',
-              style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
-            ),
-          );
+        final year = _bookingCalendarMonth.year;
+        final month = _bookingCalendarMonth.month;
+        final monthBookings = provider.bookingsForMonth(year, month);
+
+        // Group bookings by day
+        final bookingsByDay = <int, List<Booking>>{};
+        for (var b in monthBookings) {
+          bookingsByDay.putIfAbsent(b.date.day, () => []).add(b);
         }
 
-        // Group by date string 'yyyy-MM-dd'
-        final grouped = <String, List<Booking>>{};
-        for (var b in allBookings) {
-          final dateStr = '${b.date.year}-${b.date.month.toString().padLeft(2, '0')}-${b.date.day.toString().padLeft(2, '0')}';
-          grouped.putIfAbsent(dateStr, () => []).add(b);
-        }
-
-        final sortedDates = grouped.keys.toList()..sort((a, b) => b.compareTo(a)); // newest first
-
-        return ListView.separated(
+        return SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          itemCount: sortedDates.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 16),
-          itemBuilder: (context, index) {
-            final dateStr = sortedDates[index];
-            final bookings = grouped[dateStr]!;
-            
-            // Just for display formatting
-            final parts = dateStr.split('-');
-            final displayDate = '${parts[2]}/${parts[1]}/${parts[0]}';
-
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: AppTheme.cardDecoration(),
-              child: Material(
-                type: MaterialType.transparency,
-                child: Theme(
-                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                  child: ExpansionTile(
-                  title: Text(
-                    'Tanggal: $displayDate',
-                    style: GoogleFonts.spaceGrotesk(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.accentCyan,
-                    ),
-                  ),
-                  subtitle: Text(
-                    '${bookings.length} Booking',
-                    style: GoogleFonts.spaceGrotesk(
-                      color: AppTheme.textMuted,
-                      fontSize: 12,
-                    ),
-                  ),
-                  children: bookings.map((b) {
-                    final isWalkIn = b.id.startsWith('WI-');
-                    return Material(
-                      type: MaterialType.transparency,
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      leading: Icon(
-                        isWalkIn ? Icons.directions_walk : Icons.language,
-                        color: isWalkIn ? AppTheme.accentGreen : AppTheme.accentCyan,
-                      ),
-                      title: Text(
-                        b.customerName,
-                        style: GoogleFonts.spaceGrotesk(
-                          color: AppTheme.textPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      subtitle: Text(
-                        '${b.assignedUnit} • ${b.time} (${b.duration})',
-                        style: GoogleFonts.spaceGrotesk(
-                          color: AppTheme.textMuted,
-                          fontSize: 12,
-                        ),
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline, color: AppTheme.accentRed, size: 20),
-                        onPressed: () async {
-                          final confirm = await _confirmDeleteDialog(context);
-                          if (confirm == true) {
-                            provider.removeBooking(b.id);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Booking ${b.customerName} dihapus'),
-                                  backgroundColor: AppTheme.accentRed,
-                                ),
-                              );
-                            }
-                          }
-                        },
-                      ),
-                    ));
-                  }).toList(),
-                ),
+          child: Column(
+            children: [
+              _buildCalendarHeader(
+                year: year,
+                month: month,
+                onPrev: () => setState(() {
+                  _bookingCalendarMonth = DateTime(year, month - 1);
+                  _selectedBookingDate = null;
+                }),
+                onNext: () => setState(() {
+                  _bookingCalendarMonth = DateTime(year, month + 1);
+                  _selectedBookingDate = null;
+                }),
               ),
+              const SizedBox(height: 16),
+              _buildCalendarGrid(
+                year: year,
+                month: month,
+                selectedDate: _selectedBookingDate,
+                onDateTap: (date) {
+                  setState(() {
+                    if (_selectedBookingDate != null &&
+                        _selectedBookingDate!.day == date.day &&
+                        _selectedBookingDate!.month == date.month) {
+                      _selectedBookingDate = null;
+                    } else {
+                      _selectedBookingDate = date;
+                    }
+                  });
+                },
+                cellBuilder: (day) {
+                  final count = bookingsByDay[day]?.length ?? 0;
+                  return count > 0
+                      ? Text(
+                          '$count',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.accentCyan,
+                          ),
+                        )
+                      : const SizedBox.shrink();
+                },
               ),
-            );
-          },
+              if (_selectedBookingDate != null) ...[
+                const SizedBox(height: 20),
+                _buildBookingDetailForDate(provider, _selectedBookingDate!),
+              ],
+            ],
+          ),
         );
       },
     );
   }
+
+  Widget _buildBookingDetailForDate(BookingProvider provider, DateTime date) {
+    final bookings = provider.bookingsForDate(date);
+    bookings.sort((a, b) => a.time.compareTo(b.time));
+
+    final dayStr = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppTheme.accentCyan.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.accentCyan.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.calendar_today, color: AppTheme.accentCyan, size: 18),
+              const SizedBox(width: 10),
+              Text(
+                'Booking $dayStr',
+                style: GoogleFonts.spaceGrotesk(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.accentCyan,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentCyan.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${bookings.length} booking',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.accentCyan,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (bookings.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: AppTheme.cardDecoration(),
+            child: Center(
+              child: Text(
+                'Tidak ada booking di tanggal ini',
+                style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
+              ),
+            ),
+          )
+        else
+          ...bookings.map((b) {
+            final isWalkIn = b.id.startsWith('WI-');
+            final bookingColor = AppTheme.getBookingColor(b.id);
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.cardDark,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppTheme.dividerColor),
+              ),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      width: 5,
+                      decoration: BoxDecoration(
+                        color: bookingColor,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          bottomLeft: Radius.circular(10),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            Icon(
+                              isWalkIn ? Icons.directions_walk : Icons.language,
+                              color: isWalkIn ? AppTheme.accentGreen : AppTheme.accentCyan,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    b.customerName,
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${b.assignedUnit} • ${b.time} (${b.duration.displayName})',
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 11,
+                                      color: AppTheme.textMuted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, color: AppTheme.accentRed, size: 18),
+                              onPressed: () async {
+                                final confirm = await _confirmDeleteDialog(context);
+                                if (confirm == true) {
+                                  provider.removeBooking(b.id);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Booking ${b.customerName} dihapus'),
+                                        backgroundColor: AppTheme.accentRed,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+      ],
+    );
+  }
+
+  // ════════════════════════════════════════════════════════
+  //  TAB 4: DATA PENDAPATAN (Calendar)
+  // ════════════════════════════════════════════════════════
+
+  Widget _buildRevenueCalendar() {
+    return Consumer<BookingProvider>(
+      builder: (context, provider, child) {
+        final year = _revenueCalendarMonth.year;
+        final month = _revenueCalendarMonth.month;
+        final daysInMonth = DateTime(year, month + 1, 0).day;
+
+        // Calculate total month revenue
+        int totalMonthRevenue = 0;
+        final revenueByDay = <int, int>{};
+        for (int d = 1; d <= daysInMonth; d++) {
+          final date = DateTime(year, month, d);
+          final rev = provider.revenueForDate(date);
+          revenueByDay[d] = rev;
+          totalMonthRevenue += rev;
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              // Total month revenue
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.accentTeal.withValues(alpha: 0.15),
+                      AppTheme.accentCyan.withValues(alpha: 0.08),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.accentTeal.withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Total Pendapatan ${_monthNames[month]} $year',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textMuted,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      formatRupiah(totalMonthRevenue),
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.accentTeal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildCalendarHeader(
+                year: year,
+                month: month,
+                onPrev: () => setState(() {
+                  _revenueCalendarMonth = DateTime(year, month - 1);
+                  _selectedRevenueDate = null;
+                }),
+                onNext: () => setState(() {
+                  _revenueCalendarMonth = DateTime(year, month + 1);
+                  _selectedRevenueDate = null;
+                }),
+              ),
+              const SizedBox(height: 16),
+              _buildCalendarGrid(
+                year: year,
+                month: month,
+                selectedDate: _selectedRevenueDate,
+                onDateTap: (date) {
+                  setState(() {
+                    if (_selectedRevenueDate != null &&
+                        _selectedRevenueDate!.day == date.day &&
+                        _selectedRevenueDate!.month == date.month) {
+                      _selectedRevenueDate = null;
+                    } else {
+                      _selectedRevenueDate = date;
+                    }
+                  });
+                },
+                cellBuilder: (day) {
+                  final rev = revenueByDay[day] ?? 0;
+                  if (rev == 0) return const SizedBox.shrink();
+                  String label;
+                  if (rev >= 1000000) {
+                    label = '${(rev / 1000000).toStringAsFixed(1)}jt';
+                  } else if (rev >= 1000) {
+                    label = '${(rev / 1000).toStringAsFixed(0)}rb';
+                  } else {
+                    label = '$rev';
+                  }
+                  return Text(
+                    label,
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 8,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.accentTeal,
+                    ),
+                  );
+                },
+              ),
+              if (_selectedRevenueDate != null) ...[
+                const SizedBox(height: 20),
+                _buildRevenueDetailForDate(provider, _selectedRevenueDate!),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRevenueDetailForDate(BookingProvider provider, DateTime date) {
+    final bookings = provider.bookingsForDate(date);
+    final totalRevenue = provider.revenueForDate(date);
+    final dayStr = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+
+    // Breakdown per console type
+    final revenueByType = <ConsoleType, int>{};
+    final countByType = <ConsoleType, int>{};
+    for (final b in bookings) {
+      final pkg = dummyPricePackages.firstWhere(
+        (p) => p.name == b.psType.bookingDisplayName,
+        orElse: () => dummyPricePackages.first,
+      );
+      final priceTier = pkg.prices.firstWhere(
+        (t) => t.duration == b.duration.displayName,
+        orElse: () => pkg.prices.first,
+      );
+      final rev = priceTier.price * b.durationHours;
+      revenueByType[b.psType] = (revenueByType[b.psType] ?? 0) + rev;
+      countByType[b.psType] = (countByType[b.psType] ?? 0) + 1;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppTheme.accentTeal.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.accentTeal.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.payments_outlined, color: AppTheme.accentTeal, size: 18),
+              const SizedBox(width: 10),
+              Text(
+                'Pendapatan $dayStr',
+                style: GoogleFonts.spaceGrotesk(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.accentTeal,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                formatRupiah(totalRevenue),
+                style: GoogleFonts.spaceGrotesk(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.accentTeal,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Summary cards
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: AppTheme.cardDecoration(),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Total Transaksi',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 13,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  Text(
+                    '${bookings.length} sesi',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+              if (revenueByType.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                const Divider(color: AppTheme.dividerColor, height: 1),
+                const SizedBox(height: 12),
+                ...revenueByType.entries.map((entry) {
+                  final type = entry.key;
+                  final rev = entry.value;
+                  final count = countByType[type] ?? 0;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: type == ConsoleType.ps4
+                                    ? AppTheme.accentCyan
+                                    : type == ConsoleType.ps5
+                                        ? AppTheme.accentMagenta
+                                        : type == ConsoleType.ps5Vip
+                                            ? AppTheme.accentTeal
+                                            : AppTheme.accentGreen,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${type.displayName} ($count sesi)',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 12,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          formatRupiah(rev),
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ════════════════════════════════════════════════════════
+  //  SHARED: Calendar widgets
+  // ════════════════════════════════════════════════════════
+
+  Widget _buildCalendarHeader({
+    required int year,
+    required int month,
+    required VoidCallback onPrev,
+    required VoidCallback onNext,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.dividerColor),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Year on left
+          Text(
+            '$year',
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textMuted,
+            ),
+          ),
+          // Month name + navigation on right
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.chevron_left, color: AppTheme.textSecondary, size: 22),
+                onPressed: onPrev,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                padding: EdgeInsets.zero,
+              ),
+              Text(
+                _monthNames[month],
+                style: GoogleFonts.spaceGrotesk(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.accentCyan,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right, color: AppTheme.textSecondary, size: 22),
+                onPressed: onNext,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                padding: EdgeInsets.zero,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCalendarGrid({
+    required int year,
+    required int month,
+    required DateTime? selectedDate,
+    required void Function(DateTime) onDateTap,
+    required Widget Function(int day) cellBuilder,
+  }) {
+    final firstDay = DateTime(year, month, 1);
+    final daysInMonth = DateTime(year, month + 1, 0).day;
+    // Monday = 1, Sunday = 7
+    final startWeekday = firstDay.weekday; // 1-7 (Mon-Sun)
+    final today = DateTime.now();
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.dividerColor),
+      ),
+      child: Column(
+        children: [
+          // Day headers
+          Row(
+            children: _dayHeaders.map((d) {
+              return Expanded(
+                child: Center(
+                  child: Text(
+                    d,
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textMuted,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 8),
+          // Day cells
+          ...List.generate(
+            ((startWeekday - 1 + daysInMonth) / 7).ceil(),
+            (weekIndex) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  children: List.generate(7, (dayOfWeek) {
+                    final dayNumber = weekIndex * 7 + dayOfWeek - (startWeekday - 2);
+                    if (dayNumber < 1 || dayNumber > daysInMonth) {
+                      return const Expanded(child: SizedBox(height: 52));
+                    }
+
+                    final cellDate = DateTime(year, month, dayNumber);
+                    final isToday = cellDate.day == today.day &&
+                        cellDate.month == today.month &&
+                        cellDate.year == today.year;
+                    final isSelected = selectedDate != null &&
+                        selectedDate.day == dayNumber &&
+                        selectedDate.month == month &&
+                        selectedDate.year == year;
+
+                    return Expanded(
+                      child: GestureDetector(
+                        onTap: () => onDateTap(cellDate),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          height: 52,
+                          margin: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppTheme.accentCyan.withValues(alpha: 0.2)
+                                : isToday
+                                    ? AppTheme.accentCyan.withValues(alpha: 0.08)
+                                    : AppTheme.surfaceDark,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppTheme.accentCyan
+                                  : isToday
+                                      ? AppTheme.accentCyan.withValues(alpha: 0.5)
+                                      : Colors.transparent,
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '$dayNumber',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 14,
+                                  fontWeight: isToday || isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
+                                  color: isToday
+                                      ? AppTheme.accentCyan
+                                      : AppTheme.textPrimary,
+                                ),
+                              ),
+                              cellBuilder(dayNumber),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
 
   // ════════════════════════════════════════════════════════
   //  TAB 4: DATA BOOKING HARI INI

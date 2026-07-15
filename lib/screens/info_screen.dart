@@ -1072,6 +1072,9 @@ class _InfoScreenState extends State<InfoScreen>
     if (parts.length == 2) {
       startOpHour = int.tryParse(parts[0].split(':')[0].trim()) ?? 10;
       endOpHour = int.tryParse(parts[1].split(':')[0].trim()) ?? 22;
+      if (endOpHour == 0) {
+        endOpHour = 24;
+      }
     }
 
     showModalBottomSheet(

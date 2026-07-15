@@ -3,7 +3,7 @@ import '../models/booking.dart';
 import '../models/enums.dart';
 import '../models/ps_unit.dart';
 import '../data/dummy_data.dart';
-import '../data/dummy_bookings.dart';
+import '../data/dummy_revenue.dart';
 
 /// Manages all booking-related state: CRUD, scheduling, live unit status.
 ///
@@ -20,7 +20,7 @@ class BookingProvider extends ChangeNotifier {
 
   BookingProvider() {
     // Muat data booking dummy awal
-    _bookings.addAll(getDummyBookings(_now));
+    _bookings.addAll(generateMonthlyBookings(_now));
   }
 
   /// Called by ProxyProvider when [ClockService] ticks.
@@ -58,6 +58,31 @@ class BookingProvider extends ChangeNotifier {
       total += priceTier.price * b.durationHours;
     }
     return total;
+  }
+
+  /// Revenue for a specific date (used by calendar view).
+  int revenueForDate(DateTime date) {
+    int total = 0;
+    final dateBookings = bookingsForDate(date);
+    for (final b in dateBookings) {
+      final pkg = dummyPricePackages.firstWhere(
+        (p) => p.name == b.psType.bookingDisplayName,
+        orElse: () => dummyPricePackages.first,
+      );
+      final priceTier = pkg.prices.firstWhere(
+        (t) => t.duration == b.duration.displayName,
+        orElse: () => pkg.prices.first,
+      );
+      total += priceTier.price * b.durationHours;
+    }
+    return total;
+  }
+
+  /// All bookings in a given month (for calendar indicators).
+  List<Booking> bookingsForMonth(int year, int month) {
+    return _bookings
+        .where((b) => b.date.year == year && b.date.month == month)
+        .toList();
   }
 
   Map<String, int> get todayStats {

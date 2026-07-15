@@ -55,10 +55,7 @@ class UnitTimelineView extends StatelessWidget {
               String tooltipMsg = 'Kosong';
               if (matchedBooking != null) {
                 final b = matchedBooking;
-                final startH = int.parse(b.time.split(':')[0]);
-                final durH = b.durationHours;
-                tooltipMsg =
-                    '${b.customerName} (${b.time} - ${startH + durH}:00)';
+                tooltipMsg = '${b.customerName} (${b.time} - ${b.endTime})';
               }
 
               Color blockColor = AppTheme.surfaceDark;
