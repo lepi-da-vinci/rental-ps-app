@@ -490,8 +490,49 @@ class _AdminScreenState extends State<AdminScreen>
                     borderColor = bookingColor;
                   }
 
-                  return Tooltip(
-                    message: tooltipMsg,
+                  return GestureDetector(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      if (isBooked) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Sesi disewa oleh: $tooltipMsg',
+                              style: GoogleFonts.spaceGrotesk(color: Colors.white),
+                            ),
+                            backgroundColor: AppTheme.cardDark,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: const BorderSide(color: AppTheme.dividerColor),
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            action: SnackBarAction(
+                              label: 'OK',
+                              textColor: AppTheme.accentCyan,
+                              onPressed: () {},
+                            ),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Jam ini kosong / tersedia',
+                              style: GoogleFonts.spaceGrotesk(color: Colors.white),
+                            ),
+                            backgroundColor: AppTheme.cardDark,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: const BorderSide(color: AppTheme.dividerColor),
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 1),
+                          ),
+                        );
+                      }
+                    },
+                    child: Tooltip(
+                      message: tooltipMsg,
                     child: Container(
                       width: 50,
                       margin: const EdgeInsets.only(right: 8),
@@ -526,6 +567,7 @@ class _AdminScreenState extends State<AdminScreen>
                                 : AppTheme.textMuted.withValues(alpha: 0.5),
                           ),
                         ],
+                      ),
                       ),
                     ),
                   );
