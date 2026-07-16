@@ -24,13 +24,26 @@ class AppTheme {
     Colors.amber,
     Colors.purpleAccent,
     accentTeal,
+    Colors.deepOrangeAccent,
+    Colors.indigoAccent,
+    Colors.pinkAccent,
+    Colors.limeAccent,
+    Colors.lightBlueAccent,
+    Colors.yellowAccent,
+    Colors.redAccent,
+    Colors.cyanAccent,
+    Colors.lightGreenAccent,
   ];
 
   static Color getBookingColor(String id) {
     if (id.isEmpty) return accentCyan;
-    // Hash string to an index
-    int hash = id.codeUnits.fold(0, (a, b) => a + b);
-    return bookingColors[hash % bookingColors.length];
+    // Better hash function to prevent collisions for similar strings (e.g. 18 vs 81)
+    int hash = 5381;
+    for (int i = 0; i < id.length; i++) {
+      hash = ((hash << 5) + hash) + id.codeUnitAt(i); // hash * 33 + c
+    }
+    // Ensure positive index
+    return bookingColors[hash.abs() % bookingColors.length];
   }
 
   // ── Neon shadow glow ──

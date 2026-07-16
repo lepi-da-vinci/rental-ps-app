@@ -6,9 +6,24 @@ import 'package:flutter/foundation.dart';
 /// In the future this can be extended with authentication, role-based
 /// access control, and persistent login state.
 class AdminProvider extends ChangeNotifier {
+  // TODO: ganti ke auth beneran (API/Firebase) sebelum production.
+  static const _validUsername = 'admin';
+  static const _validPassword = 'admin123';
+
   bool _isAdminMode = false;
 
   bool get isAdminMode => _isAdminMode;
+
+  /// Validates credentials and enters admin mode if correct.
+  /// Returns true on success, false on invalid credentials.
+  bool login(String username, String password) {
+    if (username == _validUsername && password == _validPassword) {
+      _isAdminMode = true;
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
 
   void toggleAdminMode() {
     _isAdminMode = !_isAdminMode;

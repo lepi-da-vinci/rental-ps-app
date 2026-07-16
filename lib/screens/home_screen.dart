@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../data/dummy_data.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_title.dart';
+import '../providers/booking_provider.dart';
+import '../utils/time_helpers.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int)? onNavigate;
@@ -58,12 +61,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final booking = context.watch<BookingProvider>();
+    final stats = booking.todayStats;
+    final totalUnits = stats['unitsInUse']! + stats['unitsAvailable']!;
+
+    // Get today's operating hours and check if open
+    final todayHours = getOperatingHours().firstWhere(
+      (h) => h.isToday,
+      orElse: () => getOperatingHours().first,
+    );
+    final open = isOpenNow(booking.now, todayHours.hours);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeroSection(),
+          _buildHeroSection(
+            isOpenNow: open,
+            unitsInUse: stats['unitsInUse']!,
+            totalUnits: totalUnits,
+          ),
           const SizedBox(height: 24),
           _buildStatsGrid(),
           const SizedBox(height: 32),
@@ -105,7 +123,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeroSection() {
+  Widget _buildHeroSection({
+    required bool isOpenNow,
+    required int unitsInUse,
+    required int totalUnits,
+  }) {
+    final occupancy = totalUnits == 0 ? 0.0 : unitsInUse / totalUnits;
+    final statusColor = isOpenNow ? AppTheme.accentCyan : AppTheme.accentRed;
+
     return Container(
       width: double.infinity,
       clipBehavior: Clip.antiAlias,
@@ -161,10 +186,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentCyan.withValues(alpha: 0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: AppTheme.accentCyan.withValues(alpha: 0.4),
+                      color: statusColor.withValues(alpha: 0.4),
                     ),
                   ),
                   child: Row(
@@ -174,21 +199,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: 6,
                         height: 6,
                         decoration: BoxDecoration(
-                          color: AppTheme.accentCyan,
+                          color: statusColor,
                           shape: BoxShape.circle,
                           boxShadow: AppTheme.neonShadow(
-                            AppTheme.accentCyan,
+                            statusColor,
                             blur: 4,
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'LIVE · SEDANG BUKA',
+                        isOpenNow ? 'LIVE · SEDANG BUKA' : 'SEDANG TUTUP',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.accentCyan,
+                          color: statusColor,
                           letterSpacing: 2,
                         ),
                       ),
@@ -317,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        '20/20',
+                        '$unitsInUse/$totalUnits',
                         style: GoogleFonts.pressStart2p(
                           fontSize: 24,
                           color: AppTheme.textPrimary,
@@ -325,7 +350,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Semua unit dalam kondisi prima',
+                        unitsInUse == totalUnits
+                            ? 'Semua unit dalam kondisi prima'
+                            : '$unitsInUse unit sedang aktif',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 12,
                           color: AppTheme.textMuted,
@@ -341,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         child: FractionallySizedBox(
                           alignment: Alignment.centerLeft,
-                          widthFactor: 0.92,
+                          widthFactor: occupancy.clamp(0.0, 1.0),
                           child: Container(
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
@@ -371,7 +398,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           Text(
-                            '92%',
+                            '${(occupancy * 100).round()}%',
                             style: GoogleFonts.spaceGrotesk(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,

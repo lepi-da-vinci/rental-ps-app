@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'data/dummy_data.dart';
+import 'utils/time_helpers.dart';
 import 'theme/app_theme.dart';
 import 'providers/clock_service.dart';
 import 'providers/admin_provider.dart';
@@ -65,26 +66,17 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   /// Whether the venue is currently open based on real wall-clock time
-  bool _isOpenNow(DateTime now, OperatingHour today) {
-    final raw = today.hours; // e.g. "08:00 – 23:00"
-    final parts = raw.split(RegExp(r'[-–]'));
-    if (parts.length < 2) return false;
-    int parseHour(String s) {
-      final h = int.tryParse(s.trim().split(':').first) ?? 0;
-      return h == 0 ? 24 : h;
-    }
-    final open = parseHour(parts[0]);
-    final close = parseHour(parts[1]);
-    return now.hour >= open && now.hour < close;
-  }
+  bool _isOpenNow(DateTime now, OperatingHour today) =>
+      isOpenNow(now, today.hours);
 
   /// Short label shown in status chip: "Sabtu · 08:00 – 23:00"
   String _statusLabel(OperatingHour today) => '${today.day} · ${today.hours}';
 
   @override
   Widget build(BuildContext context) {
-    // Satu sumber waktu untuk seluruh app: jam dari BookingProvider.
-    // Provider ini yang pegang Timer.periodic, jadi di sini tinggal "watch" aja.
+    // Satu sumber waktu untuk seluruh app: jam dari BookingProvider,
+    // yang di-update tiap menit lewat ClockService (Stream.periodic).
+    // Di sini tinggal "watch" aja, gak perlu Timer sendiri.
     final now = context.watch<BookingProvider>().now;
     final todayHours = _todayHours();
     final isOpenNow = _isOpenNow(now, todayHours);
@@ -320,10 +312,12 @@ class _MainScreenState extends State<MainScreen> {
                     backgroundColor: AppTheme.accentCyan,
                   ),
                   onPressed: () {
-                    if (usernameCtrl.text == 'admin' &&
-                        passwordCtrl.text == 'admin123') {
+                    final success = context.read<AdminProvider>().login(
+                      usernameCtrl.text,
+                      passwordCtrl.text,
+                    );
+                    if (success) {
                       Navigator.pop(context);
-                      context.read<AdminProvider>().toggleAdminMode();
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Login berhasil!'),

@@ -4,6 +4,7 @@ import '../models/enums.dart';
 import '../models/ps_unit.dart';
 import '../data/dummy_data.dart';
 import '../data/dummy_revenue.dart';
+import '../utils/time_helpers.dart';
 
 /// Manages all booking-related state: CRUD, scheduling, live unit status.
 ///
@@ -141,8 +142,8 @@ class BookingProvider extends ChangeNotifier {
     }
     if (template.startTime != null && template.endTime != null) {
       final nowMin = _now.hour * 60 + _now.minute;
-      final dStart = _toMinutes(template.startTime!);
-      final dEnd = _toMinutes(template.endTime!);
+      final dStart = toMinutes(template.startTime!);
+      final dEnd = toMinutes(template.endTime!);
       final withinWindow = dEnd <= dStart
           ? (nowMin >= dStart || nowMin < dEnd)
           : (nowMin >= dStart && nowMin < dEnd);
@@ -157,7 +158,7 @@ class BookingProvider extends ChangeNotifier {
       if (!_isSameDay(b.date, _now)) continue;
       if (b.psType != template.psType) continue;
       if (!b.assignedUnit.endsWith(template.label)) continue;
-      final start = _toMinutes(b.time);
+      final start = toMinutes(b.time);
       final end = start + b.durationHours * 60;
       if (nowMin >= start && nowMin < end) return b;
     }
@@ -238,7 +239,7 @@ class BookingProvider extends ChangeNotifier {
     String startTime,
     int durationHours,
   ) {
-    final reqStart = _toMinutes(startTime);
+    final reqStart = toMinutes(startTime);
     final reqEnd = reqStart + durationHours * 60;
 
     // 1) Bentrok sama booking lain di unit yang sama & tanggal yang sama?
@@ -246,18 +247,18 @@ class BookingProvider extends ChangeNotifier {
       if (!_isSameDay(b.date, date)) continue;
       if (b.psType != baseType) continue;
       if (!b.assignedUnit.endsWith(unit.label)) continue;
-      final bStart = _toMinutes(b.time);
+      final bStart = toMinutes(b.time);
       final bEnd = bStart + b.durationHours * 60;
-      if (_overlaps(reqStart, reqEnd, bStart, bEnd)) return false;
+      if (overlaps(reqStart, reqEnd, bStart, bEnd)) return false;
     }
 
     // 2) Bentrok sama jadwal dummy (simulasi walk-in hari ini)?
     if (_isSameDay(date, DateTime.now()) &&
         unit.startTime != null &&
         unit.endTime != null) {
-      final dStart = _toMinutes(unit.startTime!);
-      final dEnd = _toMinutes(unit.endTime!);
-      if (_overlaps(reqStart, reqEnd, dStart, dEnd)) return false;
+      final dStart = toMinutes(unit.startTime!);
+      final dEnd = toMinutes(unit.endTime!);
+      if (overlaps(reqStart, reqEnd, dStart, dEnd)) return false;
     }
 
     return true;
@@ -269,14 +270,6 @@ class BookingProvider extends ChangeNotifier {
 
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
-
-  int _toMinutes(String hhmm) {
-    final p = hhmm.split(':');
-    return int.parse(p[0]) * 60 + int.parse(p[1]);
-  }
-
-  /// true kalau rentang [s1,e1) tumpang-tindih sama [s2,e2)
-  bool _overlaps(int s1, int e1, int s2, int e2) => s1 < e2 && s2 < e1;
 
   // ════════════════════════════════════════════════════════
   //  Booking CRUD

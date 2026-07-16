@@ -9,6 +9,7 @@ import '../models/booking.dart';
 import '../providers/booking_provider.dart';
 import '../widgets/section_title.dart';
 import '../widgets/retro_button.dart';
+import '../utils/time_helpers.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
@@ -438,7 +439,7 @@ class _BookingScreenState extends State<BookingScreen> {
         );
       },
     );
-    if (picked != null) {
+    if (picked != null && mounted) {
       setState(() => _selectedDate = picked);
     }
   }
@@ -462,17 +463,24 @@ class _BookingScreenState extends State<BookingScreen> {
     int durationHours = _selectedDuration!.hours;
     SessionDuration effectiveDuration = _selectedDuration!;
     
-    // Check if booking exceeds closing time (00:00 / 1440 mins)
+    // Check if booking exceeds closing time
     final p = _selectedTime!.split(':');
     final startMins = int.parse(p[0]) * 60 + int.parse(p[1]);
-    final closingMins = 24 * 60;
+    
+    final todayHours = getOperatingHours().firstWhere(
+      (h) => h.isToday,
+      orElse: () => getOperatingHours().first,
+    );
+    final (_, closeHour) = parseOperatingHours(todayHours.hours);
+    final closingMins = closeHour * 60;
     
     if (startMins + durationHours * 60 > closingMins) {
       final maxAllowedHours = (closingMins - startMins) ~/ 60;
       if (maxAllowedHours <= 0) {
+        final closeStr = '${closeHour.toString().padLeft(2, '0')}:00';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Maaf, sudah terlalu dekat dengan jam tutup (00:00)', style: GoogleFonts.spaceGrotesk()),
+            content: Text('Maaf, sudah terlalu dekat dengan jam tutup ($closeStr)', style: GoogleFonts.spaceGrotesk()),
             backgroundColor: AppTheme.accentRed,
           ),
         );
@@ -610,7 +618,10 @@ class _BookingScreenState extends State<BookingScreen> {
                   subtitle: 'Jam mulai tetap $_selectedTime, cuma durasinya disesuaikan.',
                   onTap: () {
                     Navigator.pop(ctx);
-                    setState(() => _selectedDuration = SessionDuration.values.firstWhere((e) => e.hours == maxDuration));
+                    setState(() => _selectedDuration = SessionDuration.values.firstWhere(
+                          (e) => e.hours == maxDuration,
+                          orElse: () => SessionDuration.jam1,
+                        ));
                     _submitBooking();
                   },
                 ),

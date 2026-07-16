@@ -9,6 +9,7 @@ import '../models/ps_unit.dart';
 import '../models/enums.dart';
 import '../widgets/section_title.dart';
 import '../widgets/unit_timeline_view.dart';
+import '../utils/time_helpers.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -341,16 +342,7 @@ class _AdminScreenState extends State<AdminScreen>
       (h) => h.isToday,
       orElse: () => getOperatingHours().first,
     );
-    final parts = todayHours.hours.split(RegExp(r'[-–]'));
-    int startOpHour = 10;
-    int endOpHour = 22;
-    if (parts.length == 2) {
-      startOpHour = int.tryParse(parts[0].split(':')[0].trim()) ?? 10;
-      endOpHour = int.tryParse(parts[1].split(':')[0].trim()) ?? 22;
-      if (endOpHour == 0) {
-        endOpHour = 24;
-      }
-    }
+    final (startOpHour, endOpHour) = parseOperatingHours(todayHours.hours);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
