@@ -10,6 +10,7 @@ import '../providers/booking_provider.dart';
 import '../widgets/section_title.dart';
 import '../widgets/retro_button.dart';
 import '../utils/time_helpers.dart';
+import '../widgets/glass_panel.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
@@ -103,13 +104,9 @@ class _BookingScreenState extends State<BookingScreen> {
               builder: (context, constraints) {
                 bool isLarge = constraints.maxWidth > 800;
 
-                Widget formContent = Container(
+                Widget formContent = GlassPanel(
                   padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppTheme.cardDark,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.dividerColor),
-                  ),
+                  borderRadius: 16,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1022,13 +1019,10 @@ class _BookingScreenState extends State<BookingScreen> {
                 padding: const EdgeInsets.only(bottom: 10),
                 child: GestureDetector(
                   onTap: () => _showBookingDetails(b),
-                  child: Container(
+                  child: GlassPanel(
+                    enableBlur: false,
                     padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: AppTheme.cardDark,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppTheme.dividerColor),
-                    ),
+                    borderRadius: 14,
                     child: Row(
                       children: [
                         Container(

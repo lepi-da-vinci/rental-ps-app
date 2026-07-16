@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../data/dummy_data.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_title.dart';
+import '../widgets/glass_panel.dart';
 import '../providers/booking_provider.dart';
 import '../utils/time_helpers.dart';
 
@@ -131,21 +132,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final occupancy = totalUnits == 0 ? 0.0 : unitsInUse / totalUnits;
     final statusColor = isOpenNow ? AppTheme.accentCyan : AppTheme.accentRed;
 
-    return Container(
+    return GlassPanel(
       width: double.infinity,
       clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: AppTheme.cardDark,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.dividerColor),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 20,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
+      borderRadius: 24,
       child: Stack(
         children: [
           Positioned(
@@ -204,6 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           boxShadow: AppTheme.neonShadow(
                             statusColor,
                             blur: 4,
+                            offset: Offset.zero,
                           ),
                         ),
                       ),
@@ -290,19 +281,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: GestureDetector(
                         onTap: () => widget.onNavigate?.call(2),
-                        child: Container(
+                        child: GlassPanel(
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            color: AppTheme.backgroundDark,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppTheme.dividerColor),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            'Lihat Harga',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimary,
+                          borderRadius: 12,
+                          surfaceColor: AppTheme.accentTeal.withValues(alpha: 0.15),
+                          borderColor: AppTheme.accentTeal.withValues(alpha: 0.3),
+                          addHighlight: false,
+                          child: Center(
+                            child: Text(
+                              'Lihat Harga',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.accentTeal,
+                              ),
                             ),
                           ),
                         ),
@@ -519,21 +510,11 @@ class _HomeScreenState extends State<HomeScreen> {
       children: _menuCards.map((menu) {
         return GestureDetector(
           onTap: () => widget.onNavigate?.call(menu['index']),
-          child: Container(
+          child: GlassPanel(
+            enableBlur: false,
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppTheme.cardDark,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.dividerColor),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
+            borderRadius: 16,
             child: Row(
               children: [
                 Container(
@@ -600,14 +581,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Column(
       children: displayGames.map((game) {
-        return Container(
+        return GlassPanel(
+          enableBlur: false,
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppTheme.cardDark,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.dividerColor),
-          ),
+          borderRadius: 12,
           child: Row(
             children: [
               ClipRRect(
@@ -739,12 +717,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildOperatingHours() {
     return Column(
       children: [
-        Container(
-          decoration: BoxDecoration(
-            color: AppTheme.cardDark,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.dividerColor),
-          ),
+        GlassPanel(
+          borderRadius: 16,
           child: ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),

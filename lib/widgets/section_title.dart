@@ -32,10 +32,18 @@ class SectionTitle extends StatelessWidget {
               children: [
                 Text(
                   title.toUpperCase(),
-                  style: GoogleFonts.pressStart2p(
-                    fontSize: 12,
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
                     color: color,
                     height: 1.5,
+                    shadows: [
+                      Shadow(
+                        color: color.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                      ),
+                    ],
                   ),
                 ),
                 if (subtitle != null) ...[

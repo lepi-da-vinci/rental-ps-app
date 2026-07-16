@@ -7,6 +7,7 @@ import '../providers/booking_provider.dart';
 import '../data/dummy_data.dart';
 import '../models/ps_unit.dart';
 import '../models/enums.dart';
+import '../widgets/glass_panel.dart';
 import '../widgets/section_title.dart';
 import '../widgets/unit_timeline_view.dart';
 import '../utils/time_helpers.dart';
@@ -350,91 +351,94 @@ class _AdminScreenState extends State<AdminScreen>
       child: Material(
         type: MaterialType.transparency,
         child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          childrenPadding: const EdgeInsets.only(
-            left: 16,
-            right: 16,
-            bottom: 16,
-          ),
-          title: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceDark,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppTheme.dividerColor),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  unit.label.replaceAll('Unit ', '#'),
-                  style: GoogleFonts.spaceGrotesk(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textSecondary,
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            tilePadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            childrenPadding: const EdgeInsets.only(
+              left: 16,
+              right: 16,
+              bottom: 16,
+            ),
+            title: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceDark,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppTheme.dividerColor),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    unit.label.replaceAll('Unit ', '#'),
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textSecondary,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: unit.isAvailable
-                    ? Text(
-                        'Tersedia',
-                        style: GoogleFonts.spaceGrotesk(
-                          color: AppTheme.accentGreen,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            unit.playerName ?? 'Unknown',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimary,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: unit.isAvailable
+                      ? Text(
+                          'Tersedia',
+                          style: GoogleFonts.spaceGrotesk(
+                            color: AppTheme.accentGreen,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              unit.playerName ?? 'Unknown',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimary,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(
-                                unit.isWalkIn
-                                    ? Icons.directions_walk
-                                    : Icons.book_online,
-                                size: 14,
-                                color: AppTheme.textMuted,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                '${unit.startTime} - ${unit.endTime}',
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 12,
-                                  color: AppTheme.textSecondary,
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(
+                                  unit.isWalkIn
+                                      ? Icons.directions_walk
+                                      : Icons.book_online,
+                                  size: 14,
+                                  color: AppTheme.textMuted,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '${unit.startTime} - ${unit.endTime}',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 12,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                ),
+              ],
+            ),
+            children: [
+              const Divider(color: AppTheme.dividerColor),
+              const SizedBox(height: 12),
+              UnitTimelineView(
+                unitBookings: unitBookings,
+                startOpHour: startOpHour,
+                endOpHour: endOpHour,
+                dateTitle: todayHours.hours,
               ),
             ],
           ),
-          children: [
-            const Divider(color: AppTheme.dividerColor),
-            const SizedBox(height: 12),
-            UnitTimelineView(
-              unitBookings: unitBookings,
-              startOpHour: startOpHour,
-              endOpHour: endOpHour,
-              dateTitle: todayHours.hours,
-            ),
-          ],
-        ),
         ),
       ),
     );
@@ -445,8 +449,19 @@ class _AdminScreenState extends State<AdminScreen>
   // ════════════════════════════════════════════════════════
 
   static const _monthNames = [
-    '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+    '',
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
   ];
   static const _dayHeaders = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
 
@@ -524,7 +539,8 @@ class _AdminScreenState extends State<AdminScreen>
     final bookings = provider.bookingsForDate(date);
     bookings.sort((a, b) => a.time.compareTo(b.time));
 
-    final dayStr = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    final dayStr =
+        '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -534,11 +550,17 @@ class _AdminScreenState extends State<AdminScreen>
           decoration: BoxDecoration(
             color: AppTheme.accentCyan.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.accentCyan.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: AppTheme.accentCyan.withValues(alpha: 0.3),
+            ),
           ),
           child: Row(
             children: [
-              const Icon(Icons.calendar_today, color: AppTheme.accentCyan, size: 18),
+              const Icon(
+                Icons.calendar_today,
+                color: AppTheme.accentCyan,
+                size: 18,
+              ),
               const SizedBox(width: 10),
               Text(
                 'Booking $dayStr',
@@ -550,7 +572,10 @@ class _AdminScreenState extends State<AdminScreen>
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppTheme.accentCyan.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
@@ -569,9 +594,10 @@ class _AdminScreenState extends State<AdminScreen>
         ),
         const SizedBox(height: 12),
         if (bookings.isEmpty)
-          Container(
+          GlassPanel(
+            enableBlur: false,
             padding: const EdgeInsets.all(20),
-            decoration: AppTheme.cardDecoration(),
+            borderRadius: 16,
             child: Center(
               child: Text(
                 'Tidak ada booking di tanggal ini',
@@ -583,13 +609,10 @@ class _AdminScreenState extends State<AdminScreen>
           ...bookings.map((b) {
             final isWalkIn = b.id.startsWith('WI-');
             final bookingColor = AppTheme.getBookingColor(b.id);
-            return Container(
+            return GlassPanel(
+              enableBlur: false,
               margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                color: AppTheme.cardDark,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppTheme.dividerColor),
-              ),
+              borderRadius: 10,
               child: IntrinsicHeight(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -611,7 +634,9 @@ class _AdminScreenState extends State<AdminScreen>
                           children: [
                             Icon(
                               isWalkIn ? Icons.directions_walk : Icons.language,
-                              color: isWalkIn ? AppTheme.accentGreen : AppTheme.accentCyan,
+                              color: isWalkIn
+                                  ? AppTheme.accentGreen
+                                  : AppTheme.accentCyan,
                               size: 18,
                             ),
                             const SizedBox(width: 10),
@@ -639,15 +664,23 @@ class _AdminScreenState extends State<AdminScreen>
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete_outline, color: AppTheme.accentRed, size: 18),
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: AppTheme.accentRed,
+                                size: 18,
+                              ),
                               onPressed: () async {
-                                final confirm = await _confirmDeleteDialog(context);
+                                final confirm = await _confirmDeleteDialog(
+                                  context,
+                                );
                                 if (confirm == true) {
                                   provider.removeBooking(b.id);
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('Booking ${b.customerName} dihapus'),
+                                        content: Text(
+                                          'Booking ${b.customerName} dihapus',
+                                        ),
                                         backgroundColor: AppTheme.accentRed,
                                       ),
                                     );
@@ -705,7 +738,9 @@ class _AdminScreenState extends State<AdminScreen>
                     ],
                   ),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.accentTeal.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: AppTheme.accentTeal.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -794,7 +829,8 @@ class _AdminScreenState extends State<AdminScreen>
   Widget _buildRevenueDetailForDate(BookingProvider provider, DateTime date) {
     final bookings = provider.bookingsForDate(date);
     final totalRevenue = provider.revenueForDate(date);
-    final dayStr = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    final dayStr =
+        '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
 
     // Breakdown per console type
     final revenueByType = <ConsoleType, int>{};
@@ -822,11 +858,17 @@ class _AdminScreenState extends State<AdminScreen>
           decoration: BoxDecoration(
             color: AppTheme.accentTeal.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.accentTeal.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: AppTheme.accentTeal.withValues(alpha: 0.3),
+            ),
           ),
           child: Row(
             children: [
-              const Icon(Icons.payments_outlined, color: AppTheme.accentTeal, size: 18),
+              const Icon(
+                Icons.payments_outlined,
+                color: AppTheme.accentTeal,
+                size: 18,
+              ),
               const SizedBox(width: 10),
               Text(
                 'Pendapatan $dayStr',
@@ -898,10 +940,10 @@ class _AdminScreenState extends State<AdminScreen>
                                 color: type == ConsoleType.ps4
                                     ? AppTheme.accentCyan
                                     : type == ConsoleType.ps5
-                                        ? AppTheme.accentMagenta
-                                        : type == ConsoleType.ps5Vip
-                                            ? AppTheme.accentTeal
-                                            : AppTheme.accentGreen,
+                                    ? AppTheme.accentMagenta
+                                    : type == ConsoleType.ps5Vip
+                                    ? AppTheme.accentTeal
+                                    : AppTheme.accentGreen,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -944,13 +986,9 @@ class _AdminScreenState extends State<AdminScreen>
     required VoidCallback onPrev,
     required VoidCallback onNext,
   }) {
-    return Container(
+    return GlassPanel(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.cardDark,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.dividerColor),
-      ),
+      borderRadius: 14,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -967,7 +1005,11 @@ class _AdminScreenState extends State<AdminScreen>
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.chevron_left, color: AppTheme.textSecondary, size: 22),
+                icon: const Icon(
+                  Icons.chevron_left,
+                  color: AppTheme.textSecondary,
+                  size: 22,
+                ),
                 onPressed: onPrev,
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 padding: EdgeInsets.zero,
@@ -981,7 +1023,11 @@ class _AdminScreenState extends State<AdminScreen>
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.chevron_right, color: AppTheme.textSecondary, size: 22),
+                icon: const Icon(
+                  Icons.chevron_right,
+                  color: AppTheme.textSecondary,
+                  size: 22,
+                ),
                 onPressed: onNext,
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 padding: EdgeInsets.zero,
@@ -1006,13 +1052,9 @@ class _AdminScreenState extends State<AdminScreen>
     final startWeekday = firstDay.weekday; // 1-7 (Mon-Sun)
     final today = DateTime.now();
 
-    return Container(
+    return GlassPanel(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppTheme.cardDark,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.dividerColor),
-      ),
+      borderRadius: 14,
       child: Column(
         children: [
           // Day headers
@@ -1034,81 +1076,82 @@ class _AdminScreenState extends State<AdminScreen>
           ),
           const SizedBox(height: 8),
           // Day cells
-          ...List.generate(
-            ((startWeekday - 1 + daysInMonth) / 7).ceil(),
-            (weekIndex) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  children: List.generate(7, (dayOfWeek) {
-                    final dayNumber = weekIndex * 7 + dayOfWeek - (startWeekday - 2);
-                    if (dayNumber < 1 || dayNumber > daysInMonth) {
-                      return const Expanded(child: SizedBox(height: 52));
-                    }
+          ...List.generate(((startWeekday - 1 + daysInMonth) / 7).ceil(), (
+            weekIndex,
+          ) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                children: List.generate(7, (dayOfWeek) {
+                  final dayNumber =
+                      weekIndex * 7 + dayOfWeek - (startWeekday - 2);
+                  if (dayNumber < 1 || dayNumber > daysInMonth) {
+                    return const Expanded(child: SizedBox(height: 52));
+                  }
 
-                    final cellDate = DateTime(year, month, dayNumber);
-                    final isToday = cellDate.day == today.day &&
-                        cellDate.month == today.month &&
-                        cellDate.year == today.year;
-                    final isSelected = selectedDate != null &&
-                        selectedDate.day == dayNumber &&
-                        selectedDate.month == month &&
-                        selectedDate.year == year;
+                  final cellDate = DateTime(year, month, dayNumber);
+                  final isToday =
+                      cellDate.day == today.day &&
+                      cellDate.month == today.month &&
+                      cellDate.year == today.year;
+                  final isSelected =
+                      selectedDate != null &&
+                      selectedDate.day == dayNumber &&
+                      selectedDate.month == month &&
+                      selectedDate.year == year;
 
-                    return Expanded(
-                      child: GestureDetector(
-                        onTap: () => onDateTap(cellDate),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          height: 52,
-                          margin: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () => onDateTap(cellDate),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        height: 52,
+                        margin: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppTheme.accentCyan.withValues(alpha: 0.2)
+                              : isToday
+                              ? AppTheme.accentCyan.withValues(alpha: 0.08)
+                              : AppTheme.surfaceDark,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
                             color: isSelected
-                                ? AppTheme.accentCyan.withValues(alpha: 0.2)
+                                ? AppTheme.accentCyan
                                 : isToday
-                                    ? AppTheme.accentCyan.withValues(alpha: 0.08)
-                                    : AppTheme.surfaceDark,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isSelected
-                                  ? AppTheme.accentCyan
-                                  : isToday
-                                      ? AppTheme.accentCyan.withValues(alpha: 0.5)
-                                      : Colors.transparent,
-                              width: isSelected ? 2 : 1,
-                            ),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$dayNumber',
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 14,
-                                  fontWeight: isToday || isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.w500,
-                                  color: isToday
-                                      ? AppTheme.accentCyan
-                                      : AppTheme.textPrimary,
-                                ),
-                              ),
-                              cellBuilder(dayNumber),
-                            ],
+                                ? AppTheme.accentCyan.withValues(alpha: 0.5)
+                                : Colors.transparent,
+                            width: isSelected ? 2 : 1,
                           ),
                         ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '$dayNumber',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 14,
+                                fontWeight: isToday || isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
+                                color: isToday
+                                    ? AppTheme.accentCyan
+                                    : AppTheme.textPrimary,
+                              ),
+                            ),
+                            cellBuilder(dayNumber),
+                          ],
+                        ),
                       ),
-                    );
-                  }),
-                ),
-              );
-            },
-          ),
+                    ),
+                  );
+                }),
+              ),
+            );
+          }),
         ],
       ),
     );
   }
-
 
   // ════════════════════════════════════════════════════════
   //  TAB 4: DATA BOOKING HARI INI
@@ -1117,7 +1160,10 @@ class _AdminScreenState extends State<AdminScreen>
   Widget _buildTodayBookings() {
     return Consumer<BookingProvider>(
       builder: (context, provider, child) {
-        final allBookings = provider.bookingsForDate(provider.now).where((b) => !b.isWalkIn).toList();
+        final allBookings = provider
+            .bookingsForDate(provider.now)
+            .where((b) => !b.isWalkIn)
+            .toList();
         // Sort by time
         allBookings.sort((a, b) => a.time.compareTo(b.time));
 
@@ -1139,12 +1185,9 @@ class _AdminScreenState extends State<AdminScreen>
             final isWalkIn = b.id.startsWith('WI-');
             final bookingColor = AppTheme.getBookingColor(b.id);
 
-            return Container(
-              decoration: BoxDecoration(
-                color: AppTheme.cardDark,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.dividerColor),
-              ),
+            return GlassPanel(
+              enableBlur: false,
+              borderRadius: 12,
               child: IntrinsicHeight(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,

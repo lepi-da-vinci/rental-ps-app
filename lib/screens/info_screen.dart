@@ -9,6 +9,7 @@ import '../widgets/retro_button.dart';
 import '../providers/booking_provider.dart';
 import '../widgets/unit_timeline_view.dart';
 import '../utils/time_helpers.dart';
+import '../widgets/glass_panel.dart';
 
 class InfoScreen extends StatefulWidget {
   const InfoScreen({super.key});
@@ -234,14 +235,10 @@ class _InfoScreenState extends State<InfoScreen>
     required String content,
     required double width,
   }) {
-    return Container(
+    return GlassPanel(
       width: width,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.cardDark,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.dividerColor),
-      ),
+      borderRadius: 16,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -283,14 +280,10 @@ class _InfoScreenState extends State<InfoScreen>
     required String subtitle,
     required double width,
   }) {
-    return Container(
+    return GlassPanel(
       width: width,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.cardDark,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.dividerColor),
-      ),
+      borderRadius: 16,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -739,13 +732,10 @@ class _InfoScreenState extends State<InfoScreen>
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Container(
+      child: GlassPanel(
+        enableBlur: false,
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppTheme.cardDark,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.dividerColor),
-        ),
+        borderRadius: 12,
         child: Row(
           children: [
             // Game Image
@@ -982,13 +972,9 @@ class _InfoScreenState extends State<InfoScreen>
 
   // ── Shared: S&K ──
   Widget _buildTerms() {
-    return Container(
+    return GlassPanel(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.cardDark,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.dividerColor),
-      ),
+      borderRadius: 14,
       child: Material(
         type: MaterialType.transparency,
         child: Theme(

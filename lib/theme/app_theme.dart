@@ -15,6 +15,10 @@ class AppTheme {
   static const Color textMuted = Color(0xFF6B6B7B);
   static const Color dividerColor = Color(0xFF2A2A3D);
 
+  static const Color glassSurface = Color(0x1AFFFFFF); // 10% white for frosted glass
+  static const Color glassBorder = Color(0x33FFFFFF); // 20% white for subtle edge
+  static const Color glassHighlight = Color(0x4DFFFFFF); // 30% white for specular highlight
+
   // ── Booking Colors Palette ──
   static const List<Color> bookingColors = [
     accentCyan,
@@ -46,31 +50,62 @@ class AppTheme {
     return bookingColors[hash.abs() % bookingColors.length];
   }
 
-  // ── Neon shadow glow ──
-  static List<BoxShadow> neonShadow(Color color, {double spread = 1, double blur = 8}) {
+  // ── Soft shadow for glass depth ──
+  static List<BoxShadow> neonShadow(
+    Color color, {
+    double spread = 1,
+    double blur = 15,
+    Offset offset = const Offset(0, 8),
+  }) {
     return [
       BoxShadow(
-        color: color.withValues(alpha: 0.35),
+        color: color.withValues(alpha: 0.15),
         blurRadius: blur,
         spreadRadius: spread,
-        offset: const Offset(0, 0),
+        offset: offset,
       ),
     ];
   }
 
-  // ── Card decoration ──
+  // ── Liquid Glass Decoration ──
+  static BoxDecoration glassDecoration({
+    Color? borderColor,
+    double borderRadius = 14,
+    Color? surfaceColor,
+    bool addHighlight = true,
+  }) {
+    return BoxDecoration(
+      color: surfaceColor ?? glassSurface,
+      borderRadius: BorderRadius.circular(borderRadius),
+      border: Border.all(
+        color: borderColor ?? glassBorder,
+        width: 1,
+      ),
+      gradient: addHighlight ? LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.white.withValues(alpha: 0.15),
+          Colors.white.withValues(alpha: 0.02),
+        ],
+        stops: const [0.0, 0.5],
+      ) : null,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.2),
+          blurRadius: 15,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    );
+  }
+
+  // ── Legacy Card decoration (updated to faux glass) ──
   static BoxDecoration cardDecoration({
     Color? borderColor,
     double borderRadius = 14,
   }) {
-    return BoxDecoration(
-      color: cardDark,
-      borderRadius: BorderRadius.circular(borderRadius),
-      border: Border.all(
-        color: borderColor ?? dividerColor,
-        width: 1,
-      ),
-    );
+    return glassDecoration(borderColor: borderColor, borderRadius: borderRadius, addHighlight: false, surfaceColor: cardDark.withValues(alpha: 0.6));
   }
 
   // ── Gradient (Neon) ──
@@ -127,32 +162,29 @@ class AppTheme {
           foregroundColor: Colors.black,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.pressStart2p(
-            fontSize: 12,
-          ),
+          textStyle: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.bold),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: cardDark,
+        fillColor: glassSurface,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: dividerColor),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: glassBorder),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: dividerColor),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: glassBorder),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: accentCyan, width: 2),
         ),
         labelStyle: GoogleFonts.spaceGrotesk(color: textSecondary),
         hintStyle: GoogleFonts.spaceGrotesk(color: textMuted),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
       textTheme: TextTheme(
         headlineLarge: GoogleFonts.pressStart2p(

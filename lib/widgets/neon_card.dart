@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import '../theme/app_theme.dart';
 
-/// A clean card widget with subtle border — no glow, professional look.
+/// A card widget updated to "Liquid Glass" theme with background blur and specular highlights.
 class NeonCard extends StatelessWidget {
   final Widget child;
   final Color borderColor;
@@ -14,7 +15,7 @@ class NeonCard extends StatelessWidget {
   const NeonCard({
     super.key,
     required this.child,
-    this.borderColor = AppTheme.dividerColor,
+    this.borderColor = AppTheme.glassBorder,
     this.borderRadius = 14,
     this.padding = const EdgeInsets.all(16),
     this.onTap,
@@ -26,17 +27,24 @@ class NeonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        padding: padding,
-        decoration: BoxDecoration(
-          color: AppTheme.cardDark,
-          borderRadius: BorderRadius.circular(borderRadius),
-          border: Border.all(color: borderColor, width: 1.5),
-          boxShadow: hasGlow ? AppTheme.neonShadow(glowColor ?? borderColor, spread: 1, blur: 12) : null,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            padding: padding,
+            decoration: AppTheme.glassDecoration(
+              borderColor: hasGlow ? (glowColor ?? borderColor) : borderColor,
+              borderRadius: borderRadius,
+              addHighlight: true,
+            ).copyWith(
+              boxShadow: hasGlow ? AppTheme.neonShadow(glowColor ?? borderColor, spread: 2, blur: 20) : null,
+            ),
+            child: child,
+          ),
         ),
-        child: child,
       ),
     );
   }
