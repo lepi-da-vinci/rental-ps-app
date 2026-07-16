@@ -50,8 +50,29 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
+  late AnimationController _bgController;
+  late Animation<Alignment> _bgAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _bgController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 20),
+    )..repeat(reverse: true);
+    _bgAnimation = Tween<Alignment>(
+      begin: const Alignment(-0.6, -0.6),
+      end: const Alignment(0.6, -0.2),
+    ).animate(CurvedAnimation(parent: _bgController, curve: Curves.easeInOutSine));
+  }
+
+  @override
+  void dispose() {
+    _bgController.dispose();
+    super.dispose();
+  }
 
   void _onNavigate(int index) {
     setState(() => _currentIndex = index);
@@ -83,10 +104,10 @@ class _MainScreenState extends State<MainScreen> {
     final statusLabel = _statusLabel(todayHours);
 
     final screens = [
-      HomeScreen(onNavigate: _onNavigate),
-      const InfoScreen(),
-      HargaScreen(onNavigateToBooking: _onNavigate),
-      const BookingScreen(),
+      HomeScreen(key: const ValueKey('home'), onNavigate: _onNavigate),
+      const InfoScreen(key: ValueKey('info')),
+      HargaScreen(key: const ValueKey('harga'), onNavigateToBooking: _onNavigate),
+      const BookingScreen(key: ValueKey('booking')),
     ];
 
     final titles = ['Timeless', 'Info Unit & Game', 'Harga', 'Booking'];
@@ -100,21 +121,60 @@ class _MainScreenState extends State<MainScreen> {
           appBar: isLargeScreen
               ? _buildLargeAppBar(isOpenNow, statusLabel, isAdminMode, context)
               : _buildSmallAppBar(titles[_currentIndex], isAdminMode, context),
-          body: isAdminMode
-              ? const AdminScreen()
-              : (isLargeScreen
-                    ? Row(
-                        children: [
-                          _buildSidebar(isOpenNow, statusLabel),
-                          Expanded(
-                            child: IndexedStack(
-                              index: _currentIndex,
-                              children: screens,
+          body: AnimatedBuilder(
+            animation: _bgAnimation,
+            builder: (context, child) {
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: _bgAnimation.value,
+                    radius: 1.5,
+                    colors: [
+                      AppTheme.accentMagenta.withValues(alpha: 0.08),
+                      AppTheme.backgroundDark,
+                    ],
+                  ),
+                ),
+                child: child,
+              );
+            },
+            child: isAdminMode
+                ? const AdminScreen()
+                : (isLargeScreen
+                      ? Row(
+                          children: [
+                            _buildSidebar(isOpenNow, statusLabel),
+                            Expanded(
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                transitionBuilder: (child, animation) {
+                                  return FadeTransition(
+                                    opacity: animation,
+                                    child: ScaleTransition(
+                                      scale: Tween<double>(begin: 0.98, end: 1.0).animate(animation),
+                                      child: child,
+                                    ),
+                                  );
+                                },
+                                child: screens[_currentIndex],
+                              ),
                             ),
-                          ),
-                        ],
-                      )
-                    : IndexedStack(index: _currentIndex, children: screens)),
+                          ],
+                        )
+                      : AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          transitionBuilder: (child, animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: ScaleTransition(
+                                scale: Tween<double>(begin: 0.98, end: 1.0).animate(animation),
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: screens[_currentIndex],
+                        )),
+          ),
           bottomNavigationBar: (isLargeScreen || isAdminMode)
               ? null
               : _buildBottomNav(),

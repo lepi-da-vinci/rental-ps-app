@@ -11,6 +11,7 @@ import '../widgets/section_title.dart';
 import '../widgets/retro_button.dart';
 import '../utils/time_helpers.dart';
 import '../widgets/glass_panel.dart';
+import 'package:flutter/services.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
@@ -143,17 +144,27 @@ class _BookingScreenState extends State<BookingScreen> {
                         children: _psTypes.map((type) {
                           bool isSelected = _selectedPsType == type;
                           return InkWell(
-                            onTap: () => setState(() => _selectedPsType = type),
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              setState(() => _selectedPsType = type);
+                            },
                             borderRadius: BorderRadius.circular(12),
-                            child: Container(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOut,
                               width: isLarge ? (constraints.maxWidth - 400 - 48 - 24) / 3 : (constraints.maxWidth - 96) / 2,
                               padding: const EdgeInsets.symmetric(vertical: 16),
+                              transform: isSelected ? (Matrix4.identity()..scale(1.05)) : Matrix4.identity(),
+                              transformAlignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: isSelected ? AppTheme.accentMagenta.withValues(alpha: 0.1) : AppTheme.surfaceDark,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: isSelected ? AppTheme.accentMagenta : AppTheme.dividerColor,
                                 ),
+                                boxShadow: isSelected
+                                    ? AppTheme.neonShadow(AppTheme.accentMagenta, spread: 0, blur: 12)
+                                    : [],
                               ),
                               child: Column(
                                 children: [
@@ -178,6 +189,16 @@ class _BookingScreenState extends State<BookingScreen> {
                         }).toList(),
                       ),
                       const SizedBox(height: 20),
+                      
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                        alignment: Alignment.topCenter,
+                        child: _selectedPsType == null 
+                          ? const SizedBox.shrink()
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
 
                       _buildLabel('DURASI'),
                       const SizedBox(height: 8),
@@ -187,14 +208,16 @@ class _BookingScreenState extends State<BookingScreen> {
                         children: SessionDuration.values.map((duration) {
                           bool isSelected = _selectedDuration == duration;
                           return InkWell(
-                            onTap: () => setState(() {
-                              _selectedDuration = duration;
-                              // Bug 4 fix: reset selected time when duration changes
-                              // so the user must re-pick a valid slot
-                              _selectedTime = null;
-                            }),
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              setState(() {
+                                _selectedDuration = duration;
+                                _selectedTime = null;
+                              });
+                            },
                             borderRadius: BorderRadius.circular(24),
-                            child: Container(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                               decoration: BoxDecoration(
                                 color: isSelected ? AppTheme.accentMagenta.withValues(alpha: 0.1) : AppTheme.surfaceDark,
@@ -226,7 +249,10 @@ class _BookingScreenState extends State<BookingScreen> {
                                 _buildLabel('TANGGAL'),
                                 const SizedBox(height: 8),
                                 GestureDetector(
-                                  onTap: _pickDate,
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+                                    _pickDate();
+                                  },
                                   child: AbsorbPointer(
                                     child: TextFormField(
                                       style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary, fontSize: 13),
@@ -262,7 +288,10 @@ class _BookingScreenState extends State<BookingScreen> {
                                       suffixIcon: Icon(Icons.access_time_outlined, color: AppTheme.textMuted, size: 18),
                                     ),
                                     items: validSlots.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                                    onChanged: (v) => setState(() => _selectedTime = v),
+                                    onChanged: (v) {
+                                      HapticFeedback.lightImpact();
+                                      setState(() => _selectedTime = v);
+                                    },
                                   );
                                 }),
                               ],
@@ -272,7 +301,10 @@ class _BookingScreenState extends State<BookingScreen> {
                       ),
                     ],
                   ),
-                );
+                ),
+              ],
+            ),
+          );
 
                 Widget summaryContent = Container(
                   width: isLarge ? 320 : double.infinity,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui';
 import '../theme/app_theme.dart';
 import '../data/dummy_data.dart';
 import '../models/ps_unit.dart';
@@ -344,20 +345,9 @@ class _InfoScreenState extends State<InfoScreen>
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 20),
-              child: Container(
+              child: GlassPanel(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppTheme.cardDark,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.dividerColor),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
+                borderRadius: 16,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -423,25 +413,19 @@ class _InfoScreenState extends State<InfoScreen>
                         final unit = units[index];
                         return GestureDetector(
                           onTap: () => _showUnitDetails(unit),
-                          child: Container(
+                          child: GlassPanel(
+                            enableBlur: false,
                             padding: const EdgeInsets.symmetric(
                               vertical: 10,
                               horizontal: 6,
                             ),
-                            decoration: BoxDecoration(
-                              color: unit.isAvailable
-                                  ? AppTheme.accentGreen.withValues(alpha: 0.1)
-                                  : AppTheme.accentRed.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: unit.isAvailable
-                                    ? AppTheme.accentGreen.withValues(
-                                        alpha: 0.5,
-                                      )
-                                    : AppTheme.dividerColor,
-                                width: 1,
-                              ),
-                            ),
+                            borderRadius: 8,
+                            surfaceColor: unit.isAvailable
+                                ? AppTheme.accentGreen.withValues(alpha: 0.1)
+                                : AppTheme.accentRed.withValues(alpha: 0.05),
+                            borderColor: unit.isAvailable
+                                ? AppTheme.accentGreen.withValues(alpha: 0.5)
+                                : AppTheme.dividerColor,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -733,7 +717,6 @@ class _InfoScreenState extends State<InfoScreen>
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: GlassPanel(
-        enableBlur: false,
         padding: const EdgeInsets.all(14),
         borderRadius: 12,
         child: Row(
@@ -1208,17 +1191,18 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return Container(
-      color: AppTheme.backgroundDark,
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: AppTheme.surfaceDark,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.dividerColor),
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: Container(
+          color: AppTheme.backgroundDark.withValues(alpha: 0.5),
+          child: GlassPanel(
+            margin: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            padding: const EdgeInsets.all(4),
+            borderRadius: 12,
+            child: _tabBar,
+          ),
         ),
-        child: _tabBar,
       ),
     );
   }
