@@ -9,10 +9,45 @@ List<Booking> generateMonthlyBookings(DateTime now) {
   final bookings = <Booking>[];
 
   final names = [
-    'Budi', 'Sandi', 'Riki', 'Siska', 'Adit', 'Dimas', 'Anton', 'Joko',
-    'Kayes', 'Alep', 'Fina', 'Agus', 'Lina', 'Bayu', 'Angga', 'Caca',
-    'Dina', 'Wira', 'Faris', 'Gita', 'Hadi', 'Indra', 'Jawir', 'Leon',
-    'Sir Toro', 'Nisa', 'Rina', 'Toni', 'Yuda', 'Mega',
+    'Budi',
+    'Sandi',
+    'Riki',
+    'Siska',
+    'Adit',
+    'Dimas',
+    'Anton',
+    'Joko',
+    'Kayes',
+    'Alep',
+    'Fina',
+    'Agus',
+    'Lina',
+    'Bayu',
+    'Angga',
+    'Caca',
+    'Dina',
+    'Wira',
+    'Faris',
+    'Gita',
+    'Hadi',
+    'Indra',
+    'Jawir',
+    'Leon',
+    'Sir Toro',
+    'Nisa',
+    'Rina',
+    'Toni',
+    'Yuda',
+    'Mega',
+    'Rian',
+    'Asep',
+    'Ambatukam',
+    'Rusdi',
+    'Anton',
+    'Ironi',
+    'Imut',
+    'Wawawiwin',
+    'Rusli',
   ];
   const psTypes = ConsoleType.values;
 
@@ -26,10 +61,12 @@ List<Booking> generateMonthlyBookings(DateTime now) {
     DateTime targetDate = now.subtract(Duration(days: i));
 
     // Weekends get more bookings
-    bool isWeekend = targetDate.weekday == DateTime.saturday ||
+    bool isWeekend =
+        targetDate.weekday == DateTime.saturday ||
         targetDate.weekday == DateTime.sunday;
     int bookingsCount = isWeekend
-        ? 20 + random.nextInt(15) // 20-34 on weekends
+        ? 20 +
+              random.nextInt(15) // 20-34 on weekends
         : 12 + random.nextInt(13); // 12-24 on weekdays
 
     for (int j = 0; j < bookingsCount; j++) {

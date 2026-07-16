@@ -132,7 +132,6 @@ const List<GameItem> gameCatalog = [
     genre: 'Survival Horror & Thriller',
     platform: 'PS4 PS5',
   ),
-
   GameItem(
     imageUrl: 'assets/gambar/resident-evil-7.jpg',
     title: 'Resident Evil 7',
@@ -144,6 +143,12 @@ const List<GameItem> gameCatalog = [
     title: 'Resident Evil 8 (Village)',
     genre: 'Survival Horror & Thriller',
     platform: 'PS4 PS5',
+  ),
+  GameItem(
+    imageUrl: 'assets/gambar/resident-evil-9.jpg',
+    title: 'Resident Evil Requiem',
+    genre: 'Survival Horror & Thriller',
+    platform: 'PS5',
   ),
   GameItem(
     imageUrl: 'assets/gambar/A-Plague-Tale-Innocence.jpg',
@@ -198,13 +203,13 @@ const List<GameItem> gameCatalog = [
   ),
   GameItem(
     imageUrl: 'assets/gambar/spider-man-remastered.jpg',
-      title: "Marvel's Spider-Man Remastered",
+    title: "Marvel's Spider-Man Remastered",
     genre: 'Action / Open World / Adventure',
     platform: 'PS5',
   ),
   GameItem(
     imageUrl: 'assets/gambar/spider-man-miles-morales.jpg',
-      title: "Marvel's Spider-Man: Miles Morales",
+    title: "Marvel's Spider-Man: Miles Morales",
     genre: 'Action / Open World / Adventure',
     platform: 'PS4 PS5',
   ),
@@ -227,7 +232,7 @@ const List<GameItem> gameCatalog = [
     platform: 'PS4 PS5',
   ),
   GameItem(
-    imageUrl: 'assets/gambar/Watch-Dogs-2.jpg',
+    imageUrl: 'assets/gambar/Watch-Dogs.jpg',
     title: 'Watch Dogs',
     genre: 'Action / Open World / Adventure',
     platform: 'PS4',
@@ -331,8 +336,18 @@ const List<GameItem> gameCatalog = [
     genre: 'RPG & JRPG',
     platform: 'PS5',
   ),
-  GameItem(imageUrl: 'assets/gambar/Final-Fantasy-XV.jpg', title: 'Final Fantasy XV', genre: 'RPG & JRPG', platform: 'PS4'),
-  GameItem(imageUrl: 'assets/gambar/Final-Fantasy-XVI.png', title: 'Final Fantasy XVI', genre: 'RPG & JRPG', platform: 'PS5'),
+  GameItem(
+    imageUrl: 'assets/gambar/Final-Fantasy-XV.jpg',
+    title: 'Final Fantasy XV',
+    genre: 'RPG & JRPG',
+    platform: 'PS4',
+  ),
+  GameItem(
+    imageUrl: 'assets/gambar/Final-Fantasy-XVI.png',
+    title: 'Final Fantasy XVI',
+    genre: 'RPG & JRPG',
+    platform: 'PS5',
+  ),
   GameItem(
     imageUrl: 'assets/gambar/Monster-Hunter-World.jpg',
     title: 'Monster Hunter: World',
@@ -529,6 +544,12 @@ const List<GameItem> gameCatalog = [
   GameItem(
     imageUrl: 'assets/gambar/The-Legend-of-Zelda-Breath-of-the-Wild.jpg',
     title: 'The Legend of Zelda: Breath of the Wild',
+    genre: 'Action / Open World / Adventure',
+    platform: 'Nintendo Switch',
+  ),
+  GameItem(
+    imageUrl: 'assets/gambar/the-legend-of-zelda-tears-of-the-kingdom.jpg',
+    title: 'The Legend of Zelda: Tears of the Kingdom',
     genre: 'Action / Open World / Adventure',
     platform: 'Nintendo Switch',
   ),
