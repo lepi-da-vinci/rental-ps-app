@@ -1,16 +1,8 @@
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart';
-
 /// Centralized REST API Configuration for Laravel Backend integration.
 class ApiConfig {
   /// Base URL of the Laravel API.
-  /// Automatically uses 10.0.2.2 for Android emulator and localhost for Web/Desktop.
   static String get defaultBaseUrl {
-    if (kIsWeb) return 'http://localhost:8000/api';
-    try {
-      if (Platform.isAndroid) return 'http://10.0.2.2:8000/api';
-    } catch (_) {}
-    return 'http://localhost:8000/api';
+    return 'https://rental-ps-timeless.loca.lt/api';
   }
 
   static String _customBaseUrl = '';
@@ -40,6 +32,7 @@ class ApiConfig {
   static Map<String, String> get headers => {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'Bypass-Tunnel-Reminder': 'true',
       };
 
   /// Headers with Bearer Token authentication.

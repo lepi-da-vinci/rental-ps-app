@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'data/dummy_data.dart';
@@ -29,6 +30,16 @@ void main() {
   );
 }
 
+class CustomAppScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+      };
+}
+
 class TimelessApp extends StatelessWidget {
   const TimelessApp({super.key});
 
@@ -37,6 +48,7 @@ class TimelessApp extends StatelessWidget {
     return MaterialApp(
       title: 'Timeless - PS Rental',
       debugShowCheckedModeBanner: false,
+      scrollBehavior: CustomAppScrollBehavior(),
       theme: AppTheme.darkTheme,
       home: const MainScreen(),
     );

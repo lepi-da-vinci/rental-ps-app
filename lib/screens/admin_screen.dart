@@ -11,7 +11,6 @@ import '../widgets/glass_panel.dart';
 import '../widgets/section_title.dart';
 import '../widgets/unit_timeline_view.dart';
 import '../utils/time_helpers.dart';
-import '../services/api_config.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -250,144 +249,59 @@ class _AdminScreenState extends State<AdminScreen>
     final statusColor = isOnline ? AppTheme.accentGreen : AppTheme.accentCyan;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: AppTheme.cardDark,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: statusColor.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: statusColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                isOnline ? 'SERVER LARAVEL ONLINE (CLOUD)' : 'MODE LOKAL / OFFLINE SIMULATED',
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: statusColor,
-                ),
-              ),
-              const Spacer(),
-              if (isSyncing)
-                const SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppTheme.accentCyan,
-                  ),
-                )
-              else
-                IconButton(
-                  icon: const Icon(Icons.refresh, size: 18, color: AppTheme.accentCyan),
-                  tooltip: 'Sinkronkan Ulang',
-                  onPressed: () => provider.syncWithApi(),
-                ),
-            ],
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: statusColor,
+              shape: BoxShape.circle,
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(width: 8),
           Text(
-            'URL Server: ${ApiConfig.baseUrl}',
+            isOnline
+                ? 'SYSTEM CLOUD BACKEND CONNECTED'
+                : 'MODE LOKAL / OFFLINE SIMULATED',
             style: GoogleFonts.spaceGrotesk(
-              fontSize: 11,
-              color: AppTheme.textMuted,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => _showChangeApiUrlDialog(context, provider),
-              icon: const Icon(Icons.cloud_sync_outlined, size: 16),
-              label: Text(
-                'Ubah URL Backend (Cloud Domain / Ngrok)',
-                style: GoogleFonts.spaceGrotesk(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppTheme.accentCyan,
-                side: BorderSide(color: AppTheme.accentCyan.withValues(alpha: 0.5)),
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: statusColor,
             ),
           ),
+          const Spacer(),
+          if (isSyncing)
+            const SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppTheme.accentCyan,
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(
+                Icons.refresh,
+                size: 18,
+                color: AppTheme.accentCyan,
+              ),
+              tooltip: 'Sinkronkan Ulang',
+              onPressed: () => provider.syncWithApi(),
+            ),
         ],
       ),
     );
   }
 
-  void _showChangeApiUrlDialog(BuildContext context, BookingProvider provider) {
-    final controller = TextEditingController(text: ApiConfig.baseUrl);
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceDark,
-        title: Text(
-          'Set URL Backend Online',
-          style: GoogleFonts.spaceGrotesk(
-            color: AppTheme.textPrimary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Masukkan domain online (Railway, Render, Ngrok HTTPS URL, atau Domain VPS):',
-              style: GoogleFonts.spaceGrotesk(fontSize: 12, color: AppTheme.textMuted),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary, fontSize: 13),
-              decoration: const InputDecoration(
-                hintText: 'https://nama-backend.up.railway.app/api',
-                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.dividerColor)),
-                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.accentCyan)),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Batal', style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentCyan),
-            onPressed: () {
-              ApiConfig.setCustomBaseUrl(controller.text.trim());
-              provider.syncWithApi();
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('URL Backend berhasil diubah ke ${ApiConfig.baseUrl}'),
-                  backgroundColor: AppTheme.accentGreen,
-                ),
-              );
-            },
-            child: Text('Simpan & Hubungkan', style: GoogleFonts.spaceGrotesk(color: Colors.black, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildStatCard(
     String title,

@@ -12,7 +12,10 @@ class ApiService {
   static Future<bool> checkServerHealth() async {
     try {
       final response = await http
-          .get(Uri.parse('${ApiConfig.baseUrl}/health'))
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/health'),
+            headers: ApiConfig.headers,
+          )
           .timeout(ApiConfig.timeout);
       return response.statusCode == 200;
     } catch (_) {

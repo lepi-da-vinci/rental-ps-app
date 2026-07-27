@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/booking.dart';
 import '../theme/app_theme.dart';
 
-class UnitTimelineView extends StatelessWidget {
+class UnitTimelineView extends StatefulWidget {
   final List<Booking> unitBookings;
   final int startOpHour;
   final int endOpHour;
@@ -18,28 +18,124 @@ class UnitTimelineView extends StatelessWidget {
   });
 
   @override
+  State<UnitTimelineView> createState() => _UnitTimelineViewState();
+}
+
+class _UnitTimelineViewState extends State<UnitTimelineView> {
+  int? _selectedHour;
+
+  @override
   Widget build(BuildContext context) {
+    Booking? selectedBooking;
+    if (_selectedHour != null) {
+      for (final b in widget.unitBookings) {
+        final bStart = int.tryParse(b.time.split(':')[0]) ?? 0;
+        final bEnd = bStart + b.durationHours;
+        if (_selectedHour! >= bStart && _selectedHour! < bEnd) {
+          selectedBooking = b;
+          break;
+        }
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Jadwal Hari Ini ($dateTitle)',
-          style: GoogleFonts.spaceGrotesk(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textMuted,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Jadwal Hari Ini (${widget.dateTitle})',
+              style: GoogleFonts.spaceGrotesk(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textMuted,
+              ),
+            ),
+            if (_selectedHour != null)
+              GestureDetector(
+                onTap: () => setState(() => _selectedHour = null),
+                child: Text(
+                  'Tutup Info ✕',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.accentCyan,
+                  ),
+                ),
+              ),
+          ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
+        if (_selectedHour != null) ...[
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: selectedBooking != null
+                  ? AppTheme.accentCyan.withValues(alpha: 0.15)
+                  : AppTheme.accentGreen.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: selectedBooking != null
+                    ? AppTheme.accentCyan
+                    : AppTheme.accentGreen,
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  selectedBooking != null
+                      ? (selectedBooking.isWalkIn
+                          ? Icons.directions_walk
+                          : Icons.person)
+                      : Icons.check_circle_outline,
+                  size: 18,
+                  color: selectedBooking != null
+                      ? AppTheme.accentCyan
+                      : AppTheme.accentGreen,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        selectedBooking != null
+                            ? 'Sesi Disewa: ${selectedBooking.customerName}'
+                            : 'Jam ${_selectedHour.toString().padLeft(2, '0')}:00 - ${(_selectedHour! + 1).toString().padLeft(2, '0')}:00 Kosong',
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      if (selectedBooking != null)
+                        Text(
+                          'Waktu: ${selectedBooking.time} - ${selectedBooking.endTime} • Tipe: ${selectedBooking.isWalkIn ? 'Walk-in (Langsung)' : 'Booking Online'}',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 11,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
-            children: List.generate(endOpHour - startOpHour, (index) {
-              final h = startOpHour + index;
+            children: List.generate(widget.endOpHour - widget.startOpHour, (index) {
+              final h = widget.startOpHour + index;
 
               // Check if any booking overlaps with this hour
               Booking? matchedBooking;
-              for (final b in unitBookings) {
+              for (final b in widget.unitBookings) {
                 final bStart = int.tryParse(b.time.split(':')[0]) ?? 0;
                 final dur = b.durationHours;
                 final bEnd = bStart + dur;
@@ -51,6 +147,7 @@ class UnitTimelineView extends StatelessWidget {
 
               final isBooked = matchedBooking != null;
               final isWalkIn = matchedBooking?.id.startsWith('WI-') ?? false;
+              final isSelected = _selectedHour == h;
 
               String tooltipMsg = 'Kosong';
               if (matchedBooking != null) {
@@ -68,47 +165,20 @@ class UnitTimelineView extends StatelessWidget {
                 borderColor = bookingColor;
               }
 
+              if (isSelected) {
+                borderColor = AppTheme.accentCyan;
+                blockColor = AppTheme.accentCyan.withValues(alpha: 0.25);
+              }
+
               return GestureDetector(
                 onTap: () {
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  if (isBooked) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Sesi disewa oleh: $tooltipMsg',
-                          style: GoogleFonts.spaceGrotesk(color: Colors.white),
-                        ),
-                        backgroundColor: AppTheme.cardDark,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          side: const BorderSide(color: AppTheme.dividerColor),
-                        ),
-                        behavior: SnackBarBehavior.floating,
-                        duration: const Duration(seconds: 1),
-                        action: SnackBarAction(
-                          label: 'OK',
-                          textColor: AppTheme.accentCyan,
-                          onPressed: () {},
-                        ),
-                      ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Jam ini kosong / tersedia',
-                          style: GoogleFonts.spaceGrotesk(color: Colors.white),
-                        ),
-                        backgroundColor: AppTheme.cardDark,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          side: const BorderSide(color: AppTheme.dividerColor),
-                        ),
-                        behavior: SnackBarBehavior.floating,
-                        duration: const Duration(seconds: 1),
-                      ),
-                    );
-                  }
+                  setState(() {
+                    if (_selectedHour == h) {
+                      _selectedHour = null;
+                    } else {
+                      _selectedHour = h;
+                    }
+                  });
                 },
                 child: Tooltip(
                   message: tooltipMsg,
@@ -119,7 +189,10 @@ class UnitTimelineView extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: blockColor,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: borderColor, width: 1),
+                      border: Border.all(
+                        color: borderColor,
+                        width: isSelected ? 2 : 1,
+                      ),
                     ),
                     child: Column(
                       children: [
@@ -128,7 +201,7 @@ class UnitTimelineView extends StatelessWidget {
                           style: GoogleFonts.spaceGrotesk(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: isBooked
+                            color: isBooked || isSelected
                                 ? AppTheme.textPrimary
                                 : AppTheme.textMuted,
                           ),

@@ -87,7 +87,7 @@ class BookingProvider extends ChangeNotifier {
         (t) => t.duration == b.duration.displayName,
         orElse: () => pkg.prices.first,
       );
-      total += priceTier.price * b.durationHours;
+      total += priceTier.price;
     }
     return total;
   }
@@ -105,7 +105,7 @@ class BookingProvider extends ChangeNotifier {
         (t) => t.duration == b.duration.displayName,
         orElse: () => pkg.prices.first,
       );
-      total += priceTier.price * b.durationHours;
+      total += priceTier.price;
     }
     return total;
   }
