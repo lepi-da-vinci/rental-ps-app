@@ -5,23 +5,50 @@ import '../models/ps_unit.dart';
 import '../data/dummy_data.dart';
 import '../data/dummy_revenue.dart';
 import '../utils/time_helpers.dart';
+import '../services/api_service.dart';
 
-/// Manages all booking-related state: CRUD, scheduling, live unit status.
-///
-/// No longer owns a Timer or admin state — those responsibilities
-/// have been moved to [ClockService] and [AdminProvider] respectively.
+/// Manages all booking-related state: CRUD, scheduling, live unit status, and API sync.
 class BookingProvider extends ChangeNotifier {
   final List<Booking> _bookings = [];
-
-  /// Template units — static layout of all physical units.
   final List<UnitStatus> _templateUnits = getDummyUnitStatus();
-
-  /// Current wall-clock time, updated externally by [ClockService].
   DateTime _now = DateTime.now();
 
+  bool _isApiConnected = false;
+  bool _isSyncing = false;
+
+  bool get isApiConnected => _isApiConnected;
+  bool get isSyncing => _isSyncing;
+
   BookingProvider() {
-    // Muat data booking dummy awal
+    // Initial dummy data load
     _bookings.addAll(generateMonthlyBookings(_now));
+    // Attempt API sync in background
+    syncWithApi();
+  }
+
+  /// Sync data with Laravel API backend if available.
+  Future<void> syncWithApi() async {
+    _isSyncing = true;
+    notifyListeners();
+
+    try {
+      final isOnline = await ApiService.checkServerHealth();
+      _isApiConnected = isOnline;
+
+      if (isOnline) {
+        final apiBookings = await ApiService.fetchBookings();
+        if (apiBookings != null && apiBookings.isNotEmpty) {
+          _bookings.clear();
+          _bookings.addAll(apiBookings);
+        }
+      }
+    } catch (e) {
+      _isApiConnected = false;
+      debugPrint('BookingProvider.syncWithApi error: $e');
+    } finally {
+      _isSyncing = false;
+      notifyListeners();
+    }
   }
 
   /// Called by ProxyProvider when [ClockService] ticks.
@@ -272,17 +299,25 @@ class BookingProvider extends ChangeNotifier {
       a.year == b.year && a.month == b.month && a.day == b.day;
 
   // ════════════════════════════════════════════════════════
-  //  Booking CRUD
+  //  Booking CRUD (Hybrid: Local + API)
   // ════════════════════════════════════════════════════════
 
   void addBooking(Booking booking) {
     _bookings.add(booking);
     notifyListeners();
+    // Background sync to Laravel API if server is online
+    if (_isApiConnected) {
+      ApiService.createBooking(booking);
+    }
   }
 
   void removeBooking(String id) {
     _bookings.removeWhere((b) => b.id == id);
     notifyListeners();
+    // Background sync to Laravel API if server is online
+    if (_isApiConnected) {
+      ApiService.deleteBooking(id);
+    }
   }
 
   Booking? getBookingById(String id) {
