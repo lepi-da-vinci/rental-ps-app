@@ -50,7 +50,8 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
+class _MainScreenState extends State<MainScreen>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   late AnimationController _bgController;
   late Animation<Alignment> _bgAnimation;
@@ -62,10 +63,13 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
       vsync: this,
       duration: const Duration(seconds: 20),
     )..repeat(reverse: true);
-    _bgAnimation = Tween<Alignment>(
-      begin: const Alignment(-0.6, -0.6),
-      end: const Alignment(0.6, -0.2),
-    ).animate(CurvedAnimation(parent: _bgController, curve: Curves.easeInOutSine));
+    _bgAnimation =
+        Tween<Alignment>(
+          begin: const Alignment(-0.6, -0.6),
+          end: const Alignment(0.6, -0.2),
+        ).animate(
+          CurvedAnimation(parent: _bgController, curve: Curves.easeInOutSine),
+        );
   }
 
   @override
@@ -105,8 +109,11 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
 
     final screens = [
       HomeScreen(key: const ValueKey('home'), onNavigate: _onNavigate),
-      const InfoScreen(key: ValueKey('info')),
-      HargaScreen(key: const ValueKey('harga'), onNavigateToBooking: _onNavigate),
+      InfoScreen(key: const ValueKey('info'), onNavigateToBooking: _onNavigate),
+      HargaScreen(
+        key: const ValueKey('harga'),
+        onNavigateToBooking: _onNavigate,
+      ),
       const BookingScreen(key: ValueKey('booking')),
     ];
 
@@ -151,7 +158,10 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                                   return FadeTransition(
                                     opacity: animation,
                                     child: ScaleTransition(
-                                      scale: Tween<double>(begin: 0.98, end: 1.0).animate(animation),
+                                      scale: Tween<double>(
+                                        begin: 0.98,
+                                        end: 1.0,
+                                      ).animate(animation),
                                       child: child,
                                     ),
                                   );
@@ -167,7 +177,10 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                             return FadeTransition(
                               opacity: animation,
                               child: ScaleTransition(
-                                scale: Tween<double>(begin: 0.98, end: 1.0).animate(animation),
+                                scale: Tween<double>(
+                                  begin: 0.98,
+                                  end: 1.0,
+                                ).animate(animation),
                                 child: child,
                               ),
                             );

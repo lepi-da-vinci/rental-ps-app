@@ -5,6 +5,7 @@ import '../data/dummy_data.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_title.dart';
 import '../widgets/glass_panel.dart';
+import '../widgets/game_detail_dialog.dart';
 import '../providers/booking_provider.dart';
 import '../utils/time_helpers.dart';
 
@@ -284,8 +285,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: GlassPanel(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           borderRadius: 12,
-                          surfaceColor: AppTheme.accentTeal.withValues(alpha: 0.15),
-                          borderColor: AppTheme.accentTeal.withValues(alpha: 0.3),
+                          surfaceColor: AppTheme.accentTeal.withValues(
+                            alpha: 0.15,
+                          ),
+                          borderColor: AppTheme.accentTeal.withValues(
+                            alpha: 0.3,
+                          ),
                           addHighlight: false,
                           child: Center(
                             child: Text(
@@ -581,12 +586,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Column(
       children: displayGames.map((game) {
-        return GlassPanel(
-          enableBlur: false,
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(12),
-          borderRadius: 12,
-          child: Row(
+        return GestureDetector(
+          onTap: () => GameDetailDialog.show(
+            context,
+            game,
+            onNavigateToBooking: widget.onNavigate,
+          ),
+          child: GlassPanel(
+            enableBlur: false,
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            borderRadius: 12,
+            child: Row(
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
@@ -709,8 +720,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-        );
-      }).toList(),
+        ),
+      );
+    }).toList(),
     );
   }
 

@@ -32,7 +32,6 @@ class _BookingScreenState extends State<BookingScreen> {
 
   List<ConsoleType> get _psTypes => ConsoleType.values;
 
-
   @override
   void dispose() {
     _nameController.dispose();
@@ -115,24 +114,32 @@ class _BookingScreenState extends State<BookingScreen> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _nameController,
-                        style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
+                        style: GoogleFonts.spaceGrotesk(
+                          color: AppTheme.textPrimary,
+                        ),
                         decoration: const InputDecoration(
                           hintText: 'Nama kamu',
                         ),
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Wajib diisi'
+                            : null,
                       ),
                       const SizedBox(height: 20),
-                      
+
                       _buildLabel('NOMOR WHATSAPP'),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
-                        style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
+                        style: GoogleFonts.spaceGrotesk(
+                          color: AppTheme.textPrimary,
+                        ),
                         decoration: const InputDecoration(
                           hintText: '08xxxxxxxxxx',
                         ),
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Wajib diisi'
+                            : null,
                       ),
                       const SizedBox(height: 20),
 
@@ -152,25 +159,43 @@ class _BookingScreenState extends State<BookingScreen> {
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 300),
                               curve: Curves.easeOut,
-                              width: isLarge ? (constraints.maxWidth - 400 - 48 - 24) / 3 : (constraints.maxWidth - 96) / 2,
+                              width: isLarge
+                                  ? (constraints.maxWidth - 400 - 48 - 24) / 3
+                                  : (constraints.maxWidth - 96) / 2,
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              transform: isSelected ? (Matrix4.identity()..scale(1.05)) : Matrix4.identity(),
+                              transform: isSelected
+                                  ? (Matrix4.identity()..scale(1.05))
+                                  : Matrix4.identity(),
                               transformAlignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: isSelected ? AppTheme.accentMagenta.withValues(alpha: 0.1) : AppTheme.surfaceDark,
+                                color: isSelected
+                                    ? AppTheme.accentMagenta.withValues(
+                                        alpha: 0.1,
+                                      )
+                                    : AppTheme.surfaceDark,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: isSelected ? AppTheme.accentMagenta : AppTheme.dividerColor,
+                                  color: isSelected
+                                      ? AppTheme.accentMagenta
+                                      : AppTheme.dividerColor,
                                 ),
                                 boxShadow: isSelected
-                                    ? AppTheme.neonShadow(AppTheme.accentMagenta, spread: 0, blur: 12)
+                                    ? AppTheme.neonShadow(
+                                        AppTheme.accentMagenta,
+                                        spread: 0,
+                                        blur: 12,
+                                      )
                                     : [],
                               ),
                               child: Column(
                                 children: [
                                   Icon(
-                                    type == ConsoleType.nintendoVip ? Icons.gamepad : Icons.sports_esports,
-                                    color: isSelected ? AppTheme.textPrimary : AppTheme.textMuted,
+                                    type == ConsoleType.nintendoVip
+                                        ? Icons.gamepad
+                                        : Icons.sports_esports,
+                                    color: isSelected
+                                        ? AppTheme.textPrimary
+                                        : AppTheme.textMuted,
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
@@ -178,8 +203,12 @@ class _BookingScreenState extends State<BookingScreen> {
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.spaceGrotesk(
                                       fontSize: 12,
-                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                                      color: isSelected ? AppTheme.textPrimary : AppTheme.textMuted,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w700
+                                          : FontWeight.w600,
+                                      color: isSelected
+                                          ? AppTheme.textPrimary
+                                          : AppTheme.textMuted,
                                     ),
                                   ),
                                 ],
@@ -189,128 +218,197 @@ class _BookingScreenState extends State<BookingScreen> {
                         }).toList(),
                       ),
                       const SizedBox(height: 20),
-                      
+
                       AnimatedSize(
                         duration: const Duration(milliseconds: 400),
                         curve: Curves.easeInOut,
                         alignment: Alignment.topCenter,
-                        child: _selectedPsType == null 
-                          ? const SizedBox.shrink()
-                          : Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-
-                      _buildLabel('DURASI'),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: SessionDuration.values.map((duration) {
-                          bool isSelected = _selectedDuration == duration;
-                          return InkWell(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              setState(() {
-                                _selectedDuration = duration;
-                                _selectedTime = null;
-                              });
-                            },
-                            borderRadius: BorderRadius.circular(24),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: isSelected ? AppTheme.accentMagenta.withValues(alpha: 0.1) : AppTheme.surfaceDark,
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(
-                                  color: isSelected ? AppTheme.accentMagenta : AppTheme.dividerColor,
-                                ),
-                              ),
-                              child: Text(
-                                duration.displayName,
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 12,
-                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                                  color: isSelected ? AppTheme.textPrimary : AppTheme.textMuted,
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 20),
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildLabel('TANGGAL'),
-                                const SizedBox(height: 8),
-                                GestureDetector(
-                                  onTap: () {
-                                    HapticFeedback.lightImpact();
-                                    _pickDate();
-                                  },
-                                  child: AbsorbPointer(
-                                    child: TextFormField(
-                                      style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary, fontSize: 13),
-                                      decoration: InputDecoration(
-                                        hintText: _selectedDate != null ? DateFormat('dd/MM/yyyy').format(_selectedDate!) : 'dd/mm/yyyy',
-                                        suffixIcon: const Icon(Icons.calendar_today_outlined, color: AppTheme.textMuted, size: 18),
-                                      ),
-                                    ),
+                        child: _selectedPsType == null
+                            ? const SizedBox.shrink()
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildLabel('DURASI'),
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 12,
+                                    runSpacing: 12,
+                                    children: SessionDuration.values.map((
+                                      duration,
+                                    ) {
+                                      bool isSelected =
+                                          _selectedDuration == duration;
+                                      return InkWell(
+                                        onTap: () {
+                                          HapticFeedback.lightImpact();
+                                          setState(() {
+                                            _selectedDuration = duration;
+                                            _selectedTime = null;
+                                          });
+                                        },
+                                        borderRadius: BorderRadius.circular(24),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(
+                                            milliseconds: 200,
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                            vertical: 10,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: isSelected
+                                                ? AppTheme.accentMagenta
+                                                      .withValues(alpha: 0.1)
+                                                : AppTheme.surfaceDark,
+                                            borderRadius: BorderRadius.circular(
+                                              24,
+                                            ),
+                                            border: Border.all(
+                                              color: isSelected
+                                                  ? AppTheme.accentMagenta
+                                                  : AppTheme.dividerColor,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            duration.displayName,
+                                            style: GoogleFonts.spaceGrotesk(
+                                              fontSize: 12,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.w700
+                                                  : FontWeight.w600,
+                                              color: isSelected
+                                                  ? AppTheme.textPrimary
+                                                  : AppTheme.textMuted,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildLabel('JAM MULAI'),
-                                const SizedBox(height: 8),
-                                Builder(builder: (context) {
-                                  // Bug 4 fix: only show time slots valid for the chosen duration
-                                  final durHours = _selectedDuration != null
-                                     ? _selectedDuration!.hours
-                                     : 1;
-                                  final validSlots = getValidTimeSlots(durHours);
-                                  return DropdownButtonFormField<String>(
-                                    initialValue: validSlots.contains(_selectedTime) ? _selectedTime : null,
-                                    dropdownColor: AppTheme.cardDark,
-                                    style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary, fontSize: 13),
-                                    decoration: const InputDecoration(
-                                      hintText: '--:--',
-                                      suffixIcon: Icon(Icons.access_time_outlined, color: AppTheme.textMuted, size: 18),
-                                    ),
-                                    items: validSlots.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                                    onChanged: (v) {
-                                      HapticFeedback.lightImpact();
-                                      setState(() => _selectedTime = v);
-                                    },
-                                  );
-                                }),
-                              ],
-                            ),
-                          ),
-                        ],
+                                  const SizedBox(height: 20),
+
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _buildLabel('TANGGAL'),
+                                            const SizedBox(height: 8),
+                                            GestureDetector(
+                                              onTap: () {
+                                                HapticFeedback.lightImpact();
+                                                _pickDate();
+                                              },
+                                              child: AbsorbPointer(
+                                                child: TextFormField(
+                                                  style:
+                                                      GoogleFonts.spaceGrotesk(
+                                                        color: AppTheme
+                                                            .textPrimary,
+                                                        fontSize: 13,
+                                                      ),
+                                                  decoration: InputDecoration(
+                                                    hintText:
+                                                        _selectedDate != null
+                                                        ? DateFormat(
+                                                            'dd/MM/yyyy',
+                                                          ).format(
+                                                            _selectedDate!,
+                                                          )
+                                                        : 'dd/mm/yyyy',
+                                                    suffixIcon: const Icon(
+                                                      Icons
+                                                          .calendar_today_outlined,
+                                                      color: AppTheme.textMuted,
+                                                      size: 18,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _buildLabel('JAM MULAI'),
+                                            const SizedBox(height: 8),
+                                            Builder(
+                                              builder: (context) {
+                                                // Bug 4 fix: only show time slots valid for the chosen duration
+                                                final durHours =
+                                                    _selectedDuration != null
+                                                    ? _selectedDuration!.hours
+                                                    : 1;
+                                                final validSlots =
+                                                    getValidTimeSlots(durHours);
+                                                return DropdownButtonFormField<
+                                                  String
+                                                >(
+                                                  initialValue:
+                                                      validSlots.contains(
+                                                        _selectedTime,
+                                                      )
+                                                      ? _selectedTime
+                                                      : null,
+                                                  dropdownColor:
+                                                      AppTheme.cardDark,
+                                                  style:
+                                                      GoogleFonts.spaceGrotesk(
+                                                        color: AppTheme
+                                                            .textPrimary,
+                                                        fontSize: 13,
+                                                      ),
+                                                  decoration: const InputDecoration(
+                                                    hintText: '--:--',
+                                                    suffixIcon: Icon(
+                                                      Icons
+                                                          .access_time_outlined,
+                                                      color: AppTheme.textMuted,
+                                                      size: 18,
+                                                    ),
+                                                  ),
+                                                  items: validSlots
+                                                      .map(
+                                                        (t) => DropdownMenuItem(
+                                                          value: t,
+                                                          child: Text(t),
+                                                        ),
+                                                      )
+                                                      .toList(),
+                                                  onChanged: (v) {
+                                                    HapticFeedback.lightImpact();
+                                                    setState(
+                                                      () => _selectedTime = v,
+                                                    );
+                                                  },
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-          );
+                );
 
                 Widget summaryContent = Container(
                   width: isLarge ? 320 : double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: AppTheme.surfaceDark, // slightly different dark to distinguish
+                    color: AppTheme
+                        .surfaceDark, // slightly different dark to distinguish
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
@@ -326,9 +424,15 @@ class _BookingScreenState extends State<BookingScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      _buildSummaryRow('Konsol', _selectedPsType?.bookingDisplayName ?? '-'),
+                      _buildSummaryRow(
+                        'Konsol',
+                        _selectedPsType?.bookingDisplayName ?? '-',
+                      ),
                       const SizedBox(height: 16),
-                      _buildSummaryRow('Durasi', _selectedDuration?.displayName ?? '-'),
+                      _buildSummaryRow(
+                        'Durasi',
+                        _selectedDuration?.displayName ?? '-',
+                      ),
                       const SizedBox(height: 16),
                       _buildSummaryRow('Estimasi', _estimatedPrice ?? '-'),
                       const SizedBox(height: 24),
@@ -360,7 +464,8 @@ class _BookingScreenState extends State<BookingScreen> {
                       RetroButton(
                         label: 'Konfirmasi Booking',
                         isFullWidth: true,
-                        backgroundColor: AppTheme.accentMagenta, // Assuming the button is purple/magenta from the UI
+                        backgroundColor: AppTheme
+                            .accentMagenta, // Assuming the button is purple/magenta from the UI
                         onPressed: _submitBooking,
                       ),
                       const SizedBox(height: 12),
@@ -431,8 +536,6 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-
-
   Widget _buildLabel(String text) {
     return Text(
       text,
@@ -475,7 +578,9 @@ class _BookingScreenState extends State<BookingScreen> {
 
   void _submitBooking() {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedDate == null || _selectedTime == null || _selectedDuration == null) {
+    if (_selectedDate == null ||
+        _selectedTime == null ||
+        _selectedDuration == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -491,40 +596,46 @@ class _BookingScreenState extends State<BookingScreen> {
     final baseType = _selectedPsType!;
     int durationHours = _selectedDuration!.hours;
     SessionDuration effectiveDuration = _selectedDuration!;
-    
+
     // Check if booking exceeds closing time
     final p = _selectedTime!.split(':');
     final startMins = int.parse(p[0]) * 60 + int.parse(p[1]);
-    
+
     final todayHours = getOperatingHours().firstWhere(
       (h) => h.isToday,
       orElse: () => getOperatingHours().first,
     );
     final (_, closeHour) = parseOperatingHours(todayHours.hours);
     final closingMins = closeHour * 60;
-    
+
     if (startMins + durationHours * 60 > closingMins) {
       final maxAllowedHours = (closingMins - startMins) ~/ 60;
       if (maxAllowedHours <= 0) {
         final closeStr = '${closeHour.toString().padLeft(2, '0')}:00';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Maaf, sudah terlalu dekat dengan jam tutup ($closeStr)', style: GoogleFonts.spaceGrotesk()),
+            content: Text(
+              'Maaf, sudah terlalu dekat dengan jam tutup ($closeStr)',
+              style: GoogleFonts.spaceGrotesk(),
+            ),
             backgroundColor: AppTheme.accentRed,
           ),
         );
         return;
       }
-      
+
       durationHours = maxAllowedHours;
       effectiveDuration = SessionDuration.values.firstWhere(
         (d) => d.hours == maxAllowedHours,
         orElse: () => SessionDuration.jam1,
       );
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Batas tutup jam 00:00. Booking otomatis disesuaikan menjadi $maxAllowedHours Jam.', style: GoogleFonts.spaceGrotesk()),
+          content: Text(
+            'Batas tutup jam 00:00. Booking otomatis disesuaikan menjadi $maxAllowedHours Jam.',
+            style: GoogleFonts.spaceGrotesk(),
+          ),
           backgroundColor: AppTheme.accentCyan,
           duration: const Duration(seconds: 4),
         ),
@@ -566,7 +677,10 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  void _createBookingAndShowConfirmation(String unitLabel, SessionDuration duration) {
+  void _createBookingAndShowConfirmation(
+    String unitLabel,
+    SessionDuration duration,
+  ) {
     final booking = Booking(
       id: 'BK-${DateTime.now().millisecondsSinceEpoch}',
       customerName: _nameController.text.trim(),
@@ -609,7 +723,11 @@ class _BookingScreenState extends State<BookingScreen> {
                       color: AppTheme.accentRed.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.event_busy, color: AppTheme.accentRed, size: 22),
+                    child: const Icon(
+                      Icons.event_busy,
+                      color: AppTheme.accentRed,
+                      size: 22,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -643,14 +761,19 @@ class _BookingScreenState extends State<BookingScreen> {
                 _conflictOptionTile(
                   icon: Icons.timer_outlined,
                   color: AppTheme.accentCyan,
-                  title: 'Tetap ${_selectedPsType?.bookingDisplayName}, durasi $maxDuration jam',
-                  subtitle: 'Jam mulai tetap $_selectedTime, cuma durasinya disesuaikan.',
+                  title:
+                      'Tetap ${_selectedPsType?.bookingDisplayName}, durasi $maxDuration jam',
+                  subtitle:
+                      'Jam mulai tetap $_selectedTime, cuma durasinya disesuaikan.',
                   onTap: () {
                     Navigator.pop(ctx);
-                    setState(() => _selectedDuration = SessionDuration.values.firstWhere(
-                          (e) => e.hours == maxDuration,
-                          orElse: () => SessionDuration.jam1,
-                        ));
+                    setState(
+                      () =>
+                          _selectedDuration = SessionDuration.values.firstWhere(
+                            (e) => e.hours == maxDuration,
+                            orElse: () => SessionDuration.jam1,
+                          ),
+                    );
                     _submitBooking();
                   },
                 ),
@@ -662,7 +785,8 @@ class _BookingScreenState extends State<BookingScreen> {
                   icon: Icons.swap_horiz,
                   color: AppTheme.accentMagenta,
                   title: 'Pindah ke ${alt.bookingDisplayName}',
-                  subtitle: 'Tetap main $requestedDuration jam penuh mulai $_selectedTime.',
+                  subtitle:
+                      'Tetap main $requestedDuration jam penuh mulai $_selectedTime.',
                   onTap: () {
                     Navigator.pop(ctx);
                     setState(() => _selectedPsType = alt);
@@ -675,7 +799,10 @@ class _BookingScreenState extends State<BookingScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'Semua tipe konsol lagi padat di jam segini. Coba pilih jam lain ya.',
-                  style: GoogleFonts.spaceGrotesk(fontSize: 13, color: AppTheme.textSecondary),
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 13,
+                    color: AppTheme.textSecondary,
+                  ),
                 ),
               ],
 
@@ -688,9 +815,16 @@ class _BookingScreenState extends State<BookingScreen> {
                     side: const BorderSide(color: AppTheme.dividerColor),
                     foregroundColor: AppTheme.textSecondary,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                  child: Text('Batal', style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w600)),
+                  child: Text(
+                    'Batal',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -736,7 +870,10 @@ class _BookingScreenState extends State<BookingScreen> {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: GoogleFonts.spaceGrotesk(fontSize: 11, color: AppTheme.textMuted),
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 11,
+                      color: AppTheme.textMuted,
+                    ),
                   ),
                 ],
               ),
@@ -747,7 +884,6 @@ class _BookingScreenState extends State<BookingScreen> {
       ),
     );
   }
-
 
   void _showConfirmationDialog(Booking booking) {
     showDialog(
@@ -848,7 +984,9 @@ class _BookingScreenState extends State<BookingScreen> {
                       ),
                       child: Text(
                         'Batal',
-                        style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w600),
+                        style: GoogleFonts.spaceGrotesk(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -887,7 +1025,9 @@ class _BookingScreenState extends State<BookingScreen> {
                       ),
                       child: Text(
                         'Simpan',
-                        style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
+                        style: GoogleFonts.spaceGrotesk(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
@@ -983,7 +1123,9 @@ class _BookingScreenState extends State<BookingScreen> {
                   ),
                   child: Text(
                     'Tutup',
-                    style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w600),
+                    style: GoogleFonts.spaceGrotesk(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
@@ -1115,13 +1257,17 @@ class _BookingScreenState extends State<BookingScreen> {
       },
     );
   }
-  
+
   String _getShortPsType(ConsoleType psType) {
     switch (psType) {
-      case ConsoleType.ps4: return 'PS4';
-      case ConsoleType.ps5: return 'PS5';
-      case ConsoleType.ps5Vip: return 'PS5V';
-      case ConsoleType.nintendoVip: return 'NIN';
+      case ConsoleType.ps4:
+        return 'PS4';
+      case ConsoleType.ps5:
+        return 'PS5';
+      case ConsoleType.ps5Vip:
+        return 'PS5V';
+      case ConsoleType.nintendoVip:
+        return 'NIN';
     }
   }
 }

@@ -11,9 +11,12 @@ import '../providers/booking_provider.dart';
 import '../widgets/unit_timeline_view.dart';
 import '../utils/time_helpers.dart';
 import '../widgets/glass_panel.dart';
+import '../widgets/game_detail_dialog.dart';
 
 class InfoScreen extends StatefulWidget {
-  const InfoScreen({super.key});
+  final Function(int)? onNavigateToBooking;
+
+  const InfoScreen({super.key, this.onNavigateToBooking});
 
   @override
   State<InfoScreen> createState() => _InfoScreenState();
@@ -43,190 +46,187 @@ class _InfoScreenState extends State<InfoScreen>
   @override
   Widget build(BuildContext context) {
     return NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'INFO',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.textMuted,
-                        letterSpacing: 1.5,
-                      ),
+      headerSliverBuilder: (context, innerBoxIsScrolled) {
+        return [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'INFO',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textMuted,
+                      letterSpacing: 1.5,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Tentang Timeless',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.textPrimary,
-                      ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Tentang Timeless',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Tempat main favorit sejak 2022. Kami hadir buat kamu yang cari pengalaman gaming nyaman, dengan koleksi konsol lengkap dan harga bersahabat.',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 14,
-                        color: AppTheme.textSecondary,
-                        height: 1.5,
-                      ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Tempat main favorit sejak 2022. Kami hadir buat kamu yang cari pengalaman gaming nyaman, dengan koleksi konsol lengkap dan harga bersahabat.',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 14,
+                      color: AppTheme.textSecondary,
+                      height: 1.5,
                     ),
-                    const SizedBox(height: 24),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        bool isLarge = constraints.maxWidth > 600;
-                        return Wrap(
-                          spacing: 16,
-                          runSpacing: 16,
-                          children: [
-                            _buildInfoCard(
-                              icon: Icons.location_on_outlined,
-                              title: 'ALAMAT',
-                              content: 'Jl. Lurus No. 56, Jambi (kiri dikit)',
-                              width: isLarge
-                                  ? (constraints.maxWidth - 32) / 3
-                                  : constraints.maxWidth,
-                            ),
-                            _buildInfoCard(
-                              icon: Icons.phone_outlined,
-                              title: 'TELEPON',
-                              content: '+62 812 3456 7890',
-                              width: isLarge
-                                  ? (constraints.maxWidth - 32) / 3
-                                  : constraints.maxWidth,
-                            ),
-                            _buildInfoCard(
-                              icon: Icons.email_outlined,
-                              title: 'EMAIL',
-                              content: 'timeless@gmail.com',
-                              width: isLarge
-                                  ? (constraints.maxWidth - 32) / 3
-                                  : constraints.maxWidth,
-                            ),
-                          ],
-                        );
-                      },
+                  ),
+                  const SizedBox(height: 24),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      bool isLarge = constraints.maxWidth > 600;
+                      return Wrap(
+                        spacing: 16,
+                        runSpacing: 16,
+                        children: [
+                          _buildInfoCard(
+                            icon: Icons.location_on_outlined,
+                            title: 'ALAMAT',
+                            content: 'Jl. Lurus No. 56, Jambi (kiri dikit)',
+                            width: isLarge
+                                ? (constraints.maxWidth - 32) / 3
+                                : constraints.maxWidth,
+                          ),
+                          _buildInfoCard(
+                            icon: Icons.phone_outlined,
+                            title: 'TELEPON',
+                            content: '+62 812 3456 7890',
+                            width: isLarge
+                                ? (constraints.maxWidth - 32) / 3
+                                : constraints.maxWidth,
+                          ),
+                          _buildInfoCard(
+                            icon: Icons.email_outlined,
+                            title: 'EMAIL',
+                            content: 'timeless@gmail.com',
+                            width: isLarge
+                                ? (constraints.maxWidth - 32) / 3
+                                : constraints.maxWidth,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                  Text(
+                    'Fasilitas',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
                     ),
-                    const SizedBox(height: 32),
-                    Text(
-                      'Fasilitas',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        bool isLarge = constraints.maxWidth > 600;
-                        return Wrap(
-                          spacing: 16,
-                          runSpacing: 16,
-                          children: [
-                            _buildFacilityCard(
-                              icon: Icons.ac_unit,
-                              title: 'Ruangan Ber-AC',
-                              subtitle: 'Suhu terjaga 22°C sepanjang hari.',
-                              width: isLarge
-                                  ? (constraints.maxWidth - 48) / 4
-                                  : (constraints.maxWidth - 16) / 2,
-                            ),
-                            _buildFacilityCard(
-                              icon: Icons.wifi,
-                              title: 'WiFi 200 Mbps',
-                              subtitle: 'Gratis untuk semua pengunjung.',
-                              width: isLarge
-                                  ? (constraints.maxWidth - 48) / 4
-                                  : (constraints.maxWidth - 16) / 2,
-                            ),
-                            _buildFacilityCard(
-                              icon: Icons.coffee,
-                              title: 'Cafe & Snack',
-                              subtitle: 'Kopi, mie, dan cemilan siap saji.',
-                              width: isLarge
-                                  ? (constraints.maxWidth - 48) / 4
-                                  : (constraints.maxWidth - 16) / 2,
-                            ),
-                            _buildFacilityCard(
-                              icon: Icons.shield_outlined,
-                              title: 'Konsol Original',
-                              subtitle: 'Semua game & konsol resmi.',
-                              width: isLarge
-                                  ? (constraints.maxWidth - 48) / 4
-                                  : (constraints.maxWidth - 16) / 2,
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 32),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 16),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      bool isLarge = constraints.maxWidth > 600;
+                      return Wrap(
+                        spacing: 16,
+                        runSpacing: 16,
+                        children: [
+                          _buildFacilityCard(
+                            icon: Icons.ac_unit,
+                            title: 'Ruangan Ber-AC',
+                            subtitle: 'Suhu terjaga 22°C sepanjang hari.',
+                            width: isLarge
+                                ? (constraints.maxWidth - 48) / 4
+                                : (constraints.maxWidth - 16) / 2,
+                          ),
+                          _buildFacilityCard(
+                            icon: Icons.wifi,
+                            title: 'WiFi 200 Mbps',
+                            subtitle: 'Gratis untuk semua pengunjung.',
+                            width: isLarge
+                                ? (constraints.maxWidth - 48) / 4
+                                : (constraints.maxWidth - 16) / 2,
+                          ),
+                          _buildFacilityCard(
+                            icon: Icons.coffee,
+                            title: 'Cafe & Snack',
+                            subtitle: 'Kopi, mie, dan cemilan siap saji.',
+                            width: isLarge
+                                ? (constraints.maxWidth - 48) / 4
+                                : (constraints.maxWidth - 16) / 2,
+                          ),
+                          _buildFacilityCard(
+                            icon: Icons.shield_outlined,
+                            title: 'Konsol Original',
+                            subtitle: 'Semua game & konsol resmi.',
+                            width: isLarge
+                                ? (constraints.maxWidth - 48) / 4
+                                : (constraints.maxWidth - 16) / 2,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                ],
               ),
             ),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _SliverAppBarDelegate(
-                TabBar(
-                  controller: _mainTabController,
-                  indicator: BoxDecoration(
-                    color: AppTheme.accentCyan,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  dividerColor: Colors.transparent,
-                  labelColor: Colors.white,
-                  unselectedLabelColor: AppTheme.textMuted,
-                  labelStyle: GoogleFonts.spaceGrotesk(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  unselectedLabelStyle: GoogleFonts.spaceGrotesk(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  tabs: const [
-                    Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.sports_esports_outlined, size: 18),
-                          SizedBox(width: 6),
-                          Text('Info Unit'),
-                        ],
-                      ),
-                    ),
-                    Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.videogame_asset_outlined, size: 18),
-                          SizedBox(width: 6),
-                          Text('Info Game'),
-                        ],
-                      ),
-                    ),
-                  ],
+          ),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _SliverAppBarDelegate(
+              TabBar(
+                controller: _mainTabController,
+                indicator: BoxDecoration(
+                  color: AppTheme.accentCyan,
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                dividerColor: Colors.transparent,
+                labelColor: Colors.white,
+                unselectedLabelColor: AppTheme.textMuted,
+                labelStyle: GoogleFonts.spaceGrotesk(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+                unselectedLabelStyle: GoogleFonts.spaceGrotesk(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                tabs: const [
+                  Tab(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.sports_esports_outlined, size: 18),
+                        SizedBox(width: 6),
+                        Text('Info Unit'),
+                      ],
+                    ),
+                  ),
+                  Tab(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.videogame_asset_outlined, size: 18),
+                        SizedBox(width: 6),
+                        Text('Info Game'),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-          ];
-        },
-        body: TabBarView(
-          controller: _mainTabController,
-          children: [_buildUnitTab(), _buildGameTab()],
-        ),
+          ),
+        ];
+      },
+      body: TabBarView(
+        controller: _mainTabController,
+        children: [_buildUnitTab(), _buildGameTab()],
+      ),
     );
   }
 
@@ -333,7 +333,10 @@ class _InfoScreenState extends State<InfoScreen>
           // PS type cards
           ...dummyPsUnits.map((ps) {
             final units = unitStatuses
-                .where((u) => u.psType.displayName.toLowerCase() == ps.id.toLowerCase())
+                .where(
+                  (u) =>
+                      u.psType.displayName.toLowerCase() == ps.id.toLowerCase(),
+                )
                 .toList();
             final available = units.where((u) => u.isAvailable).length;
             final inUse = units.length - available;
@@ -535,7 +538,11 @@ class _InfoScreenState extends State<InfoScreen>
     }
 
     if (_searchQuery.isNotEmpty) {
-      filtered = filtered.where((g) => g.title.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+      filtered = filtered
+          .where(
+            (g) => g.title.toLowerCase().contains(_searchQuery.toLowerCase()),
+          )
+          .toList();
     }
 
     return Column(
@@ -550,14 +557,18 @@ class _InfoScreenState extends State<InfoScreen>
               children: [
                 _buildFilterChip('Semua Game', 'semua', Icons.apps_outlined),
                 const SizedBox(width: 8),
-                _buildFilterChip('Paling Populer', 'populer', Icons.star_outline),
+                _buildFilterChip(
+                  'Paling Populer',
+                  'populer',
+                  Icons.star_outline,
+                ),
                 const SizedBox(width: 8),
                 _buildGenreDropdownChip(),
               ],
             ),
           ),
         ),
-        
+
         // Search Input
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
@@ -567,11 +578,21 @@ class _InfoScreenState extends State<InfoScreen>
                 _searchQuery = value;
               });
             },
-            style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary, fontSize: 14),
+            style: GoogleFonts.spaceGrotesk(
+              color: AppTheme.textPrimary,
+              fontSize: 14,
+            ),
             decoration: InputDecoration(
               hintText: 'Cari nama game...',
-              hintStyle: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted, fontSize: 14),
-              prefixIcon: const Icon(Icons.search, color: AppTheme.textMuted, size: 20),
+              hintStyle: GoogleFonts.spaceGrotesk(
+                color: AppTheme.textMuted,
+                fontSize: 14,
+              ),
+              prefixIcon: const Icon(
+                Icons.search,
+                color: AppTheme.textMuted,
+                size: 20,
+              ),
               filled: true,
               fillColor: AppTheme.cardDark,
               border: OutlineInputBorder(
@@ -586,11 +607,13 @@ class _InfoScreenState extends State<InfoScreen>
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: AppTheme.accentCyan),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
             ),
           ),
         ),
-        
 
         const SizedBox(height: 12),
 
@@ -716,59 +739,70 @@ class _InfoScreenState extends State<InfoScreen>
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: GlassPanel(
-        padding: const EdgeInsets.all(14),
-        borderRadius: 12,
-        child: Row(
+      child: GestureDetector(
+        onTap: () => GameDetailDialog.show(
+          context,
+          game,
+          onNavigateToBooking: widget.onNavigateToBooking,
+        ),
+        child: GlassPanel(
+          padding: const EdgeInsets.all(14),
+          borderRadius: 12,
+          child: Row(
           children: [
             // Game Image
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Builder(builder: (context) {
-                final placeholderUrl = 'https://placehold.co/120x120/1e1e2e/00d2ff/png?text=${Uri.encodeComponent(game.title.split(" ").take(2).join(" "))}';
-                final errorWidget = Container(
-                  width: 60,
-                  height: 60,
-                  color: isPopular
-                      ? AppTheme.accentMagenta.withValues(alpha: 0.12)
-                      : AppTheme.accentCyan.withValues(alpha: 0.08),
-                  child: Icon(
-                    Icons.videogame_asset,
+              child: Builder(
+                builder: (context) {
+                  final placeholderUrl =
+                      'https://placehold.co/120x120/1e1e2e/00d2ff/png?text=${Uri.encodeComponent(game.title.split(" ").take(2).join(" "))}';
+                  final errorWidget = Container(
+                    width: 60,
+                    height: 60,
                     color: isPopular
-                        ? AppTheme.accentMagenta
-                        : AppTheme.accentCyan,
-                    size: 24,
-                  ),
-                );
-                
-                if (game.imageUrl != null) {
-                  if (game.imageUrl!.startsWith('http')) {
-                    return Image.network(
-                      game.imageUrl!,
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => errorWidget,
-                    );
+                        ? AppTheme.accentMagenta.withValues(alpha: 0.12)
+                        : AppTheme.accentCyan.withValues(alpha: 0.08),
+                    child: Icon(
+                      Icons.videogame_asset,
+                      color: isPopular
+                          ? AppTheme.accentMagenta
+                          : AppTheme.accentCyan,
+                      size: 24,
+                    ),
+                  );
+
+                  if (game.imageUrl != null) {
+                    if (game.imageUrl!.startsWith('http')) {
+                      return Image.network(
+                        game.imageUrl!,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            errorWidget,
+                      );
+                    } else {
+                      return Image.asset(
+                        game.imageUrl!,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            errorWidget,
+                      );
+                    }
                   } else {
-                    return Image.asset(
-                      game.imageUrl!,
+                    return Image.network(
+                      placeholderUrl,
                       width: 60,
                       height: 60,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => errorWidget,
                     );
                   }
-                } else {
-                  return Image.network(
-                    placeholderUrl,
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => errorWidget,
-                  );
-                }
-              }),
+                },
+              ),
             ),
             const SizedBox(width: 14),
             // Info
@@ -859,12 +893,12 @@ class _InfoScreenState extends State<InfoScreen>
                 ],
               ),
             ),
-
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   // ── Shared: Timeline ──
   Widget _buildTimeline() {
@@ -962,62 +996,62 @@ class _InfoScreenState extends State<InfoScreen>
         type: MaterialType.transparency,
         child: Theme(
           data: ThemeData(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          tilePadding: EdgeInsets.zero,
-          childrenPadding: const EdgeInsets.only(top: 8),
-          iconColor: AppTheme.textSecondary,
-          collapsedIconColor: AppTheme.textMuted,
-          title: Row(
-            children: [
-              const Icon(
-                Icons.description_outlined,
-                color: AppTheme.accentMagenta,
-                size: 20,
-              ),
-              const SizedBox(width: 10),
-              Text(
-                'Baca Syarat & Ketentuan',
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary,
+          child: ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            childrenPadding: const EdgeInsets.only(top: 8),
+            iconColor: AppTheme.textSecondary,
+            collapsedIconColor: AppTheme.textMuted,
+            title: Row(
+              children: [
+                const Icon(
+                  Icons.description_outlined,
+                  color: AppTheme.accentMagenta,
+                  size: 20,
                 ),
-              ),
-            ],
+                const SizedBox(width: 10),
+                Text(
+                  'Baca Syarat & Ketentuan',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+            children: syaratKetentuan.asMap().entries.map((entry) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 22,
+                      child: Text(
+                        '${entry.key + 1}.',
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 12,
+                          color: AppTheme.accentMagenta,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        entry.value,
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 12,
+                          color: AppTheme.textSecondary,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
-          children: syaratKetentuan.asMap().entries.map((entry) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 22,
-                    child: Text(
-                      '${entry.key + 1}.',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 12,
-                        color: AppTheme.accentMagenta,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      entry.value,
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 12,
-                        color: AppTheme.textSecondary,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
         ),
-      ),
       ),
     );
   }

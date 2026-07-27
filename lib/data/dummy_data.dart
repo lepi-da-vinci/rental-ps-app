@@ -194,12 +194,24 @@ const List<GameItem> gameCatalog = [
     genre: 'Action / Open World / Adventure',
     platform: 'PS4 PS5',
     popularRank: 1,
+    description:
+        'Petualangan open-world legendaris di kota Los Santos. Ikuti kisah tiga kriminal unik — Michael, Franklin, dan Trevor — dalam berbagai aksi pencurian berisiko tinggi dengan kebebasan tanpa batas.',
+    playerCount: '1 Pemain (Story) / Online',
+    rating: 'PEGI 18 / Mature',
+    publisher: 'Rockstar Games',
+    releaseYear: '2022 (Next-Gen Update)',
   ),
   GameItem(
     imageUrl: 'assets/gambar/cyberpunk-2077.jpg',
     title: 'Cyberpunk 2077',
     genre: 'Action / Open World / Adventure',
     platform: 'PS4 PS5',
+    description:
+        'RPG open-world action-adventure berlatar di kota masa depan Night City. Bermain sebagai V, seorang tentara bayaran cyberpunk yang berjuang demi impian dan kelangsungan hidup di tengah konspirasi korporasi.',
+    playerCount: '1 Pemain',
+    rating: 'PEGI 18 / Mature',
+    publisher: 'CD Projekt Red',
+    releaseYear: '2020',
   ),
   GameItem(
     imageUrl: 'assets/gambar/spider-man-remastered.jpg',
@@ -398,6 +410,12 @@ const List<GameItem> gameCatalog = [
     genre: "Fighting & Hack 'n Slash",
     platform: 'PS5',
     popularRank: 2,
+    description:
+        'Game pertarungan legendaris generasi terbaru yang ditenagai Unreal Engine 5. Rasakan pertarungan sengit antara Jin Kazama dan Kazuya Mishima dengan grafis luar biasa dan sistem Heat yang agresif!',
+    playerCount: '1-2 Pemain Versu',
+    rating: 'PEGI 16+ / Teen',
+    publisher: 'Bandai Namco Entertainment',
+    releaseYear: '2024',
   ),
   GameItem(
     imageUrl: 'assets/gambar/Street-Fighter-6.jpg',
@@ -519,6 +537,12 @@ const List<GameItem> gameCatalog = [
     genre: 'Racing & Sports',
     platform: 'PS4 PS5',
     popularRank: 3,
+    description:
+        'Simulasi sepak bola terpopuler di dunia! Rasakan keseruan mabar bareng teman dengan kontrol realistis, animasi HyperMotion V, liga resmi, dan ribuan pemain sepak bola ternama dunia.',
+    playerCount: '1-4 Pemain Local / Online',
+    rating: 'PEGI 3 / Everyone',
+    publisher: 'EA Sports',
+    releaseYear: '2025',
   ),
   GameItem(
     imageUrl: 'assets/gambar/nba-2k26.jpg',
@@ -534,6 +558,12 @@ const List<GameItem> gameCatalog = [
     genre: 'Co-op, Puzzle & Family',
     platform: 'Nintendo Switch',
     popularRank: 4,
+    description:
+        'Game balap party terbaik di Nintendo Switch! Kumpulkan teman-temanmu dan adu kecepatan di 48 trek ikonik dengan berbagai item kocak seperti shell merah, pisang, dan bom gokart.',
+    playerCount: '1-4 Pemain Split Screen',
+    rating: 'PEGI 3 / Everyone',
+    publisher: 'Nintendo',
+    releaseYear: '2017',
   ),
   GameItem(
     imageUrl: 'assets/gambar/Super-Smash-Bros-Ultimate.jpg',

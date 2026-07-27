@@ -93,6 +93,11 @@ class GameItem {
   final int? popularRank; // null = not in top popular
   final String? imageUrl; // optional custom image url
   final bool isAvailable;
+  final String? description;
+  final String? playerCount;
+  final String? rating;
+  final String? publisher;
+  final String? releaseYear;
 
   const GameItem({
     required this.title,
@@ -101,5 +106,24 @@ class GameItem {
     this.popularRank,
     this.imageUrl,
     this.isAvailable = true,
+    this.description,
+    this.playerCount,
+    this.rating,
+    this.publisher,
+    this.releaseYear,
   });
+
+  /// Helper for description with smart fallback
+  String get effectiveDescription {
+    if (description != null && description!.trim().isNotEmpty) {
+      return description!;
+    }
+    return 'Nikmati keseruan bermain $title di konsol $platform. Game genre $genre ini siap memberikan pengalaman gaming yang immersive dan menegangkan di Timeless Rental & Arcade.';
+  }
+
+  String get effectivePlayerCount => playerCount ?? '1-2 Pemain';
+  String get effectiveRating => rating ?? 'PEGI 16+';
+  String get effectivePublisher => publisher ?? 'Official Developer';
+  String get effectiveReleaseYear => releaseYear ?? '2023';
 }
+

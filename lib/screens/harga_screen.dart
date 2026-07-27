@@ -66,12 +66,17 @@ class HargaScreen extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppTheme.accentCyan.withValues(alpha: 0.1), AppTheme.accentMagenta.withValues(alpha: 0.1)],
+                colors: [
+                  AppTheme.accentCyan.withValues(alpha: 0.1),
+                  AppTheme.accentMagenta.withValues(alpha: 0.1),
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.accentCyan.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: AppTheme.accentCyan.withValues(alpha: 0.3),
+              ),
             ),
             child: Row(
               children: [
@@ -81,7 +86,11 @@ class HargaScreen extends StatelessWidget {
                     color: AppTheme.accentCyan.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.local_fire_department, color: AppTheme.accentCyan, size: 28),
+                  child: const Icon(
+                    Icons.local_fire_department,
+                    color: AppTheme.accentCyan,
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -98,7 +107,7 @@ class HargaScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Main 5 jam, bayar 4 jam — khusus Sabtu & Minggu saja.\nHarga reguler berlaku di hari biasa.', 
+                        'Main 5 jam, bayar 4 jam — khusus Sabtu & Minggu saja.\nHarga reguler berlaku di hari biasa.',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 13,
                           color: AppTheme.textPrimary,
@@ -121,7 +130,9 @@ class HargaScreen extends StatelessWidget {
                 runSpacing: 16,
                 children: dummyPricePackages.map((pkg) {
                   return SizedBox(
-                    width: isLarge ? (constraints.maxWidth - 32) / 3 : constraints.maxWidth,
+                    width: isLarge
+                        ? (constraints.maxWidth - 32) / 3
+                        : constraints.maxWidth,
                     child: _buildPriceCard(context, pkg),
                   );
                 }).toList(),
@@ -159,12 +170,12 @@ class HargaScreen extends StatelessWidget {
           color: AppTheme.cardDark,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: pkg.isHighlighted
-                ? accentColor
-                : AppTheme.dividerColor,
+            color: pkg.isHighlighted ? accentColor : AppTheme.dividerColor,
             width: pkg.isHighlighted ? 2 : 1,
           ),
-          boxShadow: pkg.isHighlighted ? AppTheme.neonShadow(accentColor, blur: 15) : null,
+          boxShadow: pkg.isHighlighted
+              ? AppTheme.neonShadow(accentColor, blur: 15)
+              : null,
         ),
         child: Column(
           children: [
@@ -191,7 +202,9 @@ class HargaScreen extends StatelessWidget {
                         style: GoogleFonts.pressStart2p(
                           fontSize: 10,
                           color: accentColor,
-                          shadows: pkg.isHighlighted ? AppTheme.neonShadow(accentColor, blur: 2) : null,
+                          shadows: pkg.isHighlighted
+                              ? AppTheme.neonShadow(accentColor, blur: 2)
+                              : null,
                         ),
                       ),
                       if (badge != null) ...[
@@ -227,7 +240,9 @@ class HargaScreen extends StatelessWidget {
                           style: GoogleFonts.spaceGrotesk(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: pkg.isHighlighted ? accentColor : AppTheme.textPrimary,
+                            color: pkg.isHighlighted
+                                ? accentColor
+                                : AppTheme.textPrimary,
                           ),
                         ),
                       ],
