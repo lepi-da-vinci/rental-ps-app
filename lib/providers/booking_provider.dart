@@ -183,8 +183,7 @@ class BookingProvider extends ChangeNotifier {
     final nowMin = _now.hour * 60 + _now.minute;
     for (final b in _bookings) {
       if (!_isSameDay(b.date, _now)) continue;
-      if (b.psType != template.psType) continue;
-      if (!b.assignedUnit.endsWith(template.label)) continue;
+      if (!isBookingForUnit(b, template)) continue;
       final start = toMinutes(b.time);
       final end = start + b.durationHours * 60;
       if (nowMin >= start && nowMin < end) return b;
@@ -272,8 +271,7 @@ class BookingProvider extends ChangeNotifier {
     // 1) Bentrok sama booking lain di unit yang sama & tanggal yang sama?
     for (final b in _bookings) {
       if (!_isSameDay(b.date, date)) continue;
-      if (b.psType != baseType) continue;
-      if (!b.assignedUnit.endsWith(unit.label)) continue;
+      if (!isBookingForUnit(b, unit)) continue;
       final bStart = toMinutes(b.time);
       final bEnd = bStart + b.durationHours * 60;
       if (overlaps(reqStart, reqEnd, bStart, bEnd)) return false;

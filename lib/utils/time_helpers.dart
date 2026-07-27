@@ -30,3 +30,25 @@ bool isOpenNow(DateTime now, String rawHours) {
   final (open, close) = parseOperatingHours(rawHours);
   return now.hour >= open && now.hour < close;
 }
+
+/// Extracts the unit index number from a string (e.g. "PS4 Unit 1" -> 1, "PS5 VIP Ruang 3" -> 3).
+int? extractUnitNumber(String text) {
+  final matches = RegExp(r'\d+').allMatches(text);
+  if (matches.isEmpty) return null;
+  return int.tryParse(matches.last.group(0)!);
+}
+
+/// Returns true if a booking belongs to a specific unit, matching both console type and unit number.
+bool isBookingForUnit(dynamic booking, dynamic unit) {
+  if (booking.psType != unit.psType) return false;
+
+  final bNum = extractUnitNumber(booking.assignedUnit as String);
+  final uNum = extractUnitNumber(unit.label as String) ?? extractUnitNumber(unit.unitId as String);
+
+  if (bNum != null && uNum != null) {
+    return bNum == uNum;
+  }
+
+  return (booking.assignedUnit as String).endsWith(unit.label as String);
+}
+

@@ -13,8 +13,25 @@ class ApiConfig {
     return 'http://localhost:8000/api';
   }
 
-  /// Active base URL. Can be changed at runtime if connected to a local WiFi IP or production domain.
-  static String baseUrl = defaultBaseUrl;
+  static String _customBaseUrl = '';
+
+  /// Active base URL. Can be dynamically updated at runtime (e.g. Cloud domain or Ngrok HTTPS URL).
+  static String get baseUrl {
+    if (_customBaseUrl.trim().isNotEmpty) return _customBaseUrl.trim();
+    return defaultBaseUrl;
+  }
+
+  /// Sets a custom API URL (e.g. 'https://my-laravel-api.up.railway.app/api' or 'https://xxxx.ngrok-free.app/api')
+  static void setCustomBaseUrl(String url) {
+    String cleanUrl = url.trim();
+    if (cleanUrl.endsWith('/')) {
+      cleanUrl = cleanUrl.substring(0, cleanUrl.length - 1);
+    }
+    if (!cleanUrl.endsWith('/api') && !cleanUrl.contains('/api')) {
+      cleanUrl = '$cleanUrl/api';
+    }
+    _customBaseUrl = cleanUrl;
+  }
 
   /// Default HTTP timeout duration before falling back to local simulation mode.
   static const Duration timeout = Duration(seconds: 5);
