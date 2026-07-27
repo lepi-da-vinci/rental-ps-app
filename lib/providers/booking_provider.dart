@@ -56,6 +56,10 @@ class BookingProvider extends ChangeNotifier {
     if (_now.minute != newNow.minute || _now.hour != newNow.hour) {
       _now = newNow;
       notifyListeners();
+      // Periodically sync with Laravel API so HP and Laptop stay in sync
+      if (_isApiConnected && !_isSyncing) {
+        syncWithApi();
+      }
     }
   }
 
@@ -300,21 +304,21 @@ class BookingProvider extends ChangeNotifier {
   //  Booking CRUD (Hybrid: Local + API)
   // ════════════════════════════════════════════════════════
 
-  void addBooking(Booking booking) {
+  void addBooking(Booking booking) async {
     _bookings.add(booking);
     notifyListeners();
-    // Background sync to Laravel API if server is online
     if (_isApiConnected) {
-      ApiService.createBooking(booking);
+      await ApiService.createBooking(booking);
+      syncWithApi();
     }
   }
 
-  void removeBooking(String id) {
+  void removeBooking(String id) async {
     _bookings.removeWhere((b) => b.id == id);
     notifyListeners();
-    // Background sync to Laravel API if server is online
     if (_isApiConnected) {
-      ApiService.deleteBooking(id);
+      await ApiService.deleteBooking(id);
+      syncWithApi();
     }
   }
 
