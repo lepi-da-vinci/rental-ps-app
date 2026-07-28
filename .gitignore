@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local Walkthrough Notes (Ignored by Git)
+WALKTHROUGH_CATATAN.txt
+*.txt
