@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/booking.dart';
 import '../models/enums.dart';
 import '../models/customer.dart';
@@ -10,6 +12,7 @@ import '../services/api_service.dart';
 
 /// Manages all booking-related state: CRUD, scheduling, live unit status, and API sync.
 class BookingProvider extends ChangeNotifier {
+  static const String _storageKey = 'local_bookings_v1';
   final List<Booking> _bookings = [];
   final List<UnitStatus> _templateUnits = getDummyUnitStatus();
   DateTime _now = DateTime.now();
@@ -21,10 +24,45 @@ class BookingProvider extends ChangeNotifier {
   bool get isSyncing => _isSyncing;
 
   BookingProvider() {
-    // Initial dummy data load
-    _bookings.addAll(generateMonthlyBookings(_now));
-    // Attempt API sync in background
-    syncWithApi();
+    _initStorageAndSync();
+  }
+
+  Future<void> _initStorageAndSync() async {
+    await _loadLocalBookings();
+    if (_bookings.isEmpty) {
+      _bookings.addAll(generateMonthlyBookings(_now));
+      await _saveLocalBookings();
+    }
+    notifyListeners();
+    await syncWithApi();
+  }
+
+  Future<void> _loadLocalBookings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString(_storageKey);
+      if (jsonString != null && jsonString.isNotEmpty) {
+        final List<dynamic> decoded = jsonDecode(jsonString);
+        _bookings.clear();
+        for (final item in decoded) {
+          if (item is Map<String, dynamic>) {
+            _bookings.add(Booking.fromJson(item));
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading local bookings: $e');
+    }
+  }
+
+  Future<void> _saveLocalBookings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = jsonEncode(_bookings.map((b) => b.toJson()).toList());
+      await prefs.setString(_storageKey, jsonString);
+    } catch (e) {
+      debugPrint('Error saving local bookings: $e');
+    }
   }
 
   /// Sync data with Laravel API backend if available.
@@ -39,8 +77,16 @@ class BookingProvider extends ChangeNotifier {
       if (isOnline) {
         final apiBookings = await ApiService.fetchBookings();
         if (apiBookings != null && apiBookings.isNotEmpty) {
-          _bookings.clear();
-          _bookings.addAll(apiBookings);
+          // Smart Merge: Don't wipe out local bookings that aren't synced yet
+          for (final apiB in apiBookings) {
+            final idx = _bookings.indexWhere((b) => b.id == apiB.id);
+            if (idx != -1) {
+              _bookings[idx] = apiB;
+            } else {
+              _bookings.add(apiB);
+            }
+          }
+          await _saveLocalBookings();
         }
       }
     } catch (e) {
@@ -118,6 +164,18 @@ class BookingProvider extends ChangeNotifier {
   //  SESSION TIMER HELPERS
   // ════════════════════════════════════════════════════════
 
+  DateTime _getBookingStartDateTime(Booking b) {
+    final parts = b.time.split(':');
+    final hour = int.tryParse(parts[0]) ?? 0;
+    final minute = int.tryParse(parts[1]) ?? 0;
+    return DateTime(b.date.year, b.date.month, b.date.day, hour, minute);
+  }
+
+  DateTime _getBookingEndDateTime(Booking b) {
+    final start = _getBookingStartDateTime(b);
+    return start.add(Duration(hours: b.durationHours));
+  }
+
   /// Returns the remaining seconds for a unit's active session.
   /// Negative values mean the session is overtime.
   /// Returns null if the unit has no active session.
@@ -125,11 +183,8 @@ class BookingProvider extends ChangeNotifier {
     final booking = _activeBookingRightNowFor(unit);
     if (booking == null) return null;
 
-    final startMin = toMinutes(booking.time);
-    final endMin = startMin + booking.durationHours * 60;
-    final nowSec = _now.hour * 3600 + _now.minute * 60 + _now.second;
-    final endSec = endMin * 60;
-    return endSec - nowSec;
+    final end = _getBookingEndDateTime(booking);
+    return end.difference(_now).inSeconds;
   }
 
   /// Returns the [SessionTimerStatus] for a unit.
@@ -275,7 +330,8 @@ class BookingProvider extends ChangeNotifier {
     final assignedUnit = '${baseType.displayName} $unitLabel';
 
     final booking = Booking(
-      id: 'WI-${DateTime.now().millisecondsSinceEpoch}',
+      id:
+          'WI-${DateTime.now().millisecondsSinceEpoch}-${DateTime.now().microsecond}',
       customerName: playerName,
       phone: '-',
       psType: baseType,
@@ -319,13 +375,13 @@ class BookingProvider extends ChangeNotifier {
   }
 
   Booking? _activeBookingRightNowFor(UnitStatus template) {
-    final nowMin = _now.hour * 60 + _now.minute;
     for (final b in _bookings) {
-      if (!_isSameDay(b.date, _now)) continue;
       if (!isBookingForUnit(b, template)) continue;
-      final start = toMinutes(b.time);
-      final end = start + b.durationHours * 60;
-      if (nowMin >= start && nowMin < end) return b;
+      final start = _getBookingStartDateTime(b);
+      final end = _getBookingEndDateTime(b);
+      if (!_now.isBefore(start) && _now.isBefore(end)) {
+        return b;
+      }
     }
     return null;
   }
@@ -441,6 +497,7 @@ class BookingProvider extends ChangeNotifier {
 
   void addBooking(Booking booking) async {
     _bookings.add(booking);
+    await _saveLocalBookings();
     notifyListeners();
     if (_isApiConnected) {
       await ApiService.createBooking(booking);
@@ -450,6 +507,7 @@ class BookingProvider extends ChangeNotifier {
 
   void removeBooking(String id) async {
     _bookings.removeWhere((b) => b.id == id);
+    await _saveLocalBookings();
     notifyListeners();
     if (_isApiConnected) {
       await ApiService.deleteBooking(id);

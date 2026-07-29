@@ -68,6 +68,53 @@ class Booking {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'customerName': customerName,
+      'phone': phone,
+      'psType': psType.name,
+      'date': date.toIso8601String(),
+      'time': time,
+      'durationHours': duration.hours,
+      'assignedUnit': assignedUnit,
+      'paymentMethod': paymentMethod.name,
+      'paymentStatus': paymentStatus.name,
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
+
+  factory Booking.fromJson(Map<String, dynamic> json) {
+    final durHours = json['durationHours'] is int ? json['durationHours'] as int : 1;
+    final dur = SessionDuration.values.firstWhere(
+      (d) => d.hours == durHours,
+      orElse: () => SessionDuration.jam1,
+    );
+
+    return Booking(
+      id: json['id'] as String? ?? '',
+      customerName: json['customerName'] as String? ?? 'Walk-in',
+      phone: json['phone'] as String? ?? '',
+      psType: ConsoleType.values.firstWhere(
+        (e) => e.name == json['psType'],
+        orElse: () => ConsoleType.ps4,
+      ),
+      date: json['date'] != null ? DateTime.parse(json['date'] as String) : DateTime.now(),
+      time: json['time'] as String? ?? '10:00',
+      duration: dur,
+      assignedUnit: json['assignedUnit'] as String? ?? '',
+      paymentMethod: PaymentMethod.values.firstWhere(
+        (e) => e.name == json['paymentMethod'],
+        orElse: () => PaymentMethod.cash,
+      ),
+      paymentStatus: PaymentStatus.values.firstWhere(
+        (e) => e.name == json['paymentStatus'],
+        orElse: () => PaymentStatus.lunas,
+      ),
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : null,
+    );
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

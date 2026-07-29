@@ -199,9 +199,16 @@ class _BookingScreenState extends State<BookingScreen> {
                         decoration: const InputDecoration(
                           hintText: '08xxxxxxxxxx',
                         ),
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Wajib diisi'
-                            : null,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Nomor WhatsApp wajib diisi';
+                          }
+                          final clean = v.trim();
+                          if (!RegExp(r'^[0-9+\-\s()]{8,16}$').hasMatch(clean)) {
+                            return 'Format nomor WA tidak valid (misal: 08123456789)';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 20),
 
@@ -1118,7 +1125,8 @@ class _BookingScreenState extends State<BookingScreen> {
                           child: ElevatedButton(
                             onPressed: () {
                               final booking = Booking(
-                                id: 'BK-${DateTime.now().millisecondsSinceEpoch}',
+                                id:
+                                    'BK-${DateTime.now().millisecondsSinceEpoch}-${DateTime.now().microsecond}',
                                 customerName: _nameController.text.trim(),
                                 phone: _phoneController.text.trim(),
                                 psType: _selectedPsType!,

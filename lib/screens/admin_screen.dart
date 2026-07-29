@@ -2225,6 +2225,15 @@ class _AdminScreenState extends State<AdminScreen>
                           decoration: const InputDecoration(
                             hintText: '08xxxxxxxxxx (Tidak wajib)',
                           ),
+                          validator: (v) {
+                            if (v != null && v.trim().isNotEmpty) {
+                              final clean = v.trim();
+                              if (!RegExp(r'^[0-9+\-\s()]{8,16}$').hasMatch(clean)) {
+                                return 'Format nomor HP tidak valid (misal: 08123456789)';
+                              }
+                            }
+                            return null;
+                          },
                         ),
                         const SizedBox(height: 14),
 
@@ -2820,7 +2829,7 @@ class _AdminScreenState extends State<AdminScreen>
 
                                     final booking = Booking(
                                       id:
-                                          'WI-${DateTime.now().millisecondsSinceEpoch}',
+                                          'BK-${DateTime.now().millisecondsSinceEpoch}-${DateTime.now().microsecond}',
                                       customerName: name,
                                       phone: phone,
                                       psType: selectedPsType,
