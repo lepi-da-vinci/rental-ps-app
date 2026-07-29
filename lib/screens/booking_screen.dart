@@ -30,7 +30,6 @@ class _BookingScreenState extends State<BookingScreen> {
   DateTime? _selectedDate;
   String? _selectedTime;
   SessionDuration? _selectedDuration;
-  PaymentMethod _selectedPaymentMethod = PaymentMethod.transfer;
 
   List<ConsoleType> get _psTypes => ConsoleType.values;
 
@@ -459,46 +458,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 20),
-                                  _buildLabel('METODE PEMBAYARAN'),
-                                  const SizedBox(height: 8),
-                                  Wrap(
-                                    spacing: 12,
-                                    runSpacing: 12,
-                                    children: PaymentMethod.values.where((m) => m != PaymentMethod.cash).map((method) {
-                                      bool isSelected = _selectedPaymentMethod == method;
-                                      return InkWell(
-                                        onTap: () {
-                                          HapticFeedback.lightImpact();
-                                          setState(() => _selectedPaymentMethod = method);
-                                        },
-                                        borderRadius: BorderRadius.circular(24),
-                                        child: AnimatedContainer(
-                                          duration: const Duration(milliseconds: 200),
-                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                          decoration: BoxDecoration(
-                                            color: isSelected
-                                                ? AppTheme.accentCyan.withValues(alpha: 0.1)
-                                                : AppTheme.surfaceDark,
-                                            borderRadius: BorderRadius.circular(24),
-                                            border: Border.all(
-                                              color: isSelected
-                                                  ? AppTheme.accentCyan
-                                                  : AppTheme.dividerColor,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            method.displayName,
-                                            style: GoogleFonts.spaceGrotesk(
-                                              fontSize: 12,
-                                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                                              color: isSelected ? AppTheme.textPrimary : AppTheme.textMuted,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
+                                  const SizedBox(height: 10),
                                 ],
                               ),
                       ),
@@ -584,7 +544,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       const SizedBox(height: 12),
                       Center(
                         child: Text(
-                          'Pembayaran via ${_selectedPaymentMethod.displayName} · Menunggu Konfirmasi',
+                          'Metode pembayaran dipilih pada saat konfirmasi',
                           style: GoogleFonts.spaceGrotesk(
                             fontSize: 10,
                             color: AppTheme.textMuted,
@@ -794,18 +754,7 @@ class _BookingScreenState extends State<BookingScreen> {
     String unitLabel,
     SessionDuration duration,
   ) {
-    final booking = Booking(
-      id: 'BK-${DateTime.now().millisecondsSinceEpoch}',
-      customerName: _nameController.text.trim(),
-      phone: _phoneController.text.trim(),
-      psType: _selectedPsType!,
-      date: _selectedDate!,
-      time: _selectedTime!,
-      duration: duration,
-      assignedUnit: '${_selectedPsType!.displayName} $unitLabel',
-      paymentMethod: _selectedPaymentMethod,
-    );
-    _showConfirmationDialog(booking);
+    _showConfirmationDialog(unitLabel, duration);
   }
 
   /// Dialog kalau slot yang diminta gak muat — kasih 2 opsi ke user.
@@ -999,158 +948,231 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  void _showConfirmationDialog(Booking booking) {
+  void _showConfirmationDialog(String unitLabel, SessionDuration duration) {
+    PaymentMethod selectedPaymentMethod = PaymentMethod.qris;
+
     showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: AppTheme.surfaceDark,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppTheme.dividerColor),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: AppTheme.accentGreen.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.check_rounded,
-                  size: 28,
-                  color: AppTheme.accentGreen,
-                ),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                'Konfirmasi Booking',
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Pastikan data di bawah sudah benar.',
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 12,
-                  color: AppTheme.textMuted,
-                ),
-              ),
-              const SizedBox(height: 18),
-              // Summary rows
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppTheme.backgroundDark,
-                  borderRadius: BorderRadius.circular(12),
-                ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return Dialog(
+            backgroundColor: AppTheme.surfaceDark,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: AppTheme.dividerColor),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    _dialogRow('Nama', booking.customerName),
-                    _dialogRow('No. HP', booking.phone),
-                    _dialogRow('Tipe', booking.psType.bookingDisplayName),
-                    _dialogRow(
-                      'Unit',
-                      booking.assignedUnit,
-                      valueColor: AppTheme.accentGreen,
-                    ),
-                    _dialogRow(
-                      'Tanggal',
-                      DateFormat('dd MMM yyyy').format(booking.date),
-                    ),
-                    _dialogRow('Jam', booking.time),
-                    _dialogRow('Durasi', booking.duration.displayName),
-                    _dialogRow('Metode', booking.paymentMethod.displayName),
-                    const Divider(color: AppTheme.dividerColor, height: 16),
-                    _dialogRow(
-                      'ID',
-                      booking.id,
-                      valueColor: AppTheme.accentCyan,
-                    ),
-                    if (_estimatedPrice != null)
-                      _dialogRow(
-                        'Harga',
-                        _estimatedPrice!,
-                        valueColor: AppTheme.accentGreen,
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentGreen.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
                       ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: AppTheme.dividerColor),
-                        foregroundColor: AppTheme.textSecondary,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Text(
-                        'Batal',
-                        style: GoogleFonts.spaceGrotesk(
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: const Icon(
+                        Icons.check_rounded,
+                        size: 28,
+                        color: AppTheme.accentGreen,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        context.read<BookingProvider>().addBooking(booking);
-                        Navigator.pop(ctx);
-                        _resetForm();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: AppTheme.accentGreen,
-                            content: Text(
-                              'Booking berhasil disimpan!',
-                              style: GoogleFonts.spaceGrotesk(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'Konfirmasi Booking',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Pilih metode pembayaran & pastikan data benar.',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 12,
+                        color: AppTheme.textMuted,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    // Summary rows
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppTheme.backgroundDark,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          _dialogRow('Nama', _nameController.text.trim()),
+                          _dialogRow('No. HP', _phoneController.text.trim().isEmpty ? '-' : _phoneController.text.trim()),
+                          _dialogRow('Tipe', _selectedPsType!.bookingDisplayName),
+                          _dialogRow(
+                            'Unit',
+                            '${_selectedPsType!.displayName} $unitLabel',
+                            valueColor: AppTheme.accentGreen,
+                          ),
+                          _dialogRow(
+                            'Tanggal',
+                            DateFormat('dd MMM yyyy').format(_selectedDate!),
+                          ),
+                          _dialogRow('Jam', _selectedTime!),
+                          _dialogRow('Durasi', duration.displayName),
+                          _dialogRow(
+                            'Metode',
+                            selectedPaymentMethod.displayName,
+                            valueColor: AppTheme.accentCyan,
+                          ),
+                          const Divider(color: AppTheme.dividerColor, height: 16),
+                          if (_estimatedPrice != null)
+                            _dialogRow(
+                              'Harga',
+                              _estimatedPrice!,
+                              valueColor: AppTheme.accentGreen,
                             ),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // PILIH METODE PEMBAYARAN IN DIALOG
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'PILIH METODE PEMBAYARAN',
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textMuted,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: PaymentMethod.values.map((method) {
+                        bool isSelected = selectedPaymentMethod == method;
+                        return Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setDialogState(() {
+                                selectedPaymentMethod = method;
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              margin: const EdgeInsets.symmetric(horizontal: 3),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppTheme.accentCyan.withValues(alpha: 0.15)
+                                    : AppTheme.backgroundDark,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: isSelected ? AppTheme.accentCyan : AppTheme.dividerColor,
+                                  width: isSelected ? 1.5 : 1.0,
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  method.displayName,
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 11,
+                                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                    color: isSelected ? AppTheme.textPrimary : AppTheme.textMuted,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.accentCyan,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'Simpan',
-                        style: GoogleFonts.spaceGrotesk(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                      }).toList(),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: AppTheme.dividerColor),
+                              foregroundColor: AppTheme.textSecondary,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: Text(
+                              'Batal',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              final booking = Booking(
+                                id: 'BK-${DateTime.now().millisecondsSinceEpoch}',
+                                customerName: _nameController.text.trim(),
+                                phone: _phoneController.text.trim(),
+                                psType: _selectedPsType!,
+                                date: _selectedDate!,
+                                time: _selectedTime!,
+                                duration: duration,
+                                assignedUnit: '${_selectedPsType!.displayName} $unitLabel',
+                                paymentMethod: selectedPaymentMethod,
+                              );
+
+                              context.read<BookingProvider>().addBooking(booking);
+                              Navigator.pop(ctx);
+                              _resetForm();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor: AppTheme.accentGreen,
+                                  content: Text(
+                                    'Booking berhasil disimpan! (${selectedPaymentMethod.displayName})',
+                                    style: GoogleFonts.spaceGrotesk(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.accentCyan,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: Text(
+                              'Konfirmasi & Simpan',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

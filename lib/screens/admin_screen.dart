@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../models/booking.dart';
 import '../providers/booking_provider.dart';
@@ -18,6 +19,8 @@ import '../widgets/alert_banner.dart';
 import '../utils/time_helpers.dart';
 import '../widgets/receipt_dialog.dart';
 import '../widgets/customer_list_tab.dart';
+
+enum SessionInputMode { walkIn, booking }
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -58,37 +61,63 @@ class _AdminScreenState extends State<AdminScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Tab Bar
+        // Tab Bar & Action Button
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: const BoxDecoration(
             color: AppTheme.surfaceDark,
             border: Border(
               bottom: BorderSide(color: AppTheme.dividerColor, width: 1),
             ),
           ),
-          child: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            indicatorColor: AppTheme.accentCyan,
-            labelColor: AppTheme.accentCyan,
-            unselectedLabelColor: AppTheme.textMuted,
-            labelStyle: GoogleFonts.spaceGrotesk(
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-            ),
-            unselectedLabelStyle: GoogleFonts.spaceGrotesk(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-            tabs: const [
-              Tab(text: 'Dashboard'),
-              Tab(text: 'Timeline Unit'),
-              Tab(text: 'Data Booking'),
-              Tab(text: 'Data Pendapatan'),
-              Tab(text: 'Booking Hari Ini'),
-              Tab(text: 'Pelanggan'),
+          child: Row(
+            children: [
+              Expanded(
+                child: TabBar(
+                  controller: _tabController,
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                  indicatorColor: AppTheme.accentCyan,
+                  labelColor: AppTheme.accentCyan,
+                  unselectedLabelColor: AppTheme.textMuted,
+                  labelStyle: GoogleFonts.spaceGrotesk(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                  unselectedLabelStyle: GoogleFonts.spaceGrotesk(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                  tabs: const [
+                    Tab(text: 'Dashboard'),
+                    Tab(text: 'Timeline Unit'),
+                    Tab(text: 'Data Booking'),
+                    Tab(text: 'Data Pendapatan'),
+                    Tab(text: 'Booking Hari Ini'),
+                    Tab(text: 'Pelanggan'),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton.icon(
+                onPressed: () => _showAddSessionDialog(context, initialMode: SessionInputMode.booking),
+                icon: const Icon(Icons.add, size: 16),
+                label: Text(
+                  '+ Tambah Sesi / Booking',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.accentMagenta,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -174,76 +203,6 @@ class _AdminScreenState extends State<AdminScreen>
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 32),
-
-              // Walk-in Quick Action
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: AppTheme.cardDecoration(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppTheme.accentGreen.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.directions_walk,
-                            color: AppTheme.accentGreen,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Pelanggan Langsung (Walk-in)',
-                          style: GoogleFonts.spaceGrotesk(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Tambahkan sesi main langsung tanpa booking formal.',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 13,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _showWalkInDialog,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.accentGreen.withValues(
-                            alpha: 0.2,
-                          ),
-                          foregroundColor: AppTheme.accentGreen,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            side: const BorderSide(color: AppTheme.accentGreen),
-                          ),
-                        ),
-                        child: Text(
-                          'Tambah Walk-in',
-                          style: GoogleFonts.spaceGrotesk(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: 32),
 
@@ -2025,27 +1984,43 @@ class _AdminScreenState extends State<AdminScreen>
   }
 
   // ════════════════════════════════════════════════════════
-  //  WALK-IN DIALOG
+  //  UNIFIED ADD SESSION / BOOKING DIALOG
   // ════════════════════════════════════════════════════════
 
   void _showWalkInDialog() {
-    final nameCtrl = TextEditingController();
-    ConsoleType? selectedType = ConsoleType.ps5;
+    _showAddSessionDialog(context, initialMode: SessionInputMode.walkIn);
+  }
+
+  void _showAddManualBookingDialog(BuildContext context) {
+    _showAddSessionDialog(context, initialMode: SessionInputMode.booking);
+  }
+
+  void _showAddSessionDialog(
+    BuildContext context, {
+    SessionInputMode initialMode = SessionInputMode.walkIn,
+  }) {
+    final formKey = GlobalKey<FormState>();
+    final nameController = TextEditingController();
+    final phoneController = TextEditingController();
+
+    SessionInputMode selectedMode = initialMode;
+    ConsoleType selectedPsType = ConsoleType.ps4;
     String? selectedUnitLabel;
+    DateTime selectedDate = DateTime.now();
+    String selectedTime = '10:00';
     SessionDuration selectedDuration = SessionDuration.jam1;
     PaymentMethod selectedPaymentMethod = PaymentMethod.cash;
     PaymentStatus selectedPaymentStatus = PaymentStatus.lunas;
 
     showDialog(
       context: context,
-      builder: (ctx) {
+      builder: (dialogCtx) {
         return StatefulBuilder(
-          builder: (context, setState) {
-            final provider = context.read<BookingProvider>();
+          builder: (context, setDialogState) {
+            final provider = context.watch<BookingProvider>();
 
-            // Available unit labels for the selected type
             final availableUnitLabels = provider.units
-                .where((u) => u.psType == selectedType && u.isAvailable)
+                .where((u) => u.psType == selectedPsType && u.isAvailable)
                 .map((u) => u.label)
                 .toList();
 
@@ -2062,289 +2037,853 @@ class _AdminScreenState extends State<AdminScreen>
                 borderRadius: BorderRadius.circular(16),
                 side: const BorderSide(color: AppTheme.dividerColor),
               ),
-              child: Padding(
+              child: Container(
+                width: 520,
                 padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Tambah Sesi Walk-in',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Name input
-                    TextField(
-                      controller: nameCtrl,
-                      style: GoogleFonts.spaceGrotesk(
-                        color: AppTheme.textPrimary,
-                      ),
-                      decoration: InputDecoration(
-                        labelText: 'Nama Pelanggan',
-                        labelStyle: GoogleFonts.spaceGrotesk(
-                          color: AppTheme.textMuted,
-                        ),
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: AppTheme.dividerColor),
-                        ),
-                        focusedBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: AppTheme.accentGreen),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Type Selection
-                    DropdownButtonFormField<ConsoleType>(
-                      initialValue: selectedType,
-                      dropdownColor: AppTheme.cardDark,
-                      decoration: InputDecoration(
-                        labelText: 'Tipe PS',
-                        labelStyle: GoogleFonts.spaceGrotesk(
-                          color: AppTheme.textMuted,
-                        ),
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: AppTheme.dividerColor),
-                        ),
-                        focusedBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: AppTheme.accentGreen),
-                        ),
-                      ),
-                      items: ConsoleType.values
-                          .map(
-                            (e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(
-                                e.displayName,
-                                style: GoogleFonts.spaceGrotesk(
-                                  color: AppTheme.textPrimary,
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // HEADER TOGGLE (WALK-IN vs BOOKING)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => setDialogState(
+                                  () => selectedMode = SessionInputMode.walkIn,
                                 ),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (val) {
-                        setState(() {
-                          selectedType = val;
-                          selectedUnitLabel = null; // reset unit
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Unit Selection
-                    DropdownButtonFormField<String?>(
-                      initialValue: selectedUnitLabel,
-                      dropdownColor: AppTheme.cardDark,
-                      decoration: InputDecoration(
-                        labelText: 'Pilih Unit',
-                        labelStyle: GoogleFonts.spaceGrotesk(
-                          color: AppTheme.textMuted,
-                        ),
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: AppTheme.dividerColor),
-                        ),
-                        focusedBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: AppTheme.accentGreen),
-                        ),
-                      ),
-                      items: availableUnitLabels.isEmpty
-                          ? [
-                              DropdownMenuItem(
-                                value: null,
-                                child: Text(
-                                  'Semua Penuh',
-                                  style: GoogleFonts.spaceGrotesk(
-                                    color: AppTheme.accentRed,
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
                                   ),
-                                ),
-                              ),
-                            ]
-                          : availableUnitLabels
-                                .map(
-                                  (e) => DropdownMenuItem(
-                                    value: e,
-                                    child: Text(
-                                      e,
-                                      style: GoogleFonts.spaceGrotesk(
-                                        color: AppTheme.textPrimary,
-                                      ),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        selectedMode == SessionInputMode.walkIn
+                                            ? AppTheme.accentGreen.withValues(
+                                              alpha: 0.2,
+                                            )
+                                            : AppTheme.cardDark,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color:
+                                          selectedMode == SessionInputMode.walkIn
+                                              ? AppTheme.accentGreen
+                                              : AppTheme.dividerColor,
+                                      width:
+                                          selectedMode == SessionInputMode.walkIn
+                                              ? 2
+                                              : 1,
                                     ),
                                   ),
-                                )
-                                .toList(),
-                      onChanged: availableUnitLabels.isEmpty
-                          ? null
-                          : (val) {
-                              setState(() => selectedUnitLabel = val);
-                            },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Duration Selection
-                    DropdownButtonFormField<SessionDuration>(
-                      initialValue: selectedDuration,
-                      dropdownColor: AppTheme.cardDark,
-                      decoration: InputDecoration(
-                        labelText: 'Durasi',
-                        labelStyle: GoogleFonts.spaceGrotesk(
-                          color: AppTheme.textMuted,
-                        ),
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: AppTheme.dividerColor),
-                        ),
-                        focusedBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: AppTheme.accentGreen),
-                        ),
-                      ),
-                      items: SessionDuration.values
-                          .map(
-                            (e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(
-                                e.displayName,
-                                style: GoogleFonts.spaceGrotesk(
-                                  color: AppTheme.textPrimary,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.directions_walk_rounded,
+                                        size: 18,
+                                        color:
+                                            selectedMode ==
+                                                    SessionInputMode.walkIn
+                                                ? AppTheme.accentGreen
+                                                : AppTheme.textMuted,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Walk-in (Main Sekarang)',
+                                        style: GoogleFonts.spaceGrotesk(
+                                          fontSize: 12,
+                                          fontWeight:
+                                              selectedMode ==
+                                                      SessionInputMode.walkIn
+                                                  ? FontWeight.bold
+                                                  : FontWeight.w600,
+                                          color:
+                                              selectedMode ==
+                                                      SessionInputMode.walkIn
+                                                  ? AppTheme.textPrimary
+                                                  : AppTheme.textMuted,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          )
-                          .toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => selectedDuration = val);
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Payment Row
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<PaymentMethod>(
-                            initialValue: selectedPaymentMethod,
-                            dropdownColor: AppTheme.cardDark,
-                            decoration: InputDecoration(
-                              labelText: 'Metode Bayar',
-                              labelStyle: GoogleFonts.spaceGrotesk(
-                                color: AppTheme.textMuted,
-                              ),
-                              enabledBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(color: AppTheme.dividerColor),
-                              ),
-                              focusedBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(color: AppTheme.accentGreen),
-                              ),
-                            ),
-                            items: PaymentMethod.values
-                                .map((e) => DropdownMenuItem(
-                                      value: e,
-                                      child: Text(
-                                        e.displayName,
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => setDialogState(
+                                  () => selectedMode = SessionInputMode.booking,
+                                ),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        selectedMode == SessionInputMode.booking
+                                            ? AppTheme.accentMagenta.withValues(
+                                              alpha: 0.2,
+                                            )
+                                            : AppTheme.cardDark,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color:
+                                          selectedMode ==
+                                                  SessionInputMode.booking
+                                              ? AppTheme.accentMagenta
+                                              : AppTheme.dividerColor,
+                                      width:
+                                          selectedMode ==
+                                                  SessionInputMode.booking
+                                              ? 2
+                                              : 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_today_rounded,
+                                        size: 16,
+                                        color:
+                                            selectedMode ==
+                                                    SessionInputMode.booking
+                                                ? AppTheme.accentMagenta
+                                                : AppTheme.textMuted,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Jadwal Booking',
                                         style: GoogleFonts.spaceGrotesk(
-                                          color: AppTheme.textPrimary,
+                                          fontSize: 12,
+                                          fontWeight:
+                                              selectedMode ==
+                                                      SessionInputMode.booking
+                                                  ? FontWeight.bold
+                                                  : FontWeight.w600,
+                                          color:
+                                              selectedMode ==
+                                                      SessionInputMode.booking
+                                                  ? AppTheme.textPrimary
+                                                  : AppTheme.textMuted,
                                         ),
                                       ),
-                                    ))
-                                .toList(),
-                            onChanged: (val) {
-                              if (val != null) setState(() => selectedPaymentMethod = val);
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: DropdownButtonFormField<PaymentStatus>(
-                            initialValue: selectedPaymentStatus,
-                            dropdownColor: AppTheme.cardDark,
-                            decoration: InputDecoration(
-                              labelText: 'Status Bayar',
-                              labelStyle: GoogleFonts.spaceGrotesk(
-                                color: AppTheme.textMuted,
-                              ),
-                              enabledBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(color: AppTheme.dividerColor),
-                              ),
-                              focusedBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(color: AppTheme.accentGreen),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
-                            items: PaymentStatus.values
-                                .map((e) => DropdownMenuItem(
-                                      value: e,
-                                      child: Text(
-                                        e.displayName,
-                                        style: GoogleFonts.spaceGrotesk(
-                                          color: e == PaymentStatus.lunas
-                                              ? AppTheme.accentGreen
-                                              : AppTheme.warningYellow,
-                                        ),
-                                      ),
-                                    ))
-                                .toList(),
-                            onChanged: (val) {
-                              if (val != null) setState(() => selectedPaymentStatus = val);
-                            },
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+
+                        // NAMA PELANGGAN (WAJIB / REQUIRED)
+                        Text(
+                          'NAMA PELANGGAN',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textMuted,
+                            letterSpacing: 1,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
+                        const SizedBox(height: 6),
+                        TextFormField(
+                          controller: nameController,
+                          style: GoogleFonts.spaceGrotesk(
+                            color: AppTheme.textPrimary,
+                            fontSize: 13,
+                          ),
+                          decoration: const InputDecoration(
+                            hintText: 'Nama Pelanggan (Wajib diisi)',
+                          ),
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return 'Nama pelanggan wajib diisi';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 14),
 
-                    // Buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: Text(
-                            'Batal',
+                        // NOMOR TELEPON (OPSIONAL)
+                        Text(
+                          'NOMOR HP / WA (OPSIONAL)',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textMuted,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextFormField(
+                          controller: phoneController,
+                          keyboardType: TextInputType.phone,
+                          style: GoogleFonts.spaceGrotesk(
+                            color: AppTheme.textPrimary,
+                            fontSize: 13,
+                          ),
+                          decoration: const InputDecoration(
+                            hintText: '08xxxxxxxxxx (Tidak wajib)',
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // DYNAMIC FIELDS BASED ON MODE
+                        if (selectedMode == SessionInputMode.walkIn) ...[
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'TIPE KONSOL',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.textMuted,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    DropdownButtonFormField<ConsoleType>(
+                                      initialValue: selectedPsType,
+                                      dropdownColor: AppTheme.cardDark,
+                                      style: GoogleFonts.spaceGrotesk(
+                                        color: AppTheme.textPrimary,
+                                        fontSize: 13,
+                                      ),
+                                      decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                      ),
+                                      items:
+                                          ConsoleType.values
+                                              .map(
+                                                (t) => DropdownMenuItem(
+                                                  value: t,
+                                                  child: Text(t.displayName),
+                                                ),
+                                              )
+                                              .toList(),
+                                      onChanged: (val) {
+                                        if (val != null) {
+                                          setDialogState(() {
+                                            selectedPsType = val;
+                                            selectedUnitLabel = null;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'PILIH UNIT (KOSONG)',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.textMuted,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    DropdownButtonFormField<String>(
+                                      initialValue: selectedUnitLabel,
+                                      dropdownColor: AppTheme.cardDark,
+                                      style: GoogleFonts.spaceGrotesk(
+                                        color: AppTheme.textPrimary,
+                                        fontSize: 13,
+                                      ),
+                                      decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                      ),
+                                      items:
+                                          availableUnitLabels.isEmpty
+                                              ? [
+                                                const DropdownMenuItem(
+                                                  value: null,
+                                                  child: Text(
+                                                    'Semua Penuh',
+                                                    style: TextStyle(
+                                                      color: Colors.red,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ]
+                                              : availableUnitLabels
+                                                  .map(
+                                                    (u) => DropdownMenuItem(
+                                                      value: u,
+                                                      child: Text(u),
+                                                    ),
+                                                  )
+                                                  .toList(),
+                                      onChanged: (val) {
+                                        if (val != null) {
+                                          setDialogState(
+                                            () => selectedUnitLabel = val,
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            'DURASI MAIN',
                             style: GoogleFonts.spaceGrotesk(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
                               color: AppTheme.textMuted,
                             ),
                           ),
+                          const SizedBox(height: 6),
+                          DropdownButtonFormField<SessionDuration>(
+                            initialValue: selectedDuration,
+                            dropdownColor: AppTheme.cardDark,
+                            style: GoogleFonts.spaceGrotesk(
+                              color: AppTheme.textPrimary,
+                              fontSize: 13,
+                            ),
+                            decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                            ),
+                            items:
+                                SessionDuration.values
+                                    .map(
+                                      (d) => DropdownMenuItem(
+                                        value: d,
+                                        child: Text(d.displayName),
+                                      ),
+                                    )
+                                    .toList(),
+                            onChanged: (val) {
+                              if (val != null) {
+                                setDialogState(() => selectedDuration = val);
+                              }
+                            },
+                          ),
+                        ] else ...[
+                          // BOOKING MODE
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'TIPE KONSOL',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.textMuted,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    DropdownButtonFormField<ConsoleType>(
+                                      initialValue: selectedPsType,
+                                      dropdownColor: AppTheme.cardDark,
+                                      style: GoogleFonts.spaceGrotesk(
+                                        color: AppTheme.textPrimary,
+                                        fontSize: 13,
+                                      ),
+                                      decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                      ),
+                                      items:
+                                          ConsoleType.values
+                                              .map(
+                                                (t) => DropdownMenuItem(
+                                                  value: t,
+                                                  child: Text(t.displayName),
+                                                ),
+                                              )
+                                              .toList(),
+                                      onChanged: (val) {
+                                        if (val != null) {
+                                          setDialogState(
+                                            () => selectedPsType = val,
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'DURASI',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.textMuted,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    DropdownButtonFormField<SessionDuration>(
+                                      initialValue: selectedDuration,
+                                      dropdownColor: AppTheme.cardDark,
+                                      style: GoogleFonts.spaceGrotesk(
+                                        color: AppTheme.textPrimary,
+                                        fontSize: 13,
+                                      ),
+                                      decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                      ),
+                                      items:
+                                          SessionDuration.values
+                                              .map(
+                                                (d) => DropdownMenuItem(
+                                                  value: d,
+                                                  child: Text(d.displayName),
+                                                ),
+                                              )
+                                              .toList(),
+                                      onChanged: (val) {
+                                        if (val != null) {
+                                          setDialogState(
+                                            () => selectedDuration = val,
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+
+                          // TANGGAL & JAM MULAI
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'TANGGAL',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.textMuted,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    GestureDetector(
+                                      onTap: () async {
+                                        final picked = await showDatePicker(
+                                          context: context,
+                                          initialDate: selectedDate,
+                                          firstDate: DateTime.now().subtract(
+                                            const Duration(days: 30),
+                                          ),
+                                          lastDate: DateTime.now().add(
+                                            const Duration(days: 90),
+                                          ),
+                                        );
+                                        if (picked != null) {
+                                          setDialogState(
+                                            () => selectedDate = picked,
+                                          );
+                                        }
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 12,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.cardDark,
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: AppTheme.dividerColor,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              DateFormat(
+                                                'dd/MM/yyyy',
+                                              ).format(selectedDate),
+                                              style: GoogleFonts.spaceGrotesk(
+                                                color: AppTheme.textPrimary,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            const Icon(
+                                              Icons.calendar_today,
+                                              size: 14,
+                                              color: AppTheme.textMuted,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'JAM MULAI',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.textMuted,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    DropdownButtonFormField<String>(
+                                      initialValue: selectedTime,
+                                      dropdownColor: AppTheme.cardDark,
+                                      style: GoogleFonts.spaceGrotesk(
+                                        color: AppTheme.textPrimary,
+                                        fontSize: 13,
+                                      ),
+                                      decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                      ),
+                                      items:
+                                          getValidTimeSlots(
+                                                selectedDuration.hours,
+                                              )
+                                              .map(
+                                                (t) => DropdownMenuItem(
+                                                  value: t,
+                                                  child: Text(t),
+                                                ),
+                                              )
+                                              .toList(),
+                                      onChanged: (val) {
+                                        if (val != null) {
+                                          setDialogState(
+                                            () => selectedTime = val,
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        const SizedBox(height: 14),
+
+                        // METODE PEMBAYARAN (Cash, QRIS, Transfer)
+                        Text(
+                          'METODE PEMBAYARAN',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textMuted,
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed:
-                              (selectedUnitLabel == null ||
-                                  nameCtrl.text.trim().isEmpty)
-                              ? null
-                              : () {
+                        const SizedBox(height: 6),
+                        Row(
+                          children:
+                              PaymentMethod.values.map((m) {
+                                bool isSel = selectedPaymentMethod == m;
+                                return Expanded(
+                                  child: GestureDetector(
+                                    onTap:
+                                        () => setDialogState(
+                                          () => selectedPaymentMethod = m,
+                                        ),
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 2,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            isSel
+                                                ? AppTheme.accentCyan.withValues(
+                                                  alpha: 0.2,
+                                                )
+                                                : AppTheme.cardDark,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color:
+                                              isSel
+                                                  ? AppTheme.accentCyan
+                                                  : AppTheme.dividerColor,
+                                        ),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        m.displayName,
+                                        style: GoogleFonts.spaceGrotesk(
+                                          fontSize: 11,
+                                          fontWeight:
+                                              isSel
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                          color:
+                                              isSel
+                                                  ? AppTheme.textPrimary
+                                                  : AppTheme.textMuted,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // STATUS PEMBAYARAN (Lunas / Belum Bayar)
+                        Text(
+                          'STATUS PEMBAYARAN',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textMuted,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children:
+                              PaymentStatus.values.map((s) {
+                                bool isSel = selectedPaymentStatus == s;
+                                final color =
+                                    s == PaymentStatus.lunas
+                                        ? AppTheme.accentGreen
+                                        : AppTheme.accentMagenta;
+                                return Expanded(
+                                  child: GestureDetector(
+                                    onTap:
+                                        () => setDialogState(
+                                          () => selectedPaymentStatus = s,
+                                        ),
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            isSel
+                                                ? color.withValues(alpha: 0.2)
+                                                : AppTheme.cardDark,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color:
+                                              isSel
+                                                  ? color
+                                                  : AppTheme.dividerColor,
+                                        ),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        s.displayName,
+                                        style: GoogleFonts.spaceGrotesk(
+                                          fontSize: 11,
+                                          fontWeight:
+                                              isSel
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                          color:
+                                              isSel
+                                                  ? color
+                                                  : AppTheme.textMuted,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // BUTTONS
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.pop(dialogCtx),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: AppTheme.dividerColor,
+                                  ),
+                                  foregroundColor: AppTheme.textSecondary,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                                child: Text(
+                                  'Batal',
+                                  style: GoogleFonts.spaceGrotesk(),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  if (!formKey.currentState!.validate()) {
+                                    return;
+                                  }
+
+                                  final name = nameController.text.trim();
+                                  final phone = phoneController.text.trim();
+
+                                  if (selectedMode == SessionInputMode.walkIn) {
+                                    if (selectedUnitLabel == null) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Pilih unit yang tersedia terlebih dahulu!',
+                                          ),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                      return;
+                                    }
+
                                     provider.addWalkIn(
-                                      baseType: selectedType!,
+                                      baseType: selectedPsType,
                                       unitLabel: selectedUnitLabel!,
-                                      playerName: nameCtrl.text.trim(),
+                                      playerName: name,
                                       duration: selectedDuration,
                                       paymentMethod: selectedPaymentMethod,
                                       paymentStatus: selectedPaymentStatus,
                                     );
-                                    Navigator.pop(ctx);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Walk-in ditambahkan'),
-                                      backgroundColor: AppTheme.accentGreen,
-                                    ),
-                                  );
+
+                                    Navigator.pop(dialogCtx);
+                                    ScaffoldMessenger.of(
+                                      context,
+                                    ).showSnackBar(
+                                      SnackBar(
+                                        backgroundColor: AppTheme.accentGreen,
+                                        content: Text(
+                                          'Sesi Walk-in (${selectedPsType.displayName} $selectedUnitLabel) berhasil dimulai!',
+                                          style: GoogleFonts.spaceGrotesk(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    final freeUnit = provider.findAvailableUnit(
+                                      baseType: selectedPsType,
+                                      date: selectedDate,
+                                      startTime: selectedTime,
+                                      durationHours: selectedDuration.hours,
+                                    );
+
+                                    final unitLabel =
+                                        freeUnit != null
+                                            ? '${selectedPsType.displayName} ${freeUnit.label}'
+                                            : '${selectedPsType.displayName} Unit 1';
+
+                                    final booking = Booking(
+                                      id:
+                                          'WI-${DateTime.now().millisecondsSinceEpoch}',
+                                      customerName: name,
+                                      phone: phone,
+                                      psType: selectedPsType,
+                                      date: selectedDate,
+                                      time: selectedTime,
+                                      duration: selectedDuration,
+                                      assignedUnit: unitLabel,
+                                      paymentMethod: selectedPaymentMethod,
+                                      paymentStatus: selectedPaymentStatus,
+                                    );
+
+                                    provider.addBooking(booking);
+                                    Navigator.pop(dialogCtx);
+
+                                    ScaffoldMessenger.of(
+                                      context,
+                                    ).showSnackBar(
+                                      SnackBar(
+                                        backgroundColor: AppTheme.accentGreen,
+                                        content: Text(
+                                          'Booking berhasil disimpan! ($unitLabel - ${selectedPaymentMethod.displayName})',
+                                          style: GoogleFonts.spaceGrotesk(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
                                 },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.accentGreen,
-                            foregroundColor: Colors.white,
-                          ),
-                          child: Text(
-                            'Mulai Main',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontWeight: FontWeight.bold,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      selectedMode == SessionInputMode.walkIn
+                                          ? AppTheme.accentGreen
+                                          : AppTheme.accentMagenta,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                                child: Text(
+                                  selectedMode == SessionInputMode.walkIn
+                                      ? 'Mulai Main'
+                                      : 'Simpan Booking',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             );
