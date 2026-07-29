@@ -90,7 +90,7 @@ class ReceiptDialog extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Jl. Letkol Pol. Surya Dharma No. 51',
+                      'Jl. Lurus No. 56, Jambi (kiri dikit)',
                       style: GoogleFonts.spaceGrotesk(
                         color: AppTheme.textMuted,
                         fontSize: 12,

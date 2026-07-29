@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../models/booking.dart';
@@ -1075,6 +1078,226 @@ class _AdminScreenState extends State<AdminScreen>
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
+              // Export Actions Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Laporan Pendapatan Harian',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'csv') {
+                        _exportCSV();
+                      } else if (value == 'pdf') {
+                        _exportPDF();
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'csv',
+                        child: Row(
+                          children: [
+                            Icon(Icons.table_chart, size: 20),
+                            SizedBox(width: 8),
+                            Text('Export CSV'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'pdf',
+                        child: Row(
+                          children: [
+                            Icon(Icons.picture_as_pdf, size: 20),
+                            SizedBox(width: 8),
+                            Text('Export PDF'),
+                          ],
+                        ),
+                      ),
+                    ],
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentCyan,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.download, size: 18, color: AppTheme.surfaceDark),
+                          const SizedBox(width: 8),
+                          Text('Export', style: GoogleFonts.spaceGrotesk(color: AppTheme.surfaceDark, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              
+              // GRAPH CHART SECTION (GRAFIK DI ATAS)
+              Builder(
+                builder: (context) {
+                  final Map<String, int> allRevenueByDate = {};
+                  for (final b in provider.bookings) {
+                    if (b.paymentStatus == PaymentStatus.lunas) {
+                      final dateStr = '${b.date.year}-${b.date.month.toString().padLeft(2, '0')}-${b.date.day.toString().padLeft(2, '0')}';
+                      final pkg = dummyPricePackages.firstWhere((p) => p.name == b.psType.bookingDisplayName, orElse: () => dummyPricePackages.first);
+                      final priceTier = pkg.prices.firstWhere((t) => t.duration == b.duration.displayName, orElse: () => pkg.prices.first);
+                      final revenue = priceTier.price * b.durationHours;
+                      allRevenueByDate[dateStr] = (allRevenueByDate[dateStr] ?? 0) + revenue;
+                    }
+                  }
+                  final sortedDates = allRevenueByDate.keys.toList()..sort();
+                  final chartDates = sortedDates.length > 7 ? sortedDates.sublist(sortedDates.length - 7) : sortedDates;
+                  
+                  double maxRevenue = 0;
+                  for (final date in chartDates) {
+                    if (allRevenueByDate[date]! > maxRevenue) maxRevenue = allRevenueByDate[date]!.toDouble();
+                  }
+                  maxRevenue = ((maxRevenue / 100000).ceil() * 100000).toDouble();
+                  if (maxRevenue == 0) maxRevenue = 100000;
+
+                  return Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardDark.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppTheme.dividerColor),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Grafik Pendapatan (7 Hari Terakhir)',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        SizedBox(
+                          height: 250,
+                          child: chartDates.isEmpty
+                              ? const Center(child: Text('Belum ada data pendapatan'))
+                              : BarChart(
+                                  BarChartData(
+                                    alignment: BarChartAlignment.spaceAround,
+                                    maxY: maxRevenue,
+                                    barTouchData: BarTouchData(
+                                      touchTooltipData: BarTouchTooltipData(
+                                        getTooltipColor: (group) => AppTheme.surfaceDark,
+                                        getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                                          return BarTooltipItem(
+                                            formatRupiah(rod.toY.toInt()),
+                                            GoogleFonts.spaceGrotesk(
+                                              color: AppTheme.accentCyan,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    titlesData: FlTitlesData(
+                                      show: true,
+                                      bottomTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                          showTitles: true,
+                                          reservedSize: 30,
+                                          getTitlesWidget: (value, meta) {
+                                            if (value.toInt() >= 0 && value.toInt() < chartDates.length) {
+                                              final date = chartDates[value.toInt()];
+                                              final dayStr = date.substring(8, 10);
+                                              final monthStr = date.substring(5, 7);
+                                              return Padding(
+                                                padding: const EdgeInsets.only(top: 8.0),
+                                                child: Text(
+                                                  '$dayStr/$monthStr',
+                                                  style: const TextStyle(
+                                                    color: AppTheme.textMuted,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                            return const Text('');
+                                          },
+                                        ),
+                                      ),
+                                      leftTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                          showTitles: true,
+                                          reservedSize: 50,
+                                          getTitlesWidget: (value, meta) {
+                                            if (value == 0) return const SizedBox.shrink();
+                                            return Text(
+                                              '${(value / 1000).toInt()}k',
+                                              style: const TextStyle(
+                                                color: AppTheme.textMuted,
+                                                fontSize: 10,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      topTitles: const AxisTitles(
+                                        sideTitles: SideTitles(showTitles: false),
+                                      ),
+                                      rightTitles: const AxisTitles(
+                                        sideTitles: SideTitles(showTitles: false),
+                                      ),
+                                    ),
+                                    gridData: FlGridData(
+                                      show: true,
+                                      drawVerticalLine: false,
+                                      horizontalInterval: maxRevenue / 4,
+                                      getDrawingHorizontalLine: (value) => FlLine(
+                                        color: AppTheme.dividerColor.withValues(alpha: 0.5),
+                                        strokeWidth: 1,
+                                        dashArray: [5, 5],
+                                      ),
+                                    ),
+                                    borderData: FlBorderData(show: false),
+                                    barGroups: List.generate(chartDates.length, (index) {
+                                      final date = chartDates[index];
+                                      final revenue = allRevenueByDate[date]!.toDouble();
+                                      
+                                      return BarChartGroupData(
+                                        x: index,
+                                        barRods: [
+                                          BarChartRodData(
+                                            toY: revenue,
+                                            color: AppTheme.accentCyan,
+                                            width: 22,
+                                            borderRadius: const BorderRadius.only(
+                                              topLeft: Radius.circular(6),
+                                              topRight: Radius.circular(6),
+                                            ),
+                                            backDrawRodData: BackgroundBarChartRodData(
+                                              show: true,
+                                              toY: maxRevenue,
+                                              color: AppTheme.surfaceDark.withValues(alpha: 0.5),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }),
+                                  ),
+                                ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+
               // Total month revenue
               Container(
                 width: double.infinity,
@@ -1323,6 +1546,107 @@ class _AdminScreenState extends State<AdminScreen>
         ),
       ],
     );
+  }
+
+  Future<void> _exportCSV() async {
+    try {
+      final provider = context.read<BookingProvider>();
+      final bookings = provider.bookings.where((b) => b.paymentStatus == PaymentStatus.lunas);
+      final revenueByDate = <String, int>{};
+      final countByDate = <String, int>{};
+      
+      for (final b in bookings) {
+        final dateStr = '${b.date.year}-${b.date.month.toString().padLeft(2, '0')}-${b.date.day.toString().padLeft(2, '0')}';
+        final pkg = dummyPricePackages.firstWhere((p) => p.name == b.psType.bookingDisplayName, orElse: () => dummyPricePackages.first);
+        final priceTier = pkg.prices.firstWhere((t) => t.duration == b.duration.displayName, orElse: () => pkg.prices.first);
+        final revenue = priceTier.price * b.durationHours;
+        revenueByDate[dateStr] = (revenueByDate[dateStr] ?? 0) + revenue;
+        countByDate[dateStr] = (countByDate[dateStr] ?? 0) + 1;
+      }
+      
+      final downloadPath = '${Platform.environment['USERPROFILE']}\\Downloads\\Laporan_Pendapatan.csv';
+      final file = File(downloadPath);
+      String csvData = 'Tanggal,Total Sesi,Pendapatan (Rp)\n';
+      final sortedDates = revenueByDate.keys.toList()..sort();
+      for (final date in sortedDates) {
+        csvData += '$date,${countByDate[date]},${revenueByDate[date]}\n';
+      }
+      await file.writeAsString(csvData);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('CSV berhasil disimpan di folder Downloads'), backgroundColor: AppTheme.accentGreen),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal export CSV: $e'), backgroundColor: AppTheme.accentRed),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportPDF() async {
+    try {
+      final provider = context.read<BookingProvider>();
+      final bookings = provider.bookings.where((b) => b.paymentStatus == PaymentStatus.lunas);
+      final revenueByDate = <String, int>{};
+      final countByDate = <String, int>{};
+      
+      for (final b in bookings) {
+        final dateStr = '${b.date.year}-${b.date.month.toString().padLeft(2, '0')}-${b.date.day.toString().padLeft(2, '0')}';
+        final pkg = dummyPricePackages.firstWhere((p) => p.name == b.psType.bookingDisplayName, orElse: () => dummyPricePackages.first);
+        final priceTier = pkg.prices.firstWhere((t) => t.duration == b.duration.displayName, orElse: () => pkg.prices.first);
+        final revenue = priceTier.price * b.durationHours;
+        revenueByDate[dateStr] = (revenueByDate[dateStr] ?? 0) + revenue;
+        countByDate[dateStr] = (countByDate[dateStr] ?? 0) + 1;
+      }
+      
+      final pdf = pw.Document();
+      final sortedDates = revenueByDate.keys.toList()..sort((a, b) => b.compareTo(a));
+      
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Laporan Pendapatan Harian - Timeless PS', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
+                pw.TableHelper.fromTextArray(
+                  context: context,
+                  data: <List<String>>[
+                    <String>['Tanggal', 'Total Sesi', 'Pendapatan (Rp)'],
+                    ...sortedDates.map((date) => [
+                      date,
+                      countByDate[date].toString(),
+                      formatRupiah(revenueByDate[date]!).replaceAll('Rp', '').trim(),
+                    ]),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      );
+      
+      final downloadPath = '${Platform.environment['USERPROFILE']}\\Downloads\\Laporan_Pendapatan.pdf';
+      final file = File(downloadPath);
+      await file.writeAsBytes(await pdf.save());
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('PDF berhasil disimpan di folder Downloads'), backgroundColor: AppTheme.accentGreen),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal export PDF: $e'), backgroundColor: AppTheme.accentRed),
+        );
+      }
+    }
   }
 
   // ════════════════════════════════════════════════════════

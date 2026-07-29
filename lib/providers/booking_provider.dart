@@ -53,12 +53,12 @@ class BookingProvider extends ChangeNotifier {
 
   /// Called by ProxyProvider when [ClockService] ticks (every second).
   void updateClock(DateTime newNow) {
-    final minuteChanged = _now.minute != newNow.minute || _now.hour != newNow.hour;
+    final secondChanged = _now.second != newNow.second;
     _now = newNow;
     notifyListeners();
 
-    // Sync with API only on minute boundaries to avoid flooding
-    if (minuteChanged && _isApiConnected && !_isSyncing) {
+    // Fast Polling: Sync with API every 10 seconds to keep data live
+    if (secondChanged && newNow.second % 10 == 0 && _isApiConnected && !_isSyncing) {
       syncWithApi();
     }
   }

@@ -99,6 +99,9 @@ List<Booking> generateMonthlyBookings(DateTime now) {
 
       String id = isWalkIn ? 'WI-DUMMY-$i-$j' : 'ONL-DUMMY-$i-$j';
 
+      PaymentMethod method = isWalkIn ? PaymentMethod.cash : PaymentMethod.transfer;
+      if (!isWalkIn && random.nextBool()) method = PaymentMethod.qris;
+
       bookings.add(
         Booking(
           id: id,
@@ -109,6 +112,8 @@ List<Booking> generateMonthlyBookings(DateTime now) {
           time: timeStr,
           duration: duration,
           assignedUnit: unitLabel,
+          paymentMethod: method,
+          paymentStatus: PaymentStatus.lunas,
         ),
       );
     }
