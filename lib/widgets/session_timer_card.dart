@@ -120,7 +120,7 @@ class SessionTimerCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        unit.playerName ?? 'Unknown',
+                        '${unit.label} (${unit.psType.displayName})',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -141,7 +141,7 @@ class SessionTimerCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${unit.psType.displayName} · ${unit.startTime ?? ''} - ${unit.endTime ?? ''}',
+                            '${unit.playerName ?? 'Unknown'} · ${unit.startTime ?? ''} - ${unit.endTime ?? ''}',
                             style: GoogleFonts.spaceGrotesk(
                               fontSize: 11,
                               color: AppTheme.textMuted,

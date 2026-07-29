@@ -29,6 +29,7 @@ class _BookingScreenState extends State<BookingScreen> {
   DateTime? _selectedDate;
   String? _selectedTime;
   SessionDuration? _selectedDuration;
+  PaymentMethod _selectedPaymentMethod = PaymentMethod.transfer;
 
   List<ConsoleType> get _psTypes => ConsoleType.values;
 
@@ -396,6 +397,46 @@ class _BookingScreenState extends State<BookingScreen> {
                                       ),
                                     ],
                                   ),
+                                  const SizedBox(height: 20),
+                                  _buildLabel('METODE PEMBAYARAN'),
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 12,
+                                    runSpacing: 12,
+                                    children: PaymentMethod.values.where((m) => m != PaymentMethod.cash).map((method) {
+                                      bool isSelected = _selectedPaymentMethod == method;
+                                      return InkWell(
+                                        onTap: () {
+                                          HapticFeedback.lightImpact();
+                                          setState(() => _selectedPaymentMethod = method);
+                                        },
+                                        borderRadius: BorderRadius.circular(24),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(milliseconds: 200),
+                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                          decoration: BoxDecoration(
+                                            color: isSelected
+                                                ? AppTheme.accentCyan.withValues(alpha: 0.1)
+                                                : AppTheme.surfaceDark,
+                                            borderRadius: BorderRadius.circular(24),
+                                            border: Border.all(
+                                              color: isSelected
+                                                  ? AppTheme.accentCyan
+                                                  : AppTheme.dividerColor,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            method.displayName,
+                                            style: GoogleFonts.spaceGrotesk(
+                                              fontSize: 12,
+                                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                                              color: isSelected ? AppTheme.textPrimary : AppTheme.textMuted,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
                                 ],
                               ),
                       ),
@@ -427,6 +468,16 @@ class _BookingScreenState extends State<BookingScreen> {
                       _buildSummaryRow(
                         'Konsol',
                         _selectedPsType?.bookingDisplayName ?? '-',
+                      ),
+                      const SizedBox(height: 16),
+                      _buildSummaryRow(
+                        'Tanggal',
+                        _selectedDate == null ? '-' : DateFormat('dd/MM/yyyy').format(_selectedDate!),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildSummaryRow(
+                        'Jam Mulai',
+                        _selectedTime ?? '-',
                       ),
                       const SizedBox(height: 16),
                       _buildSummaryRow(
@@ -471,7 +522,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       const SizedBox(height: 12),
                       Center(
                         child: Text(
-                          'Bayar di tempat · Batal gratis sebelum 1 jam',
+                          'Pembayaran via ${_selectedPaymentMethod.displayName} · Menunggu Konfirmasi',
                           style: GoogleFonts.spaceGrotesk(
                             fontSize: 10,
                             color: AppTheme.textMuted,
@@ -690,6 +741,7 @@ class _BookingScreenState extends State<BookingScreen> {
       time: _selectedTime!,
       duration: duration,
       assignedUnit: '${_selectedPsType!.displayName} $unitLabel',
+      paymentMethod: _selectedPaymentMethod,
     );
     _showConfirmationDialog(booking);
   }
@@ -953,6 +1005,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     ),
                     _dialogRow('Jam', booking.time),
                     _dialogRow('Durasi', booking.duration.displayName),
+                    _dialogRow('Metode', booking.paymentMethod.displayName),
                     const Divider(color: AppTheme.dividerColor, height: 16),
                     _dialogRow(
                       'ID',
@@ -1099,6 +1152,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     ),
                     _dialogRow('Jam', booking.time),
                     _dialogRow('Durasi', booking.duration.displayName),
+                    _dialogRow('Metode', booking.paymentMethod.displayName),
                     const Divider(color: AppTheme.dividerColor, height: 16),
                     _dialogRow(
                       'ID',
