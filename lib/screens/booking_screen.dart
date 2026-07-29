@@ -12,6 +12,7 @@ import '../widgets/retro_button.dart';
 import '../utils/time_helpers.dart';
 import '../widgets/glass_panel.dart';
 import 'package:flutter/services.dart';
+import '../models/customer.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
@@ -113,17 +114,78 @@ class _BookingScreenState extends State<BookingScreen> {
                     children: [
                       _buildLabel('NAMA LENGKAP'),
                       const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _nameController,
-                        style: GoogleFonts.spaceGrotesk(
-                          color: AppTheme.textPrimary,
-                        ),
-                        decoration: const InputDecoration(
-                          hintText: 'Nama kamu',
-                        ),
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Wajib diisi'
-                            : null,
+                      Autocomplete<Customer>(
+                        displayStringForOption: (Customer option) => option.name,
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          if (textEditingValue.text.isEmpty) {
+                            return const Iterable<Customer>.empty();
+                          }
+                          final customers = context.read<BookingProvider>().customers;
+                          return customers.where((Customer option) {
+                            return option.name
+                                .toLowerCase()
+                                .contains(textEditingValue.text.toLowerCase());
+                          });
+                        },
+                        onSelected: (Customer selection) {
+                          _nameController.text = selection.name;
+                          _phoneController.text = selection.phone;
+                        },
+                        fieldViewBuilder: (BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
+                          textEditingController.addListener(() {
+                            if (_nameController.text != textEditingController.text) {
+                              _nameController.text = textEditingController.text;
+                            }
+                          });
+                          
+                          return TextFormField(
+                            controller: textEditingController,
+                            focusNode: focusNode,
+                            style: GoogleFonts.spaceGrotesk(
+                              color: AppTheme.textPrimary,
+                            ),
+                            decoration: const InputDecoration(
+                              hintText: 'Nama kamu',
+                            ),
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Wajib diisi'
+                                : null,
+                          );
+                        },
+                        optionsViewBuilder: (context, onSelected, options) {
+                          return Align(
+                            alignment: Alignment.topLeft,
+                            child: Material(
+                              elevation: 4.0,
+                              color: AppTheme.backgroundDark,
+                              borderRadius: BorderRadius.circular(12),
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxHeight: 200, maxWidth: 300),
+                                child: ListView.builder(
+                                  padding: EdgeInsets.zero,
+                                  shrinkWrap: true,
+                                  itemCount: options.length,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    final Customer option = options.elementAt(index);
+                                    return InkWell(
+                                      onTap: () {
+                                        onSelected(option);
+                                        // Update internal controller
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: Text(
+                                          '${option.name} (${option.displayPhone})',
+                                          style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 20),
 

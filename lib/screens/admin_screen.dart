@@ -17,6 +17,7 @@ import '../widgets/session_timer_card.dart';
 import '../widgets/alert_banner.dart';
 import '../utils/time_helpers.dart';
 import '../widgets/receipt_dialog.dart';
+import '../widgets/customer_list_tab.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -40,7 +41,7 @@ class _AdminScreenState extends State<AdminScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
     final now = DateTime.now();
     _bookingCalendarMonth = DateTime(now.year, now.month);
     _revenueCalendarMonth = DateTime(now.year, now.month);
@@ -87,6 +88,7 @@ class _AdminScreenState extends State<AdminScreen>
               Tab(text: 'Data Booking'),
               Tab(text: 'Data Pendapatan'),
               Tab(text: 'Booking Hari Ini'),
+              Tab(text: 'Pelanggan'),
             ],
           ),
         ),
@@ -100,6 +102,7 @@ class _AdminScreenState extends State<AdminScreen>
               _buildBookingCalendar(),
               _buildRevenueCalendar(),
               _buildTodayBookings(),
+              const CustomerListTab(),
             ],
           ),
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/booking.dart';
 import '../models/enums.dart';
+import '../models/customer.dart';
 import '../models/ps_unit.dart';
 import '../data/dummy_data.dart';
 import '../data/dummy_revenue.dart';
@@ -66,6 +67,52 @@ class BookingProvider extends ChangeNotifier {
   DateTime get now => _now;
   List<Booking> get bookings => List.unmodifiable(_bookings);
   int get bookingCount => _bookings.length;
+
+  // ════════════════════════════════════════════════════════
+  //  CUSTOMER HELPERS
+  // ════════════════════════════════════════════════════════
+
+  /// Extracts unique customers from the booking history and aggregates their stats.
+  List<Customer> get customers {
+    final map = <String, Customer>{};
+
+    for (final b in _bookings) {
+      final key = b.customerName.toLowerCase().trim();
+      if (key.isEmpty) continue;
+
+      // Estimate spent
+      final match = dummyPricePackages.where((p) => p.name == b.psType.bookingDisplayName).toList();
+      int spent = 0;
+      if (match.isNotEmpty) {
+        spent = match.first.prices.first.price * b.durationHours;
+      }
+
+      if (map.containsKey(key)) {
+        final existing = map[key]!;
+        map[key] = Customer(
+          name: existing.name,
+          phone: b.phone.isNotEmpty ? b.phone : existing.phone,
+          totalBookings: existing.totalBookings + 1,
+          totalSpent: existing.totalSpent + spent,
+          lastVisit: b.date.isAfter(existing.lastVisit ?? DateTime(2000)) ? b.date : existing.lastVisit,
+          favoriteConsole: existing.favoriteConsole,
+        );
+      } else {
+        map[key] = Customer(
+          name: b.customerName.trim(),
+          phone: b.phone.trim(),
+          totalBookings: 1,
+          totalSpent: spent,
+          lastVisit: b.date,
+          favoriteConsole: b.psType,
+        );
+      }
+    }
+
+    final list = map.values.toList();
+    list.sort((a, b) => b.totalBookings.compareTo(a.totalBookings));
+    return list;
+  }
 
   // ════════════════════════════════════════════════════════
   //  SESSION TIMER HELPERS
