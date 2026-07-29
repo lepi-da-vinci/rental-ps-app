@@ -10,6 +10,8 @@ class AppTheme {
   static const Color accentTeal = Color(0xFF5BA4A4); // Muted for subtle
   static const Color accentGreen = Color(0xFF00E676); // Softer Neon Green
   static const Color accentRed = Color(0xFFEF4444); // Softer Neon Red
+  static const Color warningYellow = Color(0xFFFFB800); // Timer warning
+  static const Color warningOrange = Color(0xFFFF6B35); // Timer critical
   static const Color textPrimary = Color(0xFFEAEAEA);
   static const Color textSecondary = Color(0xFFA5A5B5);
   static const Color textMuted = Color(0xFF6B6B7B);
@@ -48,6 +50,20 @@ class AppTheme {
     }
     // Ensure positive index
     return bookingColors[hash.abs() % bookingColors.length];
+  }
+
+  // ── Timer Status Color Helper ──
+  static Color timerStatusColor(dynamic status) {
+    switch (status.toString()) {
+      case 'SessionTimerStatus.active':
+        return accentGreen;
+      case 'SessionTimerStatus.expiringSoon':
+        return warningYellow;
+      case 'SessionTimerStatus.overtime':
+        return accentRed;
+      default:
+        return textMuted;
+    }
   }
 
   // ── Soft shadow for glass depth ──

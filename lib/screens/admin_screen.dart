@@ -10,7 +10,10 @@ import '../models/enums.dart';
 import '../widgets/glass_panel.dart';
 import '../widgets/section_title.dart';
 import '../widgets/unit_timeline_view.dart';
+import '../widgets/session_timer_card.dart';
+import '../widgets/alert_banner.dart';
 import '../utils/time_helpers.dart';
+import '../widgets/receipt_dialog.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -236,6 +239,10 @@ class _AdminScreenState extends State<AdminScreen>
                   ],
                 ),
               ),
+              const SizedBox(height: 32),
+
+              // ── Session Timer Cards ──
+              _buildSessionTimersSection(provider),
             ],
           ),
         );
@@ -339,6 +346,276 @@ class _AdminScreenState extends State<AdminScreen>
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ════════════════════════════════════════════════════════
+  //  SESSION TIMERS SECTION (Dashboard)
+  // ════════════════════════════════════════════════════════
+
+  Widget _buildSessionTimersSection(BookingProvider provider) {
+    final activeUnits = provider.activeUnitsWithTimer;
+
+    if (activeUnits.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SectionTitle(
+            title: 'Sesi Aktif',
+            subtitle: 'Tidak ada unit yang sedang digunakan',
+          ),
+          const SizedBox(height: 12),
+          GlassPanel(
+            enableBlur: false,
+            padding: const EdgeInsets.all(24),
+            borderRadius: 16,
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.videogame_asset_off,
+                    color: AppTheme.textMuted.withValues(alpha: 0.4),
+                    size: 40,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Semua unit tersedia',
+                    style: GoogleFonts.spaceGrotesk(
+                      color: AppTheme.textMuted,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Sort: overtime first, then expiring, then active
+    activeUnits.sort((a, b) {
+      final statusA = provider.timerStatusFor(a).index;
+      final statusB = provider.timerStatusFor(b).index;
+      // Overtime (3) > ExpiringSoon (2) > Active (1)
+      return statusB.compareTo(statusA);
+    });
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Alert banner
+        SessionAlertBanner(
+          expiringCount: provider.expiringUnits.length,
+          overtimeCount: provider.overtimeUnits.length,
+        ),
+
+        SectionTitle(
+          title: 'Sesi Aktif',
+          subtitle: '${activeUnits.length} unit sedang digunakan',
+          action: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppTheme.accentCyan.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppTheme.accentCyan.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.timer, size: 12, color: AppTheme.accentCyan),
+                const SizedBox(width: 4),
+                Text(
+                  'LIVE',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.accentCyan,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        ...activeUnits.map((unit) {
+          final booking = provider.activeBookingFor(unit);
+          final remaining = provider.remainingSecondsFor(unit);
+          final status = provider.timerStatusFor(unit);
+
+          return SessionTimerCard(
+            unit: unit,
+            activeBooking: booking,
+            remainingSeconds: remaining,
+            timerStatus: status,
+            onExtend: booking != null
+                ? () => _handleExtendSession(context, provider, booking, unit)
+                : null,
+            onFinish: booking != null
+                ? () => _handleFinishSession(context, provider, booking)
+                : null,
+          );
+        }),
+      ],
+    );
+  }
+
+  void _handleExtendSession(
+    BuildContext context,
+    BookingProvider provider,
+    Booking booking,
+    UnitStatus unit,
+  ) {
+    // Check if extending would exceed max duration (5 hours)
+    if (booking.durationHours >= 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Durasi sudah maksimal (5 jam)',
+            style: GoogleFonts.spaceGrotesk(),
+          ),
+          backgroundColor: AppTheme.warningYellow,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppTheme.dividerColor),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.add_alarm, color: AppTheme.accentCyan),
+            const SizedBox(width: 10),
+            Text(
+              'Perpanjang Sesi',
+              style: GoogleFonts.spaceGrotesk(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Perpanjang sesi ${booking.customerName} di ${unit.psType.displayName} ${unit.label} sebanyak +1 jam?\n\n'
+          'Durasi baru: ${booking.durationHours + 1} Jam\n'
+          'Selesai: ${_calculateNewEndTime(booking, 1)}',
+          style: GoogleFonts.spaceGrotesk(color: AppTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Batal',
+              style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              provider.extendBooking(booking.id, 1);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '✅ Sesi ${booking.customerName} diperpanjang +1 jam',
+                    style: GoogleFonts.spaceGrotesk(),
+                  ),
+                  backgroundColor: AppTheme.accentGreen,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.accentCyan,
+              foregroundColor: Colors.black,
+            ),
+            child: Text(
+              'Perpanjang',
+              style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _calculateNewEndTime(Booking booking, int additionalHours) {
+    final parts = booking.time.split(':');
+    final endHour = (int.parse(parts[0]) + booking.durationHours + additionalHours) % 24;
+    return '${endHour.toString().padLeft(2, '0')}:${parts[1]}';
+  }
+
+  void _handleFinishSession(
+    BuildContext context,
+    BookingProvider provider,
+    Booking booking,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppTheme.dividerColor),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.stop_circle_outlined, color: AppTheme.accentRed),
+            const SizedBox(width: 10),
+            Text(
+              'Selesaikan Sesi',
+              style: GoogleFonts.spaceGrotesk(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Selesaikan sesi ${booking.customerName}?\nBooking ini akan dihapus dari daftar aktif.',
+          style: GoogleFonts.spaceGrotesk(color: AppTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Batal',
+              style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              provider.removeBooking(booking.id);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '✅ Sesi ${booking.customerName} selesai',
+                    style: GoogleFonts.spaceGrotesk(),
+                  ),
+                  backgroundColor: AppTheme.accentGreen,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.accentRed,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              'Selesaikan',
+              style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -721,6 +998,19 @@ class _AdminScreenState extends State<AdminScreen>
                                   ),
                                 ],
                               ),
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.receipt_long,
+                                color: AppTheme.accentCyan,
+                                size: 18,
+                              ),
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (ctx) => ReceiptDialog(booking: b),
+                                );
+                              },
                             ),
                             IconButton(
                               icon: const Icon(
@@ -1416,6 +1706,8 @@ class _AdminScreenState extends State<AdminScreen>
     ConsoleType? selectedType = ConsoleType.ps5;
     String? selectedUnitLabel;
     SessionDuration selectedDuration = SessionDuration.jam1;
+    PaymentMethod selectedPaymentMethod = PaymentMethod.cash;
+    PaymentStatus selectedPaymentStatus = PaymentStatus.lunas;
 
     showDialog(
       context: context,
@@ -1600,6 +1892,80 @@ class _AdminScreenState extends State<AdminScreen>
                         if (val != null) setState(() => selectedDuration = val);
                       },
                     ),
+                    const SizedBox(height: 16),
+
+                    // Payment Row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<PaymentMethod>(
+                            initialValue: selectedPaymentMethod,
+                            dropdownColor: AppTheme.cardDark,
+                            decoration: InputDecoration(
+                              labelText: 'Metode Bayar',
+                              labelStyle: GoogleFonts.spaceGrotesk(
+                                color: AppTheme.textMuted,
+                              ),
+                              enabledBorder: const OutlineInputBorder(
+                                borderSide: BorderSide(color: AppTheme.dividerColor),
+                              ),
+                              focusedBorder: const OutlineInputBorder(
+                                borderSide: BorderSide(color: AppTheme.accentGreen),
+                              ),
+                            ),
+                            items: PaymentMethod.values
+                                .map((e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(
+                                        e.displayName,
+                                        style: GoogleFonts.spaceGrotesk(
+                                          color: AppTheme.textPrimary,
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                            onChanged: (val) {
+                              if (val != null) setState(() => selectedPaymentMethod = val);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: DropdownButtonFormField<PaymentStatus>(
+                            initialValue: selectedPaymentStatus,
+                            dropdownColor: AppTheme.cardDark,
+                            decoration: InputDecoration(
+                              labelText: 'Status Bayar',
+                              labelStyle: GoogleFonts.spaceGrotesk(
+                                color: AppTheme.textMuted,
+                              ),
+                              enabledBorder: const OutlineInputBorder(
+                                borderSide: BorderSide(color: AppTheme.dividerColor),
+                              ),
+                              focusedBorder: const OutlineInputBorder(
+                                borderSide: BorderSide(color: AppTheme.accentGreen),
+                              ),
+                            ),
+                            items: PaymentStatus.values
+                                .map((e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(
+                                        e.displayName,
+                                        style: GoogleFonts.spaceGrotesk(
+                                          color: e == PaymentStatus.lunas
+                                              ? AppTheme.accentGreen
+                                              : AppTheme.warningYellow,
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                            onChanged: (val) {
+                              if (val != null) setState(() => selectedPaymentStatus = val);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 24),
 
                     // Buttons
@@ -1622,13 +1988,15 @@ class _AdminScreenState extends State<AdminScreen>
                                   nameCtrl.text.trim().isEmpty)
                               ? null
                               : () {
-                                  provider.addWalkIn(
-                                    baseType: selectedType!,
-                                    unitLabel: selectedUnitLabel!,
-                                    playerName: nameCtrl.text.trim(),
-                                    duration: selectedDuration,
-                                  );
-                                  Navigator.pop(ctx);
+                                    provider.addWalkIn(
+                                      baseType: selectedType!,
+                                      unitLabel: selectedUnitLabel!,
+                                      playerName: nameCtrl.text.trim(),
+                                      duration: selectedDuration,
+                                      paymentMethod: selectedPaymentMethod,
+                                      paymentStatus: selectedPaymentStatus,
+                                    );
+                                    Navigator.pop(ctx);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text('Walk-in ditambahkan'),

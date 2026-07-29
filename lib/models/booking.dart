@@ -9,6 +9,8 @@ class Booking {
   final String time;       // HH:mm format
   final SessionDuration duration;
   final String assignedUnit;
+  final PaymentMethod paymentMethod;
+  final PaymentStatus paymentStatus;
   final DateTime createdAt;
 
   Booking({
@@ -20,6 +22,8 @@ class Booking {
     required this.time,
     required this.duration,
     required this.assignedUnit,
+    this.paymentMethod = PaymentMethod.cash,
+    this.paymentStatus = PaymentStatus.lunas,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
@@ -45,6 +49,8 @@ class Booking {
     String? time,
     SessionDuration? duration,
     String? assignedUnit,
+    PaymentMethod? paymentMethod,
+    PaymentStatus? paymentStatus,
     DateTime? createdAt,
   }) {
     return Booking(
@@ -56,6 +62,8 @@ class Booking {
       time: time ?? this.time,
       duration: duration ?? this.duration,
       assignedUnit: assignedUnit ?? this.assignedUnit,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
       createdAt: createdAt ?? this.createdAt,
     );
   }

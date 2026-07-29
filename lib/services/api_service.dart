@@ -188,6 +188,8 @@ class ApiService {
       time: json['time'] ?? '08:00',
       duration: duration,
       assignedUnit: json['assigned_unit'] ?? '',
+      paymentMethod: PaymentMethod.fromString(json['payment_method'] ?? 'cash'),
+      paymentStatus: PaymentStatus.fromString(json['payment_status'] ?? 'lunas'),
     );
   }
 
@@ -211,5 +213,41 @@ class ApiService {
       endTime: json['end_time'],
       isWalkIn: json['is_walk_in'] ?? false,
     );
+  }
+
+  /// Extend an active booking's duration on the Laravel backend.
+  static Future<bool> extendBooking(String bookingId, int additionalHours) async {
+    try {
+      final response = await http
+          .patch(
+            Uri.parse(ApiConfig.extendBookingEndpoint(bookingId)),
+            headers: ApiConfig.headers,
+            body: jsonEncode({'additional_hours': additionalHours}),
+          )
+          .timeout(ApiConfig.timeout);
+
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('ApiService.extendBooking error: $e');
+      return false;
+    }
+  }
+
+  /// Update payment status on the Laravel backend.
+  static Future<bool> updatePaymentStatus(String bookingId, PaymentStatus status) async {
+    try {
+      final response = await http
+          .patch(
+            Uri.parse('${ApiConfig.bookingsEndpoint}/$bookingId/payment'),
+            headers: ApiConfig.headers,
+            body: jsonEncode({'payment_status': status.dbValue}),
+          )
+          .timeout(ApiConfig.timeout);
+
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('ApiService.updatePaymentStatus error: $e');
+      return false;
+    }
   }
 }

@@ -53,4 +53,6 @@ class ApiConfig {
       '$baseUrl/revenue/daily?date=$dateStr';
   static String monthlyRevenueEndpoint(int year, int month) =>
       '$baseUrl/revenue/monthly?year=$year&month=$month';
+  static String extendBookingEndpoint(String bookingId) =>
+      '$baseUrl/bookings/$bookingId/extend';
 }

@@ -1,5 +1,24 @@
 import 'enums.dart';
 
+// ══════════════════════════════════════════
+//  Session Timer Status
+// ══════════════════════════════════════════
+
+/// Visual status for the countdown timer on each unit.
+enum SessionTimerStatus {
+  /// Unit is available — no active session.
+  available,
+
+  /// Session is active with >10 minutes remaining.
+  active,
+
+  /// ≤10 minutes remaining — show yellow warning.
+  expiringSoon,
+
+  /// Session has passed its end time — show red alert.
+  overtime,
+}
+
 class PsUnit {
   final String id;
   final String name;

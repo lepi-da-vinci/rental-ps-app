@@ -51,21 +51,105 @@ class BookingProvider extends ChangeNotifier {
     }
   }
 
-  /// Called by ProxyProvider when [ClockService] ticks.
+  /// Called by ProxyProvider when [ClockService] ticks (every second).
   void updateClock(DateTime newNow) {
-    if (_now.minute != newNow.minute || _now.hour != newNow.hour) {
-      _now = newNow;
-      notifyListeners();
-      // Periodically sync with Laravel API so HP and Laptop stay in sync
-      if (_isApiConnected && !_isSyncing) {
-        syncWithApi();
-      }
+    final minuteChanged = _now.minute != newNow.minute || _now.hour != newNow.hour;
+    _now = newNow;
+    notifyListeners();
+
+    // Sync with API only on minute boundaries to avoid flooding
+    if (minuteChanged && _isApiConnected && !_isSyncing) {
+      syncWithApi();
     }
   }
 
   DateTime get now => _now;
   List<Booking> get bookings => List.unmodifiable(_bookings);
   int get bookingCount => _bookings.length;
+
+  // ════════════════════════════════════════════════════════
+  //  SESSION TIMER HELPERS
+  // ════════════════════════════════════════════════════════
+
+  /// Returns the remaining seconds for a unit's active session.
+  /// Negative values mean the session is overtime.
+  /// Returns null if the unit has no active session.
+  int? remainingSecondsFor(UnitStatus unit) {
+    final booking = _activeBookingRightNowFor(unit);
+    if (booking == null) return null;
+
+    final startMin = toMinutes(booking.time);
+    final endMin = startMin + booking.durationHours * 60;
+    final nowSec = _now.hour * 3600 + _now.minute * 60 + _now.second;
+    final endSec = endMin * 60;
+    return endSec - nowSec;
+  }
+
+  /// Returns the [SessionTimerStatus] for a unit.
+  SessionTimerStatus timerStatusFor(UnitStatus unit) {
+    final remaining = remainingSecondsFor(unit);
+    if (remaining == null) return SessionTimerStatus.available;
+    if (remaining <= 0) return SessionTimerStatus.overtime;
+    if (remaining <= 600) return SessionTimerStatus.expiringSoon; // ≤10 min
+    return SessionTimerStatus.active;
+  }
+
+  /// All units that currently have an active session (for timer display).
+  List<UnitStatus> get activeUnitsWithTimer {
+    return units.where((u) => !u.isAvailable).toList();
+  }
+
+  /// Units with ≤10 minutes remaining.
+  List<UnitStatus> get expiringUnits {
+    return units.where((u) => timerStatusFor(u) == SessionTimerStatus.expiringSoon).toList();
+  }
+
+  /// Units that are past their end time.
+  List<UnitStatus> get overtimeUnits {
+    return units.where((u) => timerStatusFor(u) == SessionTimerStatus.overtime).toList();
+  }
+
+  /// Total number of units that need attention (expiring + overtime).
+  int get alertCount => expiringUnits.length + overtimeUnits.length;
+
+  /// Extend an active booking by [additionalHours].
+  void extendBooking(String bookingId, int additionalHours) async {
+    final idx = _bookings.indexWhere((b) => b.id == bookingId);
+    if (idx == -1) return;
+
+    final old = _bookings[idx];
+    final newDurationHours = old.durationHours + additionalHours;
+    final newDuration = SessionDuration.values.firstWhere(
+      (d) => d.hours == newDurationHours,
+      orElse: () => SessionDuration.jam5, // cap at max
+    );
+
+    _bookings[idx] = old.copyWith(duration: newDuration);
+    notifyListeners();
+
+    if (_isApiConnected) {
+      await ApiService.extendBooking(bookingId, additionalHours);
+      syncWithApi();
+    }
+  }
+
+  /// Update payment status for a booking.
+  void updatePaymentStatus(String bookingId, PaymentStatus status) async {
+    final idx = _bookings.indexWhere((b) => b.id == bookingId);
+    if (idx == -1) return;
+
+    _bookings[idx] = _bookings[idx].copyWith(paymentStatus: status);
+    notifyListeners();
+
+    if (_isApiConnected) {
+      await ApiService.updatePaymentStatus(bookingId, status);
+      // Optional: syncWithApi(); 
+      // But we just updated local state so it's fine unless we want to be absolutely sure.
+    }
+  }
+
+  /// Get the active booking for a given unit right now (public accessor).
+  Booking? activeBookingFor(UnitStatus unit) => _activeBookingRightNowFor(unit);
 
   // ════════════════════════════════════════════════════════
   //  STATS & HELPERS
@@ -136,6 +220,8 @@ class BookingProvider extends ChangeNotifier {
     required String unitLabel,
     required String playerName,
     required SessionDuration duration,
+    PaymentMethod paymentMethod = PaymentMethod.cash,
+    PaymentStatus paymentStatus = PaymentStatus.lunas,
   }) {
     final startTime =
         '${_now.hour.toString().padLeft(2, '0')}:${_now.minute.toString().padLeft(2, '0')}';
@@ -150,6 +236,8 @@ class BookingProvider extends ChangeNotifier {
       time: startTime,
       duration: duration,
       assignedUnit: assignedUnit,
+      paymentMethod: paymentMethod,
+      paymentStatus: paymentStatus,
     );
     addBooking(booking);
   }

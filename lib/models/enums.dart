@@ -72,6 +72,60 @@ enum ConsoleType {
   }
 }
 
+/// Available payment methods.
+enum PaymentMethod {
+  cash,
+  qris,
+  transfer;
+
+  String get displayName {
+    switch (this) {
+      case PaymentMethod.cash:
+        return 'Cash';
+      case PaymentMethod.qris:
+        return 'QRIS';
+      case PaymentMethod.transfer:
+        return 'Transfer Bank';
+    }
+  }
+
+  static PaymentMethod fromString(String val) {
+    return PaymentMethod.values.firstWhere(
+      (e) => e.name == val,
+      orElse: () => PaymentMethod.cash,
+    );
+  }
+}
+
+/// Payment status for a booking.
+enum PaymentStatus {
+  lunas,
+  belumLunas;
+
+  String get displayName {
+    switch (this) {
+      case PaymentStatus.lunas:
+        return 'Lunas';
+      case PaymentStatus.belumLunas:
+        return 'Belum Lunas';
+    }
+  }
+
+  String get dbValue {
+    switch (this) {
+      case PaymentStatus.lunas:
+        return 'lunas';
+      case PaymentStatus.belumLunas:
+        return 'belum_lunas';
+    }
+  }
+
+  static PaymentStatus fromString(String val) {
+    if (val == 'belum_lunas') return PaymentStatus.belumLunas;
+    return PaymentStatus.lunas; // Default to lunas
+  }
+}
+
 // ══════════════════════════════════════════
 //  Session Duration Enum
 // ══════════════════════════════════════════
