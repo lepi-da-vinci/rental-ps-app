@@ -1987,14 +1987,6 @@ class _AdminScreenState extends State<AdminScreen>
   //  UNIFIED ADD SESSION / BOOKING DIALOG
   // ════════════════════════════════════════════════════════
 
-  void _showWalkInDialog() {
-    _showAddSessionDialog(context, initialMode: SessionInputMode.walkIn);
-  }
-
-  void _showAddManualBookingDialog(BuildContext context) {
-    _showAddSessionDialog(context, initialMode: SessionInputMode.booking);
-  }
-
   void _showAddSessionDialog(
     BuildContext context, {
     SessionInputMode initialMode = SessionInputMode.walkIn,
