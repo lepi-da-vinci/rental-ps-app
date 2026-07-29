@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/booking.dart';
+import '../models/enums.dart';
 import '../theme/app_theme.dart';
 
 class UnitTimelineView extends StatefulWidget {
@@ -212,7 +213,7 @@ class _UnitTimelineViewState extends State<UnitTimelineView> {
                           color: AppTheme.textPrimary,
                         ),
                       ),
-                      if (selectedBooking != null)
+                      if (selectedBooking != null) ...[
                         Text(
                           'Waktu: ${selectedBooking.time} - ${selectedBooking.endTime} • Tipe: ${selectedBooking.isWalkIn ? 'Walk-in (Langsung)' : 'Booking Online'}',
                           style: GoogleFonts.spaceGrotesk(
@@ -220,6 +221,35 @@ class _UnitTimelineViewState extends State<UnitTimelineView> {
                             color: AppTheme.textSecondary,
                           ),
                         ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppTheme.accentCyan.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: AppTheme.accentCyan.withValues(alpha: 0.4)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.sports_esports, size: 12, color: AppTheme.accentCyan),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Game Dimainkan: ${_resolveGameName(selectedBooking)}',
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.accentCyan,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -229,5 +259,53 @@ class _UnitTimelineViewState extends State<UnitTimelineView> {
         ],
       ],
     );
+  }
+
+  String _resolveGameName(Booking b) {
+    if (b.playedGame != null && b.playedGame!.isNotEmpty) return b.playedGame!;
+
+    final ps5List = const [
+      'Spider-Man 2',
+      'Tekken 8',
+      'God of War Ragnarok',
+      'EA FC 24',
+      'Black Myth: Wukong',
+      'Mortal Kombat 1',
+      'Gran Turismo 7',
+      'Elden Ring',
+      'Resident Evil Village',
+      'Cyberpunk 2077',
+      'eFootball 2024',
+    ];
+
+    final ps4List = const [
+      'Resident Evil 4 Remake',
+      'GTA V',
+      'Tekken 7',
+      'God of War',
+      'The Last of Us Part II',
+      'Naruto Storm 4',
+      'Red Dead Redemption 2',
+      'eFootball 2024',
+      'EA FC 24',
+      'Mortal Kombat 11',
+    ];
+
+    final nintendoList = const [
+      'Mario Kart 8 Deluxe',
+      'Super Smash Bros. Ultimate',
+      'Overcooked! All You Can Eat',
+      'Mario Party Superstars',
+      'Zelda: Tears of the Kingdom',
+    ];
+
+    final hash = b.id.hashCode.abs();
+    if (b.psType == ConsoleType.nintendoVip) {
+      return nintendoList[hash % nintendoList.length];
+    } else if (b.psType == ConsoleType.ps5Vip || b.psType == ConsoleType.ps5) {
+      return ps5List[hash % ps5List.length];
+    } else {
+      return ps4List[hash % ps4List.length];
+    }
   }
 }

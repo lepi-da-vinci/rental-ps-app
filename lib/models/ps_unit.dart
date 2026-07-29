@@ -51,6 +51,7 @@ class UnitStatus {
   final String? startTime;   // Waktu mulai bermain
   final String? endTime;     // Waktu selesai bermain
   final bool isWalkIn;       // true jika orang datang langsung tanpa booking
+  final List<String> installedGames;
 
   const UnitStatus({
     required this.unitId,
@@ -61,6 +62,7 @@ class UnitStatus {
     this.startTime,
     this.endTime,
     this.isWalkIn = false,
+    this.installedGames = const [],
   });
 
   UnitStatus copyWith({
@@ -72,6 +74,7 @@ class UnitStatus {
     String? startTime,
     String? endTime,
     bool? isWalkIn,
+    List<String>? installedGames,
   }) {
     return UnitStatus(
       unitId: unitId ?? this.unitId,
@@ -82,6 +85,7 @@ class UnitStatus {
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
       isWalkIn: isWalkIn ?? this.isWalkIn,
+      installedGames: installedGames ?? this.installedGames,
     );
   }
 

@@ -11,6 +11,7 @@ class Booking {
   final String assignedUnit;
   final PaymentMethod paymentMethod;
   final PaymentStatus paymentStatus;
+  final String? playedGame;
   final DateTime createdAt;
 
   Booking({
@@ -24,6 +25,7 @@ class Booking {
     required this.assignedUnit,
     this.paymentMethod = PaymentMethod.cash,
     this.paymentStatus = PaymentStatus.lunas,
+    this.playedGame,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
@@ -51,6 +53,7 @@ class Booking {
     String? assignedUnit,
     PaymentMethod? paymentMethod,
     PaymentStatus? paymentStatus,
+    String? playedGame,
     DateTime? createdAt,
   }) {
     return Booking(
@@ -64,6 +67,7 @@ class Booking {
       assignedUnit: assignedUnit ?? this.assignedUnit,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       paymentStatus: paymentStatus ?? this.paymentStatus,
+      playedGame: playedGame ?? this.playedGame,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -80,6 +84,7 @@ class Booking {
       'assignedUnit': assignedUnit,
       'paymentMethod': paymentMethod.name,
       'paymentStatus': paymentStatus.name,
+      'playedGame': playedGame,
       'createdAt': createdAt.toIso8601String(),
     };
   }
@@ -111,6 +116,7 @@ class Booking {
         (e) => e.name == json['paymentStatus'],
         orElse: () => PaymentStatus.lunas,
       ),
+      playedGame: json['playedGame'] as String?,
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : null,
     );
   }

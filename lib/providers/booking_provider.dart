@@ -324,6 +324,7 @@ class BookingProvider extends ChangeNotifier {
     required SessionDuration duration,
     PaymentMethod paymentMethod = PaymentMethod.cash,
     PaymentStatus paymentStatus = PaymentStatus.lunas,
+    String? playedGame,
   }) {
     final startTime =
         '${_now.hour.toString().padLeft(2, '0')}:${_now.minute.toString().padLeft(2, '0')}';
@@ -341,6 +342,7 @@ class BookingProvider extends ChangeNotifier {
       assignedUnit: assignedUnit,
       paymentMethod: paymentMethod,
       paymentStatus: paymentStatus,
+      playedGame: playedGame,
     );
     addBooking(booking);
   }

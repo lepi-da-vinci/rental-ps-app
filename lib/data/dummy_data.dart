@@ -84,6 +84,13 @@ List<UnitStatus> getDummyUnitStatus() {
         psType: ConsoleType.ps4,
         label: 'Unit $i',
         isAvailable: true,
+        installedGames: const [
+          'EA FC 24',
+          'eFootball 2024',
+          'GTA V',
+          'Tekken 7',
+          'God of War',
+        ],
       ),
     for (int i = 1; i <= 8; i++)
       UnitStatus(
@@ -91,6 +98,14 @@ List<UnitStatus> getDummyUnitStatus() {
         psType: ConsoleType.ps5,
         label: 'Unit $i',
         isAvailable: true,
+        installedGames: const [
+          'EA FC 24',
+          'eFootball 2024',
+          'Tekken 8',
+          'Mortal Kombat 1',
+          'Spiderman 2',
+          'GTA V',
+        ],
       ),
     for (int i = 1; i <= 5; i++)
       UnitStatus(
@@ -98,6 +113,14 @@ List<UnitStatus> getDummyUnitStatus() {
         psType: ConsoleType.ps5Vip,
         label: 'Ruang $i',
         isAvailable: true,
+        installedGames: const [
+          'EA FC 24',
+          'eFootball 2024',
+          'Tekken 8',
+          'Mortal Kombat 1',
+          'God of War Ragnarok',
+          'Gran Turismo 7',
+        ],
       ),
     for (int i = 1; i <= 2; i++)
       UnitStatus(
@@ -105,6 +128,12 @@ List<UnitStatus> getDummyUnitStatus() {
         psType: ConsoleType.nintendoVip,
         label: 'Ruang $i',
         isAvailable: true,
+        installedGames: const [
+          'Mario Kart 8 Deluxe',
+          'Super Smash Bros. Ultimate',
+          'Overcooked! All You Can Eat',
+          'Mario Party Superstars',
+        ],
       ),
   ];
 }

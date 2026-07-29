@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/booking.dart';
 import '../models/enums.dart';
 import '../theme/app_theme.dart';
@@ -309,29 +310,17 @@ class ReceiptDialog extends StatelessWidget {
                     ),
                     Expanded(
                       child: TextButton.icon(
-                        onPressed: () {
-                          // Simple share action hint since we don't have share_plus yet
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Silakan Screenshot layar ini untuk membagikan struk.',
-                                style: GoogleFonts.spaceGrotesk(),
-                              ),
-                              backgroundColor: AppTheme.accentCyan,
-                              duration: const Duration(seconds: 4),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.share, size: 18),
+                        onPressed: () => _sendWhatsAppReceipt(context, total),
+                        icon: const Icon(Icons.send_to_mobile, size: 18, color: AppTheme.accentGreen),
                         label: Text(
-                          'Bagikan',
+                          'Kirim WA',
                           style: GoogleFonts.spaceGrotesk(
                             fontWeight: FontWeight.bold,
+                            color: AppTheme.accentGreen,
                           ),
                         ),
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          foregroundColor: AppTheme.accentCyan,
                         ),
                       ),
                     ),
@@ -343,6 +332,46 @@ class ReceiptDialog extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _sendWhatsAppReceipt(BuildContext context, int total) async {
+    var phone = booking.phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (phone.startsWith('0')) {
+      phone = '62${phone.substring(1)}';
+    }
+
+    final dateFormatted = DateFormat('dd MMM yyyy').format(booking.date);
+    final text = '''
+🎮 *TIMELESS RENTAL PS - STRUK DIGITAL*
+---------------------------------------
+*Nama Pelanggan*: ${booking.customerName}
+*Unit*: ${booking.assignedUnit}
+*Tanggal*: $dateFormatted
+*Jam Sesi*: ${booking.time} (${booking.durationHours} Jam)
+*Total Pembayaran*: ${_formatCurrency(total)}
+*Metode Bayar*: ${booking.paymentMethod.displayName}
+*Status*: ${booking.paymentStatus.displayName}
+---------------------------------------
+Terima kasih telah bermain di Timeless Rental PS! ✨
+''';
+
+    final uri = Uri.parse('https://wa.me/$phone?text=${Uri.encodeComponent(text)}');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        await launchUrl(uri);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal membuka WhatsApp: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildLabelValue(String label, String value,

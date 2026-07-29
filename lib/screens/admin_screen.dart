@@ -160,6 +160,35 @@ class _AdminScreenState extends State<AdminScreen>
                 title: 'Ringkasan Hari Ini',
                 subtitle: 'Statistik rental untuk hari ini',
               ),
+              const SizedBox(height: 16),
+              if (provider.alertCount > 0) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.redAccent, width: 1.5),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 28),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'PERHATIAN: Ada ${provider.alertCount} unit yang sesinya hampir habis (≤10 menit) atau sudah melebihi waktu (Overtime)!',
+                          style: GoogleFonts.spaceGrotesk(
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
               const SizedBox(height: 20),
               Row(
                 children: [
@@ -1296,6 +1325,35 @@ class _AdminScreenState extends State<AdminScreen>
                         color: AppTheme.accentTeal,
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    const Divider(color: AppTheme.dividerColor),
+                    const SizedBox(height: 8),
+                    Builder(
+                      builder: (context) {
+                        int qris = 0, cash = 0, tf = 0;
+                        final bookings = provider.bookingsForMonth(year, month);
+                        for (final b in bookings) {
+                          final match = dummyPricePackages.where((p) => p.name == b.psType.bookingDisplayName).toList();
+                          int spent = match.isNotEmpty ? match.first.prices.first.price * b.durationHours : 10000 * b.durationHours;
+                          if (b.paymentMethod == PaymentMethod.qris) {
+                            qris += spent;
+                          } else if (b.paymentMethod == PaymentMethod.cash) {
+                            cash += spent;
+                          } else if (b.paymentMethod == PaymentMethod.transfer) {
+                            tf += spent;
+                          }
+                        }
+                        return Row(
+                          children: [
+                            Expanded(child: _buildMiniMethodBadge('QRIS', qris, AppTheme.accentCyan)),
+                            const SizedBox(width: 8),
+                            Expanded(child: _buildMiniMethodBadge('CASH', cash, AppTheme.accentGreen)),
+                            const SizedBox(width: 8),
+                            Expanded(child: _buildMiniMethodBadge('TRANSFER', tf, AppTheme.accentMagenta)),
+                          ],
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -1357,6 +1415,40 @@ class _AdminScreenState extends State<AdminScreen>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildMiniMethodBadge(String title, int amount, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            formatRupiah(amount),
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 

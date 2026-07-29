@@ -1158,6 +1158,40 @@ class _InfoScreenState extends State<InfoScreen>
                   unit.isWalkIn ? 'Walk-in (Langsung)' : 'Booking App',
                 ),
               ],
+              if (unit.installedGames.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(
+                  '🎮 Game Terpasang:',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: unit.installedGames.map((game) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentCyan.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppTheme.accentCyan.withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        game,
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.accentCyan,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
               const SizedBox(height: 24),
               const Divider(color: AppTheme.dividerColor),
               const SizedBox(height: 16),

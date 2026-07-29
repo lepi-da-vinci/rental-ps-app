@@ -102,6 +102,44 @@ List<Booking> generateMonthlyBookings(DateTime now) {
       PaymentMethod method = isWalkIn ? PaymentMethod.cash : PaymentMethod.transfer;
       if (!isWalkIn && random.nextBool()) method = PaymentMethod.qris;
 
+      String selectedGame;
+      if (type == ConsoleType.nintendoVip) {
+        selectedGame = const [
+          'Mario Kart 8 Deluxe',
+          'Super Smash Bros. Ultimate',
+          'Overcooked! All You Can Eat',
+          'Mario Party Superstars',
+          'Zelda: Tears of the Kingdom',
+        ][random.nextInt(5)];
+      } else if (type == ConsoleType.ps5Vip || type == ConsoleType.ps5) {
+        selectedGame = const [
+          'EA FC 24',
+          'Spider-Man 2',
+          'Tekken 8',
+          'Mortal Kombat 1',
+          'God of War Ragnarok',
+          'Black Myth: Wukong',
+          'Elden Ring',
+          'Gran Turismo 7',
+          'Resident Evil Village',
+          'Cyberpunk 2077',
+          'eFootball 2024',
+        ][random.nextInt(11)];
+      } else {
+        selectedGame = const [
+          'eFootball 2024',
+          'EA FC 24',
+          'GTA V',
+          'Tekken 7',
+          'Resident Evil 4 Remake',
+          'God of War',
+          'The Last of Us Part II',
+          'Naruto Storm 4',
+          'Mortal Kombat 11',
+          'Red Dead Redemption 2',
+        ][random.nextInt(10)];
+      }
+
       bookings.add(
         Booking(
           id: id,
@@ -114,6 +152,7 @@ List<Booking> generateMonthlyBookings(DateTime now) {
           assignedUnit: unitLabel,
           paymentMethod: method,
           paymentStatus: PaymentStatus.lunas,
+          playedGame: selectedGame,
         ),
       );
     }
