@@ -99,7 +99,81 @@ class _BookingScreenState extends State<BookingScreen> {
                 color: AppTheme.textSecondary,
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
+
+            // Visual Progress Stepper Bar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppTheme.cardDark.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.dividerColor),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: const BoxDecoration(
+                      color: AppTheme.accentMagenta,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '1',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Form Booking',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      height: 2,
+                      margin: const EdgeInsets.symmetric(horizontal: 12),
+                      color: AppTheme.accentMagenta.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceDark,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppTheme.dividerColor),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '2',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textMuted,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Pilih Pembayaran',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 12,
+                      color: AppTheme.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
 
             LayoutBuilder(
               builder: (context, constraints) {
@@ -1060,7 +1134,10 @@ class _BookingScreenState extends State<BookingScreen> {
                     ),
                     const SizedBox(height: 8),
                     Row(
-                      children: PaymentMethod.values.map((method) {
+                      children: [
+                        PaymentMethod.qris,
+                        PaymentMethod.transfer,
+                      ].map((method) {
                         bool isSelected = selectedPaymentMethod == method;
                         return Expanded(
                           child: GestureDetector(

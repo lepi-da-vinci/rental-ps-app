@@ -102,7 +102,6 @@ class BookingProvider extends ChangeNotifier {
   void updateClock(DateTime newNow) {
     final secondChanged = _now.second != newNow.second;
     _now = newNow;
-    notifyListeners();
 
     // Fast Polling: Sync with API every 10 seconds to keep data live
     if (secondChanged && newNow.second % 10 == 0 && _isApiConnected && !_isSyncing) {

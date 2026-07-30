@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../models/booking.dart';
 import '../providers/booking_provider.dart';
+import '../providers/clock_service.dart';
 import '../data/dummy_data.dart';
 import '../models/ps_unit.dart';
 import '../models/enums.dart';
@@ -390,26 +391,28 @@ class _AdminScreenState extends State<AdminScreen>
       );
     }
 
-    // Sort: overtime first, then expiring, then active
-    activeUnits.sort((a, b) {
-      final statusA = provider.timerStatusFor(a).index;
-      final statusB = provider.timerStatusFor(b).index;
-      // Overtime (3) > ExpiringSoon (2) > Active (1)
-      return statusB.compareTo(statusA);
-    });
+    return Consumer<ClockService>(
+      builder: (context, clockService, _) {
+        // Sort: overtime first, then expiring, then active
+        activeUnits.sort((a, b) {
+          final statusA = provider.timerStatusFor(a).index;
+          final statusB = provider.timerStatusFor(b).index;
+          // Overtime (3) > ExpiringSoon (2) > Active (1)
+          return statusB.compareTo(statusA);
+        });
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Alert banner
-        SessionAlertBanner(
-          expiringCount: provider.expiringUnits.length,
-          overtimeCount: provider.overtimeUnits.length,
-        ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Alert banner
+            SessionAlertBanner(
+              expiringCount: provider.expiringUnits.length,
+              overtimeCount: provider.overtimeUnits.length,
+            ),
 
-        SectionTitle(
-          title: 'Sesi Aktif',
-          subtitle: '${activeUnits.length} unit sedang digunakan',
+            SectionTitle(
+              title: 'Sesi Aktif',
+              subtitle: '${activeUnits.length} unit sedang digunakan',
           action: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
@@ -459,6 +462,8 @@ class _AdminScreenState extends State<AdminScreen>
         }),
       ],
     );
+  },
+);
   }
 
   void _handleExtendSession(
