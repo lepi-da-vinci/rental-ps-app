@@ -93,6 +93,7 @@ class _AdminScreenState extends State<AdminScreen> {
       children: [
         // Tab Bar & Action Button
         Container(
+          height: 60,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: const BoxDecoration(
             color: AppTheme.surfaceDark,

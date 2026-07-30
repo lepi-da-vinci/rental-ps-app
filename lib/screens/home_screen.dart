@@ -234,25 +234,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Row(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
-                      child: ClayButton.text(
-                        text: 'Booking Sekarang',
-                        icon: Icons.sports_esports_rounded,
-                        color: AppTheme.clayPink,
-                        onTap: () => widget.onNavigate?.call(3),
-                      ),
+                    ClayButton.text(
+                      text: 'Booking Sekarang',
+                      icon: Icons.sports_esports_rounded,
+                      color: AppTheme.clayPink,
+                      onTap: () => widget.onNavigate?.call(3),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ClayButton.text(
-                        text: 'Lihat Harga',
-                        isPrimary: false,
-                        color: AppTheme.claySurface,
-                        textColor: AppTheme.clayCyan,
-                        onTap: () => widget.onNavigate?.call(2),
-                      ),
+                    const SizedBox(height: 12),
+                    ClayButton.text(
+                      text: 'Lihat Harga',
+                      isPrimary: false,
+                      color: AppTheme.claySurface,
+                      textColor: AppTheme.clayCyan,
+                      onTap: () => widget.onNavigate?.call(2),
                     ),
                   ],
                 ),

@@ -474,7 +474,6 @@ class _MainScreenState extends State<MainScreen>
   }
 
   Widget _buildAdminToggle(bool isAdminMode, BuildContext context) {
-    final adminProvider = context.read<AdminProvider>();
     return Container(
       margin: const EdgeInsets.only(right: 8),
       child: Material(
