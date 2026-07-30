@@ -2,24 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const Color backgroundDark = Color(0xFF0F0F16);
-  static const Color surfaceDark = Color(0xFF171721);
-  static const Color cardDark = Color(0xFF1E1E2C);
-  static const Color accentCyan = Color(0xFF00D0FF); // Softer Cyan
-  static const Color accentMagenta = Color(0xFFE024C5); // Softer Magenta
-  static const Color accentTeal = Color(0xFF5BA4A4); // Muted for subtle
-  static const Color accentGreen = Color(0xFF00E676); // Softer Neon Green
-  static const Color accentRed = Color(0xFFEF4444); // Softer Neon Red
-  static const Color warningYellow = Color(0xFFFFB800); // Timer warning
-  static const Color warningOrange = Color(0xFFFF6B35); // Timer critical
-  static const Color textPrimary = Color(0xFFEAEAEA);
-  static const Color textSecondary = Color(0xFFA5A5B5);
-  static const Color textMuted = Color(0xFF6B6B7B);
-  static const Color dividerColor = Color(0xFF2A2A3D);
+  static const Color backgroundDark = Color(0xFF0A0D18);
+  static const Color surfaceDark = Color(0xFF121626);
+  static const Color cardDark = Color(0xFF192034);
+  static const Color accentCyan = Color(0xFF00E5FF); // Electric Cyan
+  static const Color accentMagenta = Color(0xFFFF2A85); // Vibrant Neon Pink
+  static const Color accentTeal = Color(0xFF00E5FF);
+  static const Color accentGreen = Color(0xFF00F59B); // Electric Emerald
+  static const Color accentRed = Color(0xFFFF3366); // Coral Crimson Red
+  static const Color warningYellow = Color(0xFFFFB800); // Solar Amber Gold
+  static const Color warningOrange = Color(0xFFFF7A00); // Electric Orange
+  static const Color textPrimary = Color(0xFFF1F5F9);
+  static const Color textSecondary = Color(0xFF94A3B8);
+  static const Color textMuted = Color(0xFF64748B);
+  static const Color dividerColor = Color(0xFF232B45);
 
-  static const Color glassSurface = Color(0x1AFFFFFF); // 10% white for frosted glass
-  static const Color glassBorder = Color(0x33FFFFFF); // 20% white for subtle edge
-  static const Color glassHighlight = Color(0x4DFFFFFF); // 30% white for specular highlight
+  static const Color glassSurface = Color(0x1AFFFFFF);
+  static const Color glassBorder = Color(0x33FFFFFF);
+  static const Color glassHighlight = Color(0x4DFFFFFF);
+
+  // ── Claymorphism 3D Color Tokens ──
+  static const Color claySurface = Color(0xFF141829);
+  static const Color clayBorder = Color(0xFF26304D);
+  static const Color clayPink = Color(0xFFFF3B8B);
+  static const Color clayCyan = Color(0xFF00E5FF);
+  static const Color clayPurple = Color(0xFFA855F7);
+  static const Color clayOrange = Color(0xFFFF7A00);
+  static const Color clayGreen = Color(0xFF00F59B);
+
+  // ── Ultra-Modern Skeuomorphism Gaming Tokens ──
+  static const Color ps5ChassisDark = Color(0xFF10121A);
+  static const Color ps5ChassisLight = Color(0xFFE2E7F0);
+  static const Color ps5MetallicSlate = Color(0xFF1A1D2A);
+  static const Color ps5LedBlue = Color(0xFF0070D1);
+  static const Color ps5LedOrange = Color(0xFFFF8C00);
+  static const Color ps5LedCrimson = Color(0xFFFF2A4B);
+  static const Color ps5LedActiveGreen = Color(0xFF00E676);
 
   // ── Booking Colors Palette ──
   static const List<Color> bookingColors = [
@@ -116,12 +134,50 @@ class AppTheme {
     );
   }
 
-  // ── Legacy Card decoration (updated to faux glass) ──
+  // ── Claymorphism 3D Decoration ──
+  static BoxDecoration clayDecoration({
+    Color? surfaceColor,
+    Color? borderColor,
+    double borderRadius = 22,
+    bool isPressed = false,
+  }) {
+    final color = surfaceColor ?? claySurface;
+    return BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(borderRadius),
+      border: Border.all(
+        color: borderColor ?? clayBorder,
+        width: 1.5,
+      ),
+      boxShadow: isPressed
+          ? [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                offset: const Offset(1, 2),
+                blurRadius: 4,
+              )
+            ]
+          : [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.45),
+                offset: const Offset(4, 6),
+                blurRadius: 14,
+              ),
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.08),
+                offset: const Offset(-3, -3),
+                blurRadius: 8,
+              ),
+            ],
+    );
+  }
+
+  // ── Legacy Card decoration (updated to Clay 3D) ──
   static BoxDecoration cardDecoration({
     Color? borderColor,
-    double borderRadius = 14,
+    double borderRadius = 20,
   }) {
-    return glassDecoration(borderColor: borderColor, borderRadius: borderRadius, addHighlight: false, surfaceColor: cardDark.withValues(alpha: 0.6));
+    return clayDecoration(borderColor: borderColor, borderRadius: borderRadius);
   }
 
   // ── Gradient (Neon) ──

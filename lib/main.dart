@@ -75,13 +75,12 @@ class _MainScreenState extends State<MainScreen>
       vsync: this,
       duration: const Duration(seconds: 20),
     )..repeat(reverse: true);
-    _bgAnimation =
-        Tween<Alignment>(
-          begin: const Alignment(-0.6, -0.6),
-          end: const Alignment(0.6, -0.2),
-        ).animate(
-          CurvedAnimation(parent: _bgController, curve: Curves.easeInOutSine),
-        );
+    _bgAnimation = Tween<Alignment>(
+      begin: const Alignment(-0.6, -0.6),
+      end: const Alignment(0.6, -0.2),
+    ).animate(
+      CurvedAnimation(parent: _bgController, curve: Curves.easeInOutSine),
+    );
   }
 
   @override
@@ -91,6 +90,11 @@ class _MainScreenState extends State<MainScreen>
   }
 
   void _onNavigate(int index) {
+    final adminProvider = context.read<AdminProvider>();
+    if (index == 4 && !adminProvider.isAdminMode) {
+      _showLoginDialog(context);
+      return;
+    }
     setState(() => _currentIndex = index);
   }
 
@@ -111,13 +115,11 @@ class _MainScreenState extends State<MainScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Satu sumber waktu untuk seluruh app: jam dari BookingProvider,
-    // yang di-update tiap menit lewat ClockService (Stream.periodic).
-    // Di sini tinggal "watch" aja, gak perlu Timer sendiri.
     final now = context.watch<BookingProvider>().now;
     final todayHours = _todayHours();
     final isOpenNow = _isOpenNow(now, todayHours);
     final statusLabel = _statusLabel(todayHours);
+    final isAdminMode = context.watch<AdminProvider>().isAdminMode;
 
     final screens = [
       HomeScreen(key: const ValueKey('home'), onNavigate: _onNavigate),
@@ -129,12 +131,16 @@ class _MainScreenState extends State<MainScreen>
       const BookingScreen(key: ValueKey('booking')),
     ];
 
-    final titles = ['Timeless', 'Info Unit & Game', 'Harga', 'Booking'];
+    final titles = [
+      'Timeless',
+      'Info Unit & Game',
+      'Harga Paket',
+      'Booking Online',
+    ];
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final isLargeScreen = constraints.maxWidth > 800;
-        final isAdminMode = context.watch<AdminProvider>().isAdminMode;
 
         return Scaffold(
           appBar: isLargeScreen
@@ -157,33 +163,12 @@ class _MainScreenState extends State<MainScreen>
                 child: child,
               );
             },
-            child: isAdminMode
-                ? const AdminScreen()
-                : (isLargeScreen
-                      ? Row(
-                          children: [
-                            _buildSidebar(isOpenNow, statusLabel),
-                            Expanded(
-                              child: AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 300),
-                                transitionBuilder: (child, animation) {
-                                  return FadeTransition(
-                                    opacity: animation,
-                                    child: ScaleTransition(
-                                      scale: Tween<double>(
-                                        begin: 0.98,
-                                        end: 1.0,
-                                      ).animate(animation),
-                                      child: child,
-                                    ),
-                                  );
-                                },
-                                child: screens[_currentIndex],
-                              ),
-                            ),
-                          ],
-                        )
-                      : AnimatedSwitcher(
+            child: isLargeScreen
+                ? Row(
+                    children: [
+                      _buildSidebar(isOpenNow, statusLabel, isAdminMode),
+                      Expanded(
+                        child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 300),
                           transitionBuilder: (child, animation) {
                             return FadeTransition(
@@ -198,11 +183,28 @@ class _MainScreenState extends State<MainScreen>
                             );
                           },
                           child: screens[_currentIndex],
-                        )),
+                        ),
+                      ),
+                    ],
+                  )
+                : AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(
+                          scale: Tween<double>(
+                            begin: 0.98,
+                            end: 1.0,
+                          ).animate(animation),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: screens[_currentIndex],
+                  ),
           ),
-          bottomNavigationBar: (isLargeScreen || isAdminMode)
-              ? null
-              : _buildBottomNav(),
+          bottomNavigationBar: isLargeScreen ? null : _buildBottomNav(),
         );
       },
     );
@@ -215,13 +217,10 @@ class _MainScreenState extends State<MainScreen>
   ) {
     return AppBar(
       title: Text(
-        isAdminMode ? 'ADMIN MODE' : title,
-        style: isAdminMode
-            ? GoogleFonts.spaceGrotesk(
-                color: AppTheme.accentCyan,
-                fontWeight: FontWeight.bold,
-              )
-            : null,
+        title,
+        style: GoogleFonts.spaceGrotesk(
+          fontWeight: FontWeight.bold,
+        ),
       ),
       actions: [_buildAdminToggle(isAdminMode, context)],
       bottom: PreferredSize(
@@ -256,11 +255,11 @@ class _MainScreenState extends State<MainScreen>
           ),
           const SizedBox(width: 16),
           Text(
-            isAdminMode ? 'TIMELESS (ADMIN)' : 'TIMELESS',
+            'TIMELESS RENTAL PS',
             style: GoogleFonts.pressStart2p(
-              fontSize: 14,
-              color: isAdminMode ? AppTheme.accentCyan : AppTheme.textPrimary,
-              letterSpacing: 2,
+              fontSize: 13,
+              color: AppTheme.textPrimary,
+              letterSpacing: 1.5,
             ),
           ),
           const Spacer(),
@@ -323,12 +322,22 @@ class _MainScreenState extends State<MainScreen>
           builder: (context, setState) {
             return AlertDialog(
               backgroundColor: AppTheme.surfaceDark,
-              title: Text(
-                'Admin Login',
-                style: GoogleFonts.spaceGrotesk(
-                  color: AppTheme.textPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: const BorderSide(color: AppTheme.dividerColor),
+              ),
+              title: Row(
+                children: [
+                  const Icon(Icons.admin_panel_settings_rounded, color: AppTheme.accentCyan),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Login Admin Rental PS',
+                    style: GoogleFonts.spaceGrotesk(
+                      color: AppTheme.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -343,11 +352,13 @@ class _MainScreenState extends State<MainScreen>
                       labelStyle: GoogleFonts.spaceGrotesk(
                         color: AppTheme.textMuted,
                       ),
-                      enabledBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: AppTheme.dividerColor),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppTheme.dividerColor),
                       ),
-                      focusedBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: AppTheme.accentCyan),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppTheme.accentCyan),
                       ),
                     ),
                   ),
@@ -363,15 +374,11 @@ class _MainScreenState extends State<MainScreen>
                       labelStyle: GoogleFonts.spaceGrotesk(
                         color: AppTheme.textMuted,
                       ),
-                      enabledBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: AppTheme.dividerColor),
-                      ),
-                      focusedBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: AppTheme.accentCyan),
-                      ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          obscureText ? Icons.visibility_off : Icons.visibility,
+                          obscureText
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           color: AppTheme.textMuted,
                         ),
                         onPressed: () {
@@ -380,6 +387,22 @@ class _MainScreenState extends State<MainScreen>
                           });
                         },
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppTheme.dividerColor),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppTheme.accentCyan),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    '* Gunakan username: admin dan password: admin',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 11,
+                      color: AppTheme.textMuted,
                     ),
                   ),
                 ],
@@ -393,35 +416,51 @@ class _MainScreenState extends State<MainScreen>
                   ),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.accentCyan,
-                  ),
                   onPressed: () {
-                    final success = context.read<AdminProvider>().login(
+                    final adminProvider = context.read<AdminProvider>();
+                    final success = adminProvider.login(
                       usernameCtrl.text,
                       passwordCtrl.text,
                     );
                     if (success) {
                       Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AdminScreen(),
+                        ),
+                      );
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Login berhasil!'),
+                        SnackBar(
+                          content: Text(
+                            '✅ Login Admin Berhasil! Selamat Datang.',
+                            style: GoogleFonts.spaceGrotesk(),
+                          ),
                           backgroundColor: AppTheme.accentGreen,
                         ),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Username atau Password salah!'),
+                        SnackBar(
+                          content: Text(
+                            '❌ Username atau Password salah',
+                            style: GoogleFonts.spaceGrotesk(),
+                          ),
                           backgroundColor: AppTheme.accentRed,
                         ),
                       );
                     }
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.accentCyan,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                   child: Text(
                     'Login',
                     style: GoogleFonts.spaceGrotesk(
-                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -435,25 +474,65 @@ class _MainScreenState extends State<MainScreen>
   }
 
   Widget _buildAdminToggle(bool isAdminMode, BuildContext context) {
-    return IconButton(
-      icon: Icon(
-        isAdminMode
-            ? Icons.admin_panel_settings
-            : Icons.admin_panel_settings_outlined,
-        color: isAdminMode ? AppTheme.accentCyan : AppTheme.textMuted,
+    final adminProvider = context.read<AdminProvider>();
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () {
+            if (isAdminMode) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AdminScreen(),
+                ),
+              );
+            } else {
+              _showLoginDialog(context);
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: isAdminMode
+                  ? AppTheme.accentCyan.withValues(alpha: 0.15)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isAdminMode
+                    ? AppTheme.accentCyan.withValues(alpha: 0.5)
+                    : AppTheme.dividerColor,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isAdminMode ? Icons.admin_panel_settings : Icons.lock_outline,
+                  size: 16,
+                  color: isAdminMode ? AppTheme.accentCyan : AppTheme.textMuted,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  isAdminMode ? 'ADMIN' : 'LOGIN',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color:
+                        isAdminMode ? AppTheme.accentCyan : AppTheme.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
-      tooltip: 'Toggle Admin Mode',
-      onPressed: () {
-        if (isAdminMode) {
-          context.read<AdminProvider>().toggleAdminMode();
-        } else {
-          _showLoginDialog(context);
-        }
-      },
     );
   }
 
-  Widget _buildSidebar(bool isOpenNow, String statusLabel) {
+  Widget _buildSidebar(bool isOpenNow, String statusLabel, bool isAdminMode) {
     return Container(
       width: 250,
       decoration: const BoxDecoration(
@@ -516,11 +595,12 @@ class _MainScreenState extends State<MainScreen>
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Text(
-              'Navigasi',
+              'NAVIGASI UTAMA',
               style: GoogleFonts.spaceGrotesk(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
                 color: AppTheme.textMuted,
+                letterSpacing: 1,
               ),
             ),
           ),
@@ -548,7 +628,7 @@ class _MainScreenState extends State<MainScreen>
 
           const Spacer(),
 
-          // Bottom Info
+          // Bottom Operating Hour Info Card
           Padding(
             padding: const EdgeInsets.all(24),
             child: Container(
@@ -614,6 +694,7 @@ class _MainScreenState extends State<MainScreen>
     IconData activeIcon,
   ) {
     final isActive = _currentIndex == index;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: InkWell(

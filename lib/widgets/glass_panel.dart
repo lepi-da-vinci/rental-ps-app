@@ -34,11 +34,10 @@ class GlassPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final decoration = AppTheme.glassDecoration(
+    final decoration = AppTheme.clayDecoration(
       borderColor: borderColor,
       borderRadius: borderRadius,
-      surfaceColor: surfaceColor,
-      addHighlight: addHighlight,
+      surfaceColor: surfaceColor ?? AppTheme.claySurface,
     );
 
     if (!enableBlur) {

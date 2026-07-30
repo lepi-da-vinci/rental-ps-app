@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../providers/booking_provider.dart';
 import '../data/dummy_data.dart';
-import 'glass_panel.dart';
+import 'clay_panel.dart';
 
 class CustomerListTab extends StatefulWidget {
   const CustomerListTab({super.key});
@@ -37,45 +37,44 @@ class _CustomerListTabState extends State<CustomerListTab> {
               Row(
                 children: [
                   Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppTheme.cardDark,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppTheme.dividerColor),
-                      ),
+                    child: ClayPanel(
+                      padding: const EdgeInsets.all(18),
+                      borderRadius: 22,
                       child: Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(10),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppTheme.accentCyan.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
+                              color: AppTheme.clayCyan.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: AppTheme.clayCyan.withValues(alpha: 0.3),
+                              ),
                             ),
                             child: const Icon(
                               Icons.people_alt_rounded,
-                              color: AppTheme.accentCyan,
-                              size: 22,
+                              color: AppTheme.clayCyan,
+                              size: 24,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 14),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'TOTAL PELANGGAN',
                                 style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 10,
+                                  fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                   color: AppTheme.textMuted,
                                   letterSpacing: 1,
                                 ),
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: 4),
                               Text(
                                 '${allCustomers.length} Gamer',
                                 style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 18,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                   color: AppTheme.textPrimary,
                                 ),
@@ -146,8 +145,11 @@ class _CustomerListTabState extends State<CustomerListTab> {
                   separatorBuilder: (ctx, i) => const SizedBox(height: 14),
                   itemBuilder: (ctx, i) {
                     final customer = filteredCustomers[i];
-                    return GlassPanel(
-                      borderRadius: 16,
+                    final avatarColors = [AppTheme.clayCyan, AppTheme.clayPink, AppTheme.clayPurple, AppTheme.clayGreen];
+                    final cColor = avatarColors[i % avatarColors.length];
+                    return ClayPanel(
+                      borderRadius: 22,
+                      borderColor: cColor.withValues(alpha: 0.3),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                         child: Row(

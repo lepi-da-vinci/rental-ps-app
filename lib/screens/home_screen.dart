@@ -5,6 +5,9 @@ import '../data/dummy_data.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_title.dart';
 import '../widgets/glass_panel.dart';
+import '../widgets/clay_panel.dart';
+import '../widgets/clay_button.dart';
+import '../widgets/clay_stat_card.dart';
 import '../widgets/game_detail_dialog.dart';
 import '../providers/booking_provider.dart';
 import '../utils/time_helpers.dart';
@@ -234,74 +237,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: GestureDetector(
+                      child: ClayButton.text(
+                        text: 'Booking Sekarang',
+                        icon: Icons.sports_esports_rounded,
+                        color: AppTheme.clayPink,
                         onTap: () => widget.onNavigate?.call(3),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                AppTheme.accentCyan,
-                                AppTheme.accentMagenta,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: AppTheme.neonShadow(
-                              AppTheme.accentCyan,
-                              blur: 10,
-                            ),
-                          ),
-                          alignment: Alignment.center,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  'Booking Sekarang',
-                                  style: GoogleFonts.spaceGrotesk(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Icon(
-                                Icons.arrow_forward,
-                                size: 16,
-                                color: Colors.white,
-                              ),
-                            ],
-                          ),
-                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: GestureDetector(
+                      child: ClayButton.text(
+                        text: 'Lihat Harga',
+                        isPrimary: false,
+                        color: AppTheme.claySurface,
+                        textColor: AppTheme.clayCyan,
                         onTap: () => widget.onNavigate?.call(2),
-                        child: GlassPanel(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          borderRadius: 12,
-                          surfaceColor: AppTheme.accentTeal.withValues(
-                            alpha: 0.15,
-                          ),
-                          borderColor: AppTheme.accentTeal.withValues(
-                            alpha: 0.3,
-                          ),
-                          addHighlight: false,
-                          child: Center(
-                            child: Text(
-                              'Lihat Harga',
-                              style: GoogleFonts.spaceGrotesk(
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.accentTeal,
-                              ),
-                            ),
-                          ),
-                        ),
                       ),
                     ),
                   ],
@@ -429,79 +379,29 @@ class _HomeScreenState extends State<HomeScreen> {
             (constraints.maxWidth - ((crossAxisCount - 1) * spacing)) /
             crossAxisCount;
 
+        final statColors = [
+          AppTheme.clayCyan,
+          AppTheme.clayPink,
+          AppTheme.clayPurple,
+          AppTheme.clayGreen,
+        ];
+
+        int index = 0;
         return Wrap(
           spacing: spacing,
           runSpacing: spacing,
           children: _stats.map((stat) {
+            final c = statColors[index % statColors.length];
+            index++;
             return SizedBox(
               width: itemWidth,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.cardDark,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.dividerColor),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppTheme.accentCyan.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            stat['icon'],
-                            size: 16,
-                            color: AppTheme.accentCyan,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            stat['label'],
-                            textAlign: TextAlign.right,
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.5,
-                              color: AppTheme.textMuted,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      stat['value'],
-                      style: GoogleFonts.pressStart2p(
-                        fontSize: 16,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      stat['sub'],
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 10,
-                        color: AppTheme.textMuted,
-                      ),
-                    ),
-                  ],
-                ),
+              height: 136,
+              child: ClayStatCard(
+                label: stat['label'],
+                value: stat['value'],
+                sub: stat['sub'],
+                icon: stat['icon'],
+                color: c,
               ),
             );
           }).toList(),
@@ -511,33 +411,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildQuickAccess() {
+    final colors = [AppTheme.clayCyan, AppTheme.clayPink, AppTheme.clayPurple];
+    int idx = 0;
     return Column(
       children: _menuCards.map((menu) {
+        final color = colors[idx % colors.length];
+        idx++;
         return GestureDetector(
           onTap: () => widget.onNavigate?.call(menu['index']),
-          child: GlassPanel(
-            enableBlur: false,
-            margin: const EdgeInsets.only(bottom: 12),
+          child: ClayPanel(
+            margin: const EdgeInsets.only(bottom: 14),
             padding: const EdgeInsets.all(20),
-            borderRadius: 16,
+            borderRadius: 24,
+            borderColor: color.withValues(alpha: 0.4),
             child: Row(
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppTheme.accentCyan, AppTheme.accentMagenta],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: AppTheme.neonShadow(
-                      AppTheme.accentCyan,
-                      blur: 5,
-                    ),
+                    color: color.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
                   ),
-                  child: Icon(menu['icon'], color: Colors.white),
+                  child: Icon(menu['icon'], color: color, size: 24),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -547,7 +444,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(
                         menu['title'],
                         style: GoogleFonts.pressStart2p(
-                          fontSize: 14,
+                          fontSize: 13,
                           color: AppTheme.textPrimary,
                         ),
                       ),
@@ -562,10 +459,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 14,
-                  color: AppTheme.textMuted,
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: color,
                 ),
               ],
             ),

@@ -13,6 +13,7 @@ import '../data/dummy_data.dart';
 import '../models/ps_unit.dart';
 import '../models/enums.dart';
 import '../widgets/glass_panel.dart';
+import '../widgets/clay_stat_card.dart';
 import '../widgets/section_title.dart';
 import '../widgets/unit_timeline_view.dart';
 import '../widgets/session_timer_card.dart';
@@ -30,9 +31,8 @@ class AdminScreen extends StatefulWidget {
   State<AdminScreen> createState() => _AdminScreenState();
 }
 
-class _AdminScreenState extends State<AdminScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _AdminScreenState extends State<AdminScreen> {
+  int _activeTabIndex = 0;
 
   // Calendar state for Data Booking
   late DateTime _bookingCalendarMonth;
@@ -45,21 +45,50 @@ class _AdminScreenState extends State<AdminScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
     final now = DateTime.now();
     _bookingCalendarMonth = DateTime(now.year, now.month);
     _revenueCalendarMonth = DateTime(now.year, now.month);
   }
 
   @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Column(
+    final tabLabels = [
+      'Dashboard',
+      'Timeline Unit',
+      'Data Booking',
+      'Data Pendapatan',
+      'Booking Hari Ini',
+      'Pelanggan',
+    ];
+
+    final tabIcons = [
+      Icons.dashboard_rounded,
+      Icons.timeline_rounded,
+      Icons.calendar_month_rounded,
+      Icons.attach_money_rounded,
+      Icons.today_rounded,
+      Icons.people_alt_rounded,
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Admin Dashboard',
+          style: GoogleFonts.spaceGrotesk(
+            fontWeight: FontWeight.bold,
+            color: AppTheme.accentCyan,
+          ),
+        ),
+        backgroundColor: AppTheme.backgroundDark,
+        elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppTheme.dividerColor),
+        ),
+      ),
+      backgroundColor: AppTheme.backgroundDark,
+      body: SizedBox.expand(
+        child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Tab Bar & Action Button
@@ -74,34 +103,76 @@ class _AdminScreenState extends State<AdminScreen>
           child: Row(
             children: [
               Expanded(
-                child: TabBar(
-                  controller: _tabController,
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  indicatorColor: AppTheme.accentCyan,
-                  labelColor: AppTheme.accentCyan,
-                  unselectedLabelColor: AppTheme.textMuted,
-                  labelStyle: GoogleFonts.spaceGrotesk(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: List.generate(tabLabels.length, (index) {
+                      final isActive = _activeTabIndex == index;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _activeTabIndex = index;
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isActive
+                                  ? AppTheme.accentCyan.withValues(alpha: 0.15)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isActive
+                                    ? AppTheme.accentCyan
+                                    : AppTheme.dividerColor.withValues(alpha: 0.5),
+                                width: isActive ? 1.5 : 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  tabIcons[index],
+                                  size: 16,
+                                  color: isActive
+                                      ? AppTheme.accentCyan
+                                      : AppTheme.textMuted,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  tabLabels[index],
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontWeight: isActive
+                                        ? FontWeight.bold
+                                        : FontWeight.w600,
+                                    fontSize: 13,
+                                    color: isActive
+                                        ? AppTheme.accentCyan
+                                        : AppTheme.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
                   ),
-                  unselectedLabelStyle: GoogleFonts.spaceGrotesk(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                  tabs: const [
-                    Tab(text: 'Dashboard'),
-                    Tab(text: 'Timeline Unit'),
-                    Tab(text: 'Data Booking'),
-                    Tab(text: 'Data Pendapatan'),
-                    Tab(text: 'Booking Hari Ini'),
-                    Tab(text: 'Pelanggan'),
-                  ],
                 ),
               ),
               const SizedBox(width: 12),
               ElevatedButton.icon(
-                onPressed: () => _showAddSessionDialog(context, initialMode: SessionInputMode.booking),
+                onPressed: () => _showAddSessionDialog(
+                  context,
+                  initialMode: SessionInputMode.booking,
+                ),
                 icon: const Icon(Icons.add, size: 16),
                 label: Text(
                   '+ Tambah Sesi / Booking',
@@ -113,7 +184,10 @@ class _AdminScreenState extends State<AdminScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.accentMagenta,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -122,10 +196,10 @@ class _AdminScreenState extends State<AdminScreen>
             ],
           ),
         ),
-        // Tab Views
+        // Tab Content Views
         Expanded(
-          child: TabBarView(
-            controller: _tabController,
+          child: IndexedStack(
+            index: _activeTabIndex,
             children: [
               _buildDashboard(),
               _buildUnitTimeline(),
@@ -137,6 +211,8 @@ class _AdminScreenState extends State<AdminScreen>
           ),
         ),
       ],
+    ),
+    ),
     );
   }
 
@@ -311,38 +387,13 @@ class _AdminScreenState extends State<AdminScreen>
     IconData icon,
     Color color,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: AppTheme.cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 12,
-                  color: AppTheme.textMuted,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Icon(icon, size: 16, color: color),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: GoogleFonts.spaceGrotesk(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+    return SizedBox(
+      height: 136,
+      child: ClayStatCard(
+        label: title,
+        value: value,
+        icon: icon,
+        color: color,
       ),
     );
   }
