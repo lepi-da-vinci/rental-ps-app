@@ -1157,39 +1157,42 @@ class _InfoScreenState extends State<InfoScreen>
                   'Status',
                   unit.isWalkIn ? 'Walk-in (Langsung)' : 'Booking App',
                 ),
-              ],
-              if (unit.installedGames.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                Text(
-                  '🎮 Game Terpasang:',
-                  style: GoogleFonts.spaceGrotesk(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: unit.installedGames.map((game) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentCyan.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppTheme.accentCyan.withValues(alpha: 0.3)),
+                // Game sedang dimainkan (jika unit sedang dipakai)
+                Row(
+                  children: [
+                    const Icon(Icons.sports_esports, size: 18, color: AppTheme.accentCyan),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Game Dimainkan:',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
                       ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
                       child: Text(
-                        game,
+                        (() {
+                          final active = unitBookings.where((b) {
+                            final now = provider.now;
+                            final parts = b.time.split(':');
+                            final startMin = int.parse(parts[0]) * 60 + int.parse(parts[1]);
+                            final endMin = startMin + b.durationHours * 60;
+                            final nowMin = now.hour * 60 + now.minute;
+                            return nowMin >= startMin && nowMin < endMin;
+                          }).firstOrNull;
+                          return active?.playedGame ?? 'Bebas Pilih / Belum Diset';
+                        })(),
                         style: GoogleFonts.spaceGrotesk(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
                           color: AppTheme.accentCyan,
                         ),
                       ),
-                    );
-                  }).toList(),
+                    ),
+                  ],
                 ),
               ],
               const SizedBox(height: 24),

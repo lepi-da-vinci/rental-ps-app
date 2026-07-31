@@ -28,7 +28,12 @@ bool overlaps(int s1, int e1, int s2, int e2) => s1 < e2 && s2 < e1;
 /// Whether the venue is open right now based on raw hours string.
 bool isOpenNow(DateTime now, String rawHours) {
   final (open, close) = parseOperatingHours(rawHours);
-  return now.hour >= open && now.hour < close;
+  if (open < close) {
+    return now.hour >= open && now.hour < close;
+  } else {
+    // Cross-midnight scenario (e.g. 08:00 to 02:00)
+    return now.hour >= open || now.hour < close;
+  }
 }
 
 /// Extracts the unit index number from a string (e.g. "PS4 Unit 1" -> 1, "PS5 VIP Ruang 3" -> 3).

@@ -92,9 +92,68 @@ class _BookingScreenState extends State<BookingScreen> {
     return '~${formatRupiah(pkg.prices.first.price * durHours)}';
   }
 
+  // Daftar game paling populer di dunia nyata (sesuai nama resmi di katalog agar sinkron)
+  static const List<String> _globalPopularGames = [
+    'God of War',
+    'God of War Ragnarok',
+    'EA Sports FC 26 (FIFA)', // Sync dengan katalog
+    'Grand Theft Auto V (GTA V)', // Sync dengan katalog
+    'Red Dead Redemption 2 (RDR2)', // Sync dengan katalog
+    'The Last of Us Part I',
+    'The Last of Us Part II',
+    'Marvel\'s Spider-Man Remastered',
+    'Marvel\'s Spider-Man: Miles Morales', // Sync
+    'Spider-Man 2', // Sync
+    'Horizon Zero Dawn',
+    'Horizon Forbidden West',
+    'Ghost of Tsushima',
+    'Elden Ring',
+    'Dark Souls III',
+    'Demon\'s Souls',
+    'Bloodborne',
+    'Sekiro: Shadows Die Twice',
+    'Call of Duty: Modern Warfare III',
+    'Mortal Kombat 1',
+    'Street Fighter 6',
+    'Tekken 7',
+    'Tekken 8',
+    'NBA 2K24',
+    'NBA 2K26',
+    'Gran Turismo 7',
+    'Death Stranding',
+    'Cyberpunk 2077',
+    'Assassin\'s Creed Valhalla',
+    'Assassin\'s Creed Mirage',
+    'Resident Evil 4 Remake',
+    'Resident Evil 2 Remake',
+    'Resident Evil 3 Remake',
+    'Resident Evil 8 (Village)',
+    'Final Fantasy XVI',
+    'Final Fantasy VII Remake',
+    'Final Fantasy VII Rebirth',
+    'Persona 3 Reload',
+    'Hogwarts Legacy',
+    'It Takes Two',
+    'A Way Out',
+    'Stray',
+    'Need for Speed Unbound',
+    'Mario Kart 8 Deluxe',
+    'Super Smash Bros. Ultimate',
+    'The Legend of Zelda: Tears of the Kingdom',
+    'Super Mario Odyssey',
+    'The Witcher 3: Wild Hunt',
+  ];
+
   Future<void> _showGamePickerSheet(List<String> games) async {
     String searchQuery = '';
     String? tempSelected = _selectedGame;
+    String activeTab = 'semua'; // 'semua' or 'rekomendasi'
+
+    // Rekomendasi = game yang ada di library DAN masuk daftar global popular
+    final recommended = games
+        .where((g) => _globalPopularGames
+            .any((p) => p.toLowerCase() == g.toLowerCase()))
+        .toList();
 
     await showModalBottomSheet<void>(
       context: context,
@@ -104,15 +163,17 @@ class _BookingScreenState extends State<BookingScreen> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
-            final filtered = games
+            final sourceList =
+                activeTab == 'rekomendasi' ? recommended : games;
+            final filtered = sourceList
                 .where((g) =>
                     g.toLowerCase().contains(searchQuery.toLowerCase()))
                 .toList();
 
             return DraggableScrollableSheet(
-              initialChildSize: 0.75,
-              minChildSize: 0.4,
-              maxChildSize: 0.92,
+              initialChildSize: 0.78,
+              minChildSize: 0.45,
+              maxChildSize: 0.93,
               expand: false,
               builder: (context, scrollController) {
                 return Container(
@@ -124,15 +185,15 @@ class _BookingScreenState extends State<BookingScreen> {
                         color: AppTheme.accentCyan.withValues(alpha: 0.25)),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.accentCyan.withValues(alpha: 0.1),
-                        blurRadius: 30,
+                        color: AppTheme.accentCyan.withValues(alpha: 0.12),
+                        blurRadius: 32,
                         spreadRadius: 2,
                       )
                     ],
                   ),
                   child: Column(
                     children: [
-                      // Handle bar
+                      // ── Handle bar ──────────────────────────────────
                       Padding(
                         padding: const EdgeInsets.only(top: 12, bottom: 4),
                         child: Container(
@@ -144,10 +205,9 @@ class _BookingScreenState extends State<BookingScreen> {
                           ),
                         ),
                       ),
-                      // Header
+                      // ── Header ──────────────────────────────────────
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
                         child: Row(
                           children: [
                             Container(
@@ -181,9 +241,9 @@ class _BookingScreenState extends State<BookingScreen> {
                                   ),
                                 ),
                                 Text(
-                                  '${games.length} game tersedia',
+                                  '${games.length} game tersedia · ${recommended.length} rekomendasi',
                                   style: GoogleFonts.spaceGrotesk(
-                                    fontSize: 12,
+                                    fontSize: 11,
                                     color: AppTheme.textMuted,
                                   ),
                                 ),
@@ -221,7 +281,35 @@ class _BookingScreenState extends State<BookingScreen> {
                           ],
                         ),
                       ),
-                      // Search field
+                      // ── Tab Filter: Semua / Rekomendasi ─────────────
+                      Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                        child: Row(
+                          children: [
+                            _buildTabChip(
+                              label: 'Semua',
+                              icon: Icons.grid_view_rounded,
+                              isActive: activeTab == 'semua',
+                              count: games.length,
+                              onTap: () =>
+                                  setSheetState(() => activeTab = 'semua'),
+                            ),
+                            const SizedBox(width: 10),
+                            _buildTabChip(
+                              label: 'Rekomendasi',
+                              icon: Icons.local_fire_department_rounded,
+                              isActive: activeTab == 'rekomendasi',
+                              count: recommended.length,
+                              color: AppTheme.accentMagenta,
+                              onTap: () => setSheetState(
+                                  () => activeTab = 'rekomendasi'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // ── Search ──────────────────────────────────────
                       Padding(
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                         child: TextField(
@@ -262,7 +350,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       ),
                       const Divider(
                           height: 1, color: AppTheme.dividerColor),
-                      // Game grid
+                      // ── Game Grid ───────────────────────────────────
                       Expanded(
                         child: filtered.isEmpty
                             ? Center(
@@ -270,11 +358,19 @@ class _BookingScreenState extends State<BookingScreen> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.center,
                                   children: [
-                                    const Icon(Icons.search_off,
-                                        color: AppTheme.textMuted, size: 40),
+                                    Icon(
+                                      activeTab == 'rekomendasi'
+                                          ? Icons.local_fire_department
+                                          : Icons.search_off,
+                                      color: AppTheme.textMuted,
+                                      size: 40,
+                                    ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      'Game tidak ditemukan',
+                                      activeTab == 'rekomendasi'
+                                          ? 'Belum ada game rekomendasi\ndi konsol ini'
+                                          : 'Game tidak ditemukan',
+                                      textAlign: TextAlign.center,
                                       style: GoogleFonts.spaceGrotesk(
                                         color: AppTheme.textMuted,
                                         fontSize: 14,
@@ -292,12 +388,15 @@ class _BookingScreenState extends State<BookingScreen> {
                                   crossAxisCount: 2,
                                   mainAxisSpacing: 10,
                                   crossAxisSpacing: 10,
-                                  childAspectRatio: 3.2,
+                                  childAspectRatio: 3.0,
                                 ),
                                 itemCount: filtered.length,
                                 itemBuilder: (context, index) {
                                   final game = filtered[index];
                                   final isSelected = tempSelected == game;
+                                  final isHot = _globalPopularGames.any(
+                                      (p) => p.toLowerCase() ==
+                                          game.toLowerCase());
                                   return GestureDetector(
                                     onTap: () {
                                       setSheetState(
@@ -306,25 +405,27 @@ class _BookingScreenState extends State<BookingScreen> {
                                           () => _selectedGame = game);
                                       HapticFeedback.lightImpact();
                                       Future.delayed(
-                                          const Duration(milliseconds: 160),
-                                          () {
+                                          const Duration(
+                                              milliseconds: 160), () {
                                         if (context.mounted) {
                                           Navigator.of(context).pop();
                                         }
                                       });
                                     },
                                     child: AnimatedContainer(
-                                      duration:
-                                          const Duration(milliseconds: 200),
+                                      duration: const Duration(
+                                          milliseconds: 200),
                                       curve: Curves.easeOut,
                                       decoration: BoxDecoration(
                                         gradient: isSelected
                                             ? LinearGradient(
                                                 colors: [
                                                   AppTheme.accentCyan
-                                                      .withValues(alpha: 0.25),
+                                                      .withValues(
+                                                          alpha: 0.25),
                                                   AppTheme.accentMagenta
-                                                      .withValues(alpha: 0.15),
+                                                      .withValues(
+                                                          alpha: 0.15),
                                                 ],
                                               )
                                             : null,
@@ -336,52 +437,74 @@ class _BookingScreenState extends State<BookingScreen> {
                                         border: Border.all(
                                           color: isSelected
                                               ? AppTheme.accentCyan
-                                              : AppTheme.dividerColor,
+                                              : isHot
+                                                  ? AppTheme.accentMagenta
+                                                      .withValues(alpha: 0.4)
+                                                  : AppTheme.dividerColor,
                                           width: isSelected ? 1.5 : 1,
                                         ),
                                         boxShadow: isSelected
                                             ? [
                                                 BoxShadow(
-                                                  color: AppTheme.accentCyan
-                                                      .withValues(alpha: 0.25),
+                                                  color: AppTheme
+                                                      .accentCyan
+                                                      .withValues(
+                                                          alpha: 0.25),
                                                   blurRadius: 10,
                                                 )
                                               ]
                                             : null,
                                       ),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 10, vertical: 6),
+                                      padding:
+                                          const EdgeInsets.fromLTRB(
+                                              10, 6, 8, 6),
                                       child: Row(
                                         children: [
                                           Icon(
                                             isSelected
-                                                ? Icons.check_circle_rounded
+                                                ? Icons
+                                                    .check_circle_rounded
                                                 : Icons
                                                     .videogame_asset_outlined,
-                                            size: 16,
+                                            size: 15,
                                             color: isSelected
                                                 ? AppTheme.accentCyan
-                                                : AppTheme.textMuted,
+                                                : isHot
+                                                    ? AppTheme
+                                                        .accentMagenta
+                                                    : AppTheme.textMuted,
                                           ),
-                                          const SizedBox(width: 8),
+                                          const SizedBox(width: 7),
                                           Expanded(
                                             child: Text(
                                               game,
                                               maxLines: 2,
                                               overflow:
                                                   TextOverflow.ellipsis,
-                                              style:
-                                                  GoogleFonts.spaceGrotesk(
-                                                fontSize: 12,
+                                              style: GoogleFonts
+                                                  .spaceGrotesk(
+                                                fontSize: 11,
                                                 fontWeight: isSelected
                                                     ? FontWeight.w700
                                                     : FontWeight.w500,
                                                 color: isSelected
                                                     ? AppTheme.textPrimary
-                                                    : AppTheme.textSecondary,
+                                                    : AppTheme
+                                                        .textSecondary,
                                               ),
                                             ),
                                           ),
+                                          if (isHot && !isSelected)
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.only(
+                                                      left: 2),
+                                              child: Text(
+                                                '🔥',
+                                                style: const TextStyle(
+                                                    fontSize: 11),
+                                              ),
+                                            ),
                                         ],
                                       ),
                                     ),
@@ -399,6 +522,80 @@ class _BookingScreenState extends State<BookingScreen> {
       },
     );
   }
+
+  Widget _buildTabChip({
+    required String label,
+    required IconData icon,
+    required bool isActive,
+    required int count,
+    required VoidCallback onTap,
+    Color color = AppTheme.accentCyan,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive
+              ? color.withValues(alpha: 0.15)
+              : AppTheme.cardDark,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isActive ? color : AppTheme.dividerColor,
+            width: isActive ? 1.5 : 1,
+          ),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                  )
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon,
+                size: 14,
+                color: isActive ? color : AppTheme.textMuted),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.spaceGrotesk(
+                fontSize: 12,
+                fontWeight:
+                    isActive ? FontWeight.w700 : FontWeight.w500,
+                color: isActive ? color : AppTheme.textMuted,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? color.withValues(alpha: 0.25)
+                    : AppTheme.dividerColor.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '$count',
+                style: GoogleFonts.spaceGrotesk(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: isActive ? color : AppTheme.textMuted,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -637,7 +834,8 @@ class _BookingScreenState extends State<BookingScreen> {
                               HapticFeedback.lightImpact();
                               setState(() {
                                 _selectedPsType = type;
-                                _selectedGame = null;
+                                // Jangan reset game saat ganti konsol
+                                // agar preselect dari info screen tetap terjaga
                               });
                             },
                             borderRadius: BorderRadius.circular(12),

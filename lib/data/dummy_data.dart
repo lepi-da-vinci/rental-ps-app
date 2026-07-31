@@ -85,26 +85,20 @@ List<UnitStatus> getDummyUnitStatus() {
         label: 'Unit $i',
         isAvailable: true,
         installedGames: const [
-          'EA FC 24',
-          'eFootball 2024',
-          'FIFA 23',
-          'GTA V',
-          'Tekken 7',
-          'Mortal Kombat 11',
-          'God of War Ragnarok',
-          'Spider-Man Miles Morales',
-          'Naruto Shippuden: Ultimate Ninja Storm 4',
-          'PES 2021 Season Update',
-          'Red Dead Redemption 2',
-          'Call of Duty: Warzone',
-          'NBA 2K24',
-          'WWE 2K23',
-          'Crash Team Racing Nitro-Fueled',
+          'Grand Theft Auto V (GTA V)',
           'Resident Evil 4 Remake',
-          'The Last of Us Part II',
+          'Tekken 7',
+          'God of War Ragnarok',
+          'Marvel\'s Spider-Man: Miles Morales',
+          'Red Dead Redemption 2 (RDR2)',
           'It Takes Two',
-          'Overcooked 2',
-          'Need for Speed Heat',
+          'The Witcher 3: Wild Hunt',
+          'Elden Ring',
+          'EA Sports FC 26 (FIFA)',
+          'Cyberpunk 2077',
+          'Street Fighter 6',
+          'A Way Out',
+          'Stray',
         ],
       ),
     for (int i = 1; i <= 8; i++)
@@ -114,28 +108,21 @@ List<UnitStatus> getDummyUnitStatus() {
         label: 'Unit $i',
         isAvailable: true,
         installedGames: const [
-          'EA FC 24',
-          'eFootball 2024',
           'Tekken 8',
           'Mortal Kombat 1',
-          'Marvel\'s Spider-Man 2',
-          'GTA V',
+          'Spider-Man 2',
+          'Grand Theft Auto V (GTA V)',
           'God of War Ragnarok',
-          'Gran Turismo 7',
-          'NBA 2K24',
-          'WWE 2K24',
-          'Call of Duty: Modern Warfare III',
-          'Demon\'s Souls',
-          'FC 25 (Beta)',
-          'UFC 5',
+          'EA Sports FC 26 (FIFA)',
           'Street Fighter 6',
           'Final Fantasy XVI',
-          'Helldivers 2',
-          'Black Myth: Wukong',
           'Need for Speed Unbound',
-          'Assassins Creed Mirage',
+          'Assassin\'s Creed Mirage',
           'It Takes Two',
-          'A Way Out',
+          'Elden Ring',
+          'Resident Evil 4 Remake',
+          'Hogwarts Legacy',
+          'Death Stranding',
         ],
       ),
     for (int i = 1; i <= 5; i++)
@@ -145,26 +132,18 @@ List<UnitStatus> getDummyUnitStatus() {
         label: 'Ruang $i',
         isAvailable: true,
         installedGames: const [
-          'EA FC 24',
-          'eFootball 2024',
           'Tekken 8',
           'Mortal Kombat 1',
           'God of War Ragnarok',
-          'Gran Turismo 7',
-          'Marvel\'s Spider-Man 2',
-          'Black Myth: Wukong',
-          'Helldivers 2',
-          'NBA 2K24 Deluxe',
-          'WWE 2K24 VIP',
-          'Call of Duty: Modern Warfare III',
-          'FC 25 Ultimate Edition',
+          'Spider-Man 2',
+          'EA Sports FC 26 (FIFA)',
           'Street Fighter 6',
-          'UFC 5',
-          'Resident Evil 4 Remake PS5',
-          'Cyberpunk 2077: Phantom Liberty',
-          'Elden Ring + Shadow of the Erdtree',
-          'F1 24',
+          'Resident Evil 4 Remake',
+          'Cyberpunk 2077',
+          'Elden Ring',
           'It Takes Two',
+          'Hogwarts Legacy',
+          'Final Fantasy VII Rebirth',
         ],
       ),
     for (int i = 1; i <= 2; i++)
@@ -176,16 +155,8 @@ List<UnitStatus> getDummyUnitStatus() {
         installedGames: const [
           'Mario Kart 8 Deluxe',
           'Super Smash Bros. Ultimate',
-          'Overcooked! All You Can Eat',
-          'Mario Party Superstars',
-          'Super Mario 3D World + Bowser\'s Fury',
-          'Nintendo Switch Sports',
-          'Just Dance 2024',
-          'Pokémon Scarlet / Violet',
           'The Legend of Zelda: Tears of the Kingdom',
-          'Splatoon 3',
-          'FC 24 Switch Edition',
-          'Luigi\'s Mansion 3',
+          'Super Mario Odyssey',
         ],
       ),
   ];
@@ -954,20 +925,35 @@ List<String> getValidTimeSlots(int durationHours) {
     (h) => h.isToday,
     orElse: () => const OperatingHour(day: '', hours: '10:00 – 22:00'),
   );
-  final closingHourStr = todayHours.hours
-      .split(RegExp(r'[-–]'))
-      .last
-      .trim()
-      .split(':')
-      .first;
+  
+  final parts = todayHours.hours.split(RegExp(r'[-–]'));
+  
+  final openingHourStr = parts.first.trim().split(':').first;
+  int openingHour = int.tryParse(openingHourStr) ?? 8;
+  
+  final closingHourStr = parts.last.trim().split(':').first;
   int closingHour = int.tryParse(closingHourStr) ?? 22;
+  
   if (closingHour == 0) {
     closingHour = 24;
+  }
+  
+  // Cross-midnight adjustment
+  if (closingHour < openingHour) {
+    closingHour += 24;
   }
 
   return timeSlotOptions.where((slot) {
     final startHour = int.tryParse(slot.split(':').first) ?? 0;
-    return (startHour + durationHours) <= closingHour;
+    
+    // If the slot is mathematically early morning but we open at 08:00,
+    // it belongs to the extended cross-midnight period.
+    int adjustedStartHour = startHour;
+    if (startHour < openingHour) {
+      adjustedStartHour += 24;
+    }
+    
+    return (adjustedStartHour + durationHours) <= closingHour;
   }).toList();
 }
 
