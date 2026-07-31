@@ -27,6 +27,5 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    print('Test finished successfully.');
   });
 }

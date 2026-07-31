@@ -38,10 +38,11 @@ dependencies:
   provider: ^6.1.1
   intl: ^0.20.3
   http: ^1.2.1
-  fl_chart: ^1.2.0
+  fl_chart: any
   pdf: ^3.13.0
   shared_preferences: ^2.3.5
   url_launcher: ^6.3.1
+  web: ^1.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

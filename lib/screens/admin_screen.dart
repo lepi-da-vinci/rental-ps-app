@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,11 +21,13 @@ import '../widgets/alert_banner.dart';
 import '../utils/time_helpers.dart';
 import '../widgets/receipt_dialog.dart';
 import '../widgets/customer_list_tab.dart';
+import '../utils/download_helper.dart';
 
 enum SessionInputMode { walkIn, booking }
 
 class AdminScreen extends StatefulWidget {
-  const AdminScreen({super.key});
+  final VoidCallback? onExit;
+  const AdminScreen({super.key, this.onExit});
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
@@ -42,6 +44,24 @@ class _AdminScreenState extends State<AdminScreen> {
   late DateTime _revenueCalendarMonth;
   DateTime? _selectedRevenueDate;
 
+  final List<String> tabLabels = [
+    'Dashboard',
+    'Rental',
+    'Data Booking',
+    'Data Pendapatan',
+    'Jadwal Hari Ini',
+    'Pelanggan',
+  ];
+
+  final List<IconData> tabIcons = [
+    Icons.dashboard_rounded,
+    Icons.videogame_asset_rounded,
+    Icons.calendar_month_rounded,
+    Icons.account_balance_wallet_rounded,
+    Icons.view_agenda_rounded,
+    Icons.people_alt_rounded,
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -52,34 +72,15 @@ class _AdminScreenState extends State<AdminScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tabLabels = [
-      'Dashboard',
-      'Timeline Unit',
-      'Data Booking',
-      'Data Pendapatan',
-      'Booking Hari Ini',
-      'Pelanggan',
-    ];
-
-    final tabIcons = [
-      Icons.dashboard_rounded,
-      Icons.timeline_rounded,
-      Icons.calendar_month_rounded,
-      Icons.attach_money_rounded,
-      Icons.today_rounded,
-      Icons.people_alt_rounded,
-    ];
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Admin Dashboard',
-          style: GoogleFonts.spaceGrotesk(
-            fontWeight: FontWeight.bold,
-            color: AppTheme.accentCyan,
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: AppTheme.accentCyan),
+          onPressed: () {
+            widget.onExit?.call();
+            Navigator.maybePop(context);
+          },
         ),
-        backgroundColor: AppTheme.backgroundDark,
         elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -87,134 +88,165 @@ class _AdminScreenState extends State<AdminScreen> {
         ),
       ),
       backgroundColor: AppTheme.backgroundDark,
-      body: SizedBox.expand(
-        child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Tab Bar & Action Button
-        Container(
-          height: 60,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: const BoxDecoration(
-            color: AppTheme.surfaceDark,
-            border: Border(
-              bottom: BorderSide(color: AppTheme.dividerColor, width: 1),
-            ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: List.generate(tabLabels.length, (index) {
-                      final isActive = _activeTabIndex == index;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              _activeTabIndex = index;
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(12),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isActive
-                                  ? AppTheme.accentCyan.withValues(alpha: 0.15)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isActive
-                                    ? AppTheme.accentCyan
-                                    : AppTheme.dividerColor.withValues(alpha: 0.5),
-                                width: isActive ? 1.5 : 1,
-                              ),
-                            ),
+      body: Builder(
+        builder: (context) {
+          try {
+            return SizedBox.expand(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Tab Bar & Action Button
+                  Container(
+                    height: 60,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: const BoxDecoration(
+                      color: AppTheme.surfaceDark,
+                      border: Border(
+                        bottom: BorderSide(color: AppTheme.dividerColor, width: 1),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
                             child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  tabIcons[index],
-                                  size: 16,
-                                  color: isActive
-                                      ? AppTheme.accentCyan
-                                      : AppTheme.textMuted,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  tabLabels[index],
-                                  style: GoogleFonts.spaceGrotesk(
-                                    fontWeight: isActive
-                                        ? FontWeight.bold
-                                        : FontWeight.w600,
-                                    fontSize: 13,
-                                    color: isActive
-                                        ? AppTheme.accentCyan
-                                        : AppTheme.textMuted,
+                              children: List.generate(tabLabels.length, (index) {
+                                final isActive = _activeTabIndex == index;
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        _activeTabIndex = index;
+                                      });
+                                    },
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: isActive
+                                            ? AppTheme.accentCyan.withValues(alpha: 0.15)
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: isActive
+                                              ? AppTheme.accentCyan
+                                              : AppTheme.dividerColor.withValues(alpha: 0.5),
+                                          width: isActive ? 1.5 : 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            tabIcons[index],
+                                            size: 16,
+                                            color: isActive
+                                                ? AppTheme.accentCyan
+                                                : AppTheme.textMuted,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            tabLabels[index],
+                                            style: GoogleFonts.spaceGrotesk(
+                                              fontWeight: isActive
+                                                  ? FontWeight.bold
+                                                  : FontWeight.w600,
+                                              fontSize: 13,
+                                              color: isActive
+                                                  ? AppTheme.accentCyan
+                                                  : AppTheme.textMuted,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                );
+                              }),
                             ),
                           ),
                         ),
-                      );
-                    }),
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          onPressed: () => _showAddSessionDialog(
+                            context,
+                            initialMode: SessionInputMode.booking,
+                          ),
+                          icon: const Icon(Icons.add, size: 16),
+                          label: Text(
+                            '+ Tambah Sesi / Booking',
+                            style: GoogleFonts.spaceGrotesk(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.accentMagenta,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                  // Tab Content Views
+                  Expanded(
+                    child: _buildTabContent(_activeTabIndex),
+                  ),
+                ],
+              ),
+            );
+          } catch (e, stack) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    const SizedBox(height: 16),
+                    Text('Error: $e', style: const TextStyle(color: Colors.red)),
+                    const SizedBox(height: 8),
+                    Text('$stack', style: const TextStyle(color: Colors.grey, fontSize: 10)),
+                  ],
                 ),
               ),
-              const SizedBox(width: 12),
-              ElevatedButton.icon(
-                onPressed: () => _showAddSessionDialog(
-                  context,
-                  initialMode: SessionInputMode.booking,
-                ),
-                icon: const Icon(Icons.add, size: 16),
-                label: Text(
-                  '+ Tambah Sesi / Booking',
-                  style: GoogleFonts.spaceGrotesk(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.accentMagenta,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Tab Content Views
-        Expanded(
-          child: IndexedStack(
-            index: _activeTabIndex,
-            children: [
-              _buildDashboard(),
-              _buildUnitTimeline(),
-              _buildBookingCalendar(),
-              _buildRevenueCalendar(),
-              _buildTodayBookings(),
-              const CustomerListTab(),
-            ],
-          ),
-        ),
-      ],
-    ),
-    ),
+            );
+          }
+        },
+      ),
     );
+  }
+
+  Widget _buildTabContent(int index) {
+    switch (index) {
+      case 0:
+        return _buildDashboard();
+      case 1:
+        return _buildUnitTimeline();
+      case 2:
+        return _buildBookingCalendar();
+      case 3:
+        return _buildRevenueCalendar();
+      case 4:
+        return _buildTodayBookings();
+      case 5:
+        return const CustomerListTab();
+      default:
+        return _buildDashboard();
+    }
   }
 
   // ════════════════════════════════════════════════════════
@@ -1075,7 +1107,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                 );
                                 if (confirm == true) {
                                   provider.removeBooking(b.id);
-                                  if (context.mounted) {
+                                  if (mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
@@ -1675,18 +1707,20 @@ class _AdminScreenState extends State<AdminScreen> {
         countByDate[dateStr] = (countByDate[dateStr] ?? 0) + 1;
       }
       
-      final downloadPath = '${Platform.environment['USERPROFILE']}\\Downloads\\Laporan_Pendapatan.csv';
-      final file = File(downloadPath);
       String csvData = 'Tanggal,Total Sesi,Pendapatan (Rp)\n';
       final sortedDates = revenueByDate.keys.toList()..sort();
       for (final date in sortedDates) {
         csvData += '$date,${countByDate[date]},${revenueByDate[date]}\n';
       }
-      await file.writeAsString(csvData);
+      
+      downloadFile(
+        bytes: utf8.encode(csvData),
+        fileName: 'Laporan_Pendapatan.csv',
+      );
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('CSV berhasil disimpan di folder Downloads'), backgroundColor: AppTheme.accentGreen),
+          SnackBar(content: Text('CSV berhasil di-download'), backgroundColor: AppTheme.accentGreen),
         );
       }
     } catch (e) {
@@ -1742,13 +1776,15 @@ class _AdminScreenState extends State<AdminScreen> {
         ),
       );
       
-      final downloadPath = '${Platform.environment['USERPROFILE']}\\Downloads\\Laporan_Pendapatan.pdf';
-      final file = File(downloadPath);
-      await file.writeAsBytes(await pdf.save());
+      final pdfBytes = await pdf.save();
+      downloadFile(
+        bytes: pdfBytes,
+        fileName: 'Laporan_Pendapatan.pdf',
+      );
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('PDF berhasil disimpan di folder Downloads'), backgroundColor: AppTheme.accentGreen),
+          SnackBar(content: Text('PDF berhasil di-download'), backgroundColor: AppTheme.accentGreen),
         );
       }
     } catch (e) {

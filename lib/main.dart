@@ -65,6 +65,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen>
     with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
+  bool _adminReady = false;
   late AnimationController _bgController;
   late Animation<Alignment> _bgAnimation;
 
@@ -89,13 +90,29 @@ class _MainScreenState extends State<MainScreen>
     super.dispose();
   }
 
+  void _navigateToAdmin() {
+    _bgController.stop();
+    setState(() {
+      _currentIndex = 4;
+      _adminReady = false;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _currentIndex != 4) return;
+      setState(() => _adminReady = true);
+    });
+  }
+
   void _onNavigate(int index) {
     final adminProvider = context.read<AdminProvider>();
     if (index == 4 && !adminProvider.isAdminMode) {
       _showLoginDialog(context);
       return;
     }
-    setState(() => _currentIndex = index);
+    if (index == 4) {
+      _navigateToAdmin();
+    } else {
+      setState(() => _currentIndex = index);
+    }
   }
 
   // ─── Helpers (pakai jam dari BookingProvider, bukan Timer sendiri) ─────────
@@ -129,6 +146,13 @@ class _MainScreenState extends State<MainScreen>
         onNavigateToBooking: _onNavigate,
       ),
       const BookingScreen(key: ValueKey('booking')),
+      AdminScreen(
+        key: const ValueKey('admin'),
+        onExit: () {
+          _bgController.repeat(reverse: true);
+          setState(() => _currentIndex = 0);
+        },
+      ),
     ];
 
     final titles = [
@@ -136,7 +160,13 @@ class _MainScreenState extends State<MainScreen>
       'Info Unit & Game',
       'Harga Paket',
       'Booking Online',
+      'Admin Dashboard',
     ];
+
+    if (_currentIndex == 4) {
+      if (_adminReady) return screens[4];
+      return _buildAdminLoading();
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -314,6 +344,7 @@ class _MainScreenState extends State<MainScreen>
     final usernameCtrl = TextEditingController();
     final passwordCtrl = TextEditingController();
     bool obscureText = true;
+    final mainSetState = setState;
 
     showDialog(
       context: context,
@@ -424,12 +455,7 @@ class _MainScreenState extends State<MainScreen>
                     );
                     if (success) {
                       Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const AdminScreen(),
-                        ),
-                      );
+                      mainSetState(() => _navigateToAdmin());
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
@@ -473,6 +499,28 @@ class _MainScreenState extends State<MainScreen>
     );
   }
 
+  Widget _buildAdminLoading() {
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundDark,
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(color: AppTheme.accentCyan),
+            const SizedBox(height: 20),
+            Text(
+              'Loading Admin Dashboard...',
+              style: GoogleFonts.spaceGrotesk(
+                color: AppTheme.textMuted,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildAdminToggle(bool isAdminMode, BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(right: 8),
@@ -480,18 +528,7 @@ class _MainScreenState extends State<MainScreen>
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(8),
-          onTap: () {
-            if (isAdminMode) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AdminScreen(),
-                ),
-              );
-            } else {
-              _showLoginDialog(context);
-            }
-          },
+          onTap: () => _onNavigate(4),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(

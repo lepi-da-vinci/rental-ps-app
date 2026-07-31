@@ -1,34 +1,25 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
-/// Provides a reactive wall-clock time that updates every second.
-///
-/// Uses [Stream.periodic] instead of [Timer.periodic] for safer
-/// memory management — the [StreamSubscription] is automatically
-/// cleaned up on [dispose].
-///
-/// Ticks every second to support real-time countdown timers
-/// for active sessions in the admin dashboard.
 class ClockService extends ChangeNotifier {
   DateTime _now = DateTime.now();
-  late final StreamSubscription<DateTime> _subscription;
+  Timer? _timer;
 
   ClockService() {
-    _subscription = Stream.periodic(
-      const Duration(seconds: 1),
-      (_) => DateTime.now(),
-    ).listen((tick) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final tick = DateTime.now();
       _now = tick;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     });
   }
 
-  /// Current wall-clock time, updated every second.
   DateTime get now => _now;
 
   @override
   void dispose() {
-    _subscription.cancel();
+    _timer?.cancel();
     super.dispose();
   }
 }

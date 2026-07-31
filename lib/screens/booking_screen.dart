@@ -307,7 +307,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                   : (constraints.maxWidth - 96) / 2,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               transform: isSelected
-                                  ? (Matrix4.identity()..scale(1.05))
+                                  ? Matrix4.diagonal3Values(1.05, 1.05, 1.0)
                                   : Matrix4.identity(),
                               transformAlignment: Alignment.center,
                               decoration: BoxDecoration(
