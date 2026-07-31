@@ -10,7 +10,7 @@ class ClayPanel extends StatelessWidget {
   final EdgeInsetsGeometry? margin;
   final Color? color;
   final Color? borderColor;
-  final double width;
+  final double? width;
   final double? height;
   final AlignmentGeometry? alignment;
   final List<BoxShadow>? customShadows;
@@ -23,7 +23,7 @@ class ClayPanel extends StatelessWidget {
     this.margin,
     this.color,
     this.borderColor,
-    this.width = double.infinity,
+    this.width,
     this.height,
     this.alignment,
     this.customShadows,

@@ -65,7 +65,6 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen>
     with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
-  bool _adminReady = false;
   late AnimationController _bgController;
   late Animation<Alignment> _bgAnimation;
 
@@ -92,13 +91,15 @@ class _MainScreenState extends State<MainScreen>
 
   void _navigateToAdmin() {
     _bgController.stop();
-    setState(() {
-      _currentIndex = 4;
-      _adminReady = false;
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _currentIndex != 4) return;
-      setState(() => _adminReady = true);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AdminScreen(
+          key: const ValueKey('admin'),
+        ),
+      ),
+    ).then((_) {
+      if (mounted) _bgController.repeat(reverse: true);
     });
   }
 
@@ -146,13 +147,6 @@ class _MainScreenState extends State<MainScreen>
         onNavigateToBooking: _onNavigate,
       ),
       const BookingScreen(key: ValueKey('booking')),
-      AdminScreen(
-        key: const ValueKey('admin'),
-        onExit: () {
-          _bgController.repeat(reverse: true);
-          setState(() => _currentIndex = 0);
-        },
-      ),
     ];
 
     final titles = [
@@ -162,11 +156,6 @@ class _MainScreenState extends State<MainScreen>
       'Booking Online',
       'Admin Dashboard',
     ];
-
-    if (_currentIndex == 4) {
-      if (_adminReady) return screens[4];
-      return _buildAdminLoading();
-    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -344,7 +333,6 @@ class _MainScreenState extends State<MainScreen>
     final usernameCtrl = TextEditingController();
     final passwordCtrl = TextEditingController();
     bool obscureText = true;
-    final mainSetState = setState;
 
     showDialog(
       context: context,
@@ -455,7 +443,7 @@ class _MainScreenState extends State<MainScreen>
                     );
                     if (success) {
                       Navigator.pop(context);
-                      mainSetState(() => _navigateToAdmin());
+                      _navigateToAdmin();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
@@ -499,27 +487,6 @@ class _MainScreenState extends State<MainScreen>
     );
   }
 
-  Widget _buildAdminLoading() {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundDark,
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CircularProgressIndicator(color: AppTheme.accentCyan),
-            const SizedBox(height: 20),
-            Text(
-              'Loading Admin Dashboard...',
-              style: GoogleFonts.spaceGrotesk(
-                color: AppTheme.textMuted,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildAdminToggle(bool isAdminMode, BuildContext context) {
     return Container(

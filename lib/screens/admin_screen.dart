@@ -72,7 +72,27 @@ class _AdminScreenState extends State<AdminScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isSmall = MediaQuery.of(context).size.width < 600;
+    
     return Scaffold(
+      floatingActionButton: isSmall
+          ? FloatingActionButton.extended(
+              onPressed: () => _showAddSessionDialog(
+                context,
+                initialMode: SessionInputMode.booking,
+              ),
+              icon: const Icon(Icons.add, color: Colors.white, size: 20),
+              label: Text(
+                'Tambah Sesi',
+                style: GoogleFonts.spaceGrotesk(
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  fontSize: 13,
+                ),
+              ),
+              backgroundColor: AppTheme.accentMagenta,
+            )
+          : null,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.close, color: AppTheme.accentCyan),
@@ -97,7 +117,6 @@ class _AdminScreenState extends State<AdminScreen> {
                 children: [
                   // Tab Bar & Action Button
                   Container(
-                    height: 60,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: const BoxDecoration(
                       color: AppTheme.surfaceDark,
@@ -105,75 +124,75 @@ class _AdminScreenState extends State<AdminScreen> {
                         bottom: BorderSide(color: AppTheme.dividerColor, width: 1),
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: List.generate(tabLabels.length, (index) {
-                                final isActive = _activeTabIndex == index;
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        _activeTabIndex = index;
-                                      });
-                                    },
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 200),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 14,
-                                        vertical: 8,
-                                      ),
-                                      decoration: BoxDecoration(
+                    child: Builder(
+                      builder: (context) {
+                        final isSmall = MediaQuery.of(context).size.width < 600;
+                        
+                        final tabsWidget = SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: List.generate(tabLabels.length, (index) {
+                              final isActive = _activeTabIndex == index;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _activeTabIndex = index;
+                                    });
+                                  },
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isActive
+                                          ? AppTheme.accentCyan.withValues(alpha: 0.15)
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
                                         color: isActive
-                                            ? AppTheme.accentCyan.withValues(alpha: 0.15)
-                                            : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
+                                            ? AppTheme.accentCyan
+                                            : AppTheme.dividerColor.withValues(alpha: 0.5),
+                                        width: isActive ? 1.5 : 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          tabIcons[index],
+                                          size: 16,
                                           color: isActive
                                               ? AppTheme.accentCyan
-                                              : AppTheme.dividerColor.withValues(alpha: 0.5),
-                                          width: isActive ? 1.5 : 1,
+                                              : AppTheme.textMuted,
                                         ),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            tabIcons[index],
-                                            size: 16,
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          tabLabels[index],
+                                          style: GoogleFonts.spaceGrotesk(
+                                            fontWeight: isActive
+                                                ? FontWeight.bold
+                                                : FontWeight.w600,
+                                            fontSize: 13,
                                             color: isActive
                                                 ? AppTheme.accentCyan
                                                 : AppTheme.textMuted,
                                           ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            tabLabels[index],
-                                            style: GoogleFonts.spaceGrotesk(
-                                              fontWeight: isActive
-                                                  ? FontWeight.bold
-                                                  : FontWeight.w600,
-                                              fontSize: 13,
-                                              color: isActive
-                                                  ? AppTheme.accentCyan
-                                                  : AppTheme.textMuted,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                );
-                              }),
-                            ),
+                                ),
+                              );
+                            }),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        ElevatedButton.icon(
+                        );
+
+                        final actionButton = ElevatedButton.icon(
                           onPressed: () => _showAddSessionDialog(
                             context,
                             initialMode: SessionInputMode.booking,
@@ -197,8 +216,20 @@ class _AdminScreenState extends State<AdminScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                        ),
-                      ],
+                        );
+
+                        if (isSmall) {
+                          return tabsWidget;
+                        } else {
+                          return Row(
+                            children: [
+                              Expanded(child: tabsWidget),
+                              const SizedBox(width: 12),
+                              actionButton,
+                            ],
+                          );
+                        }
+                      },
                     ),
                   ),
                   // Tab Content Views
@@ -254,15 +285,19 @@ class _AdminScreenState extends State<AdminScreen> {
   // ════════════════════════════════════════════════════════
 
   Widget _buildDashboard() {
+    final isSmall = MediaQuery.of(context).size.width < 600;
     return Consumer<BookingProvider>(
       builder: (context, provider, child) {
         final stats = provider.todayStats;
         final revenue = provider.todayRevenue;
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        return Builder(
+          builder: (context) {
+            try {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildApiServerCard(context, provider),
               const SizedBox(height: 24),
@@ -300,55 +335,55 @@ class _AdminScreenState extends State<AdminScreen> {
                 const SizedBox(height: 16),
               ],
               const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      'Total Booking',
-                      '${stats['totalBookings']}',
-                      Icons.book_online,
-                      AppTheme.accentMagenta,
+              if (isSmall)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildStatCard('Total Booking', '${stats['totalBookings']}', Icons.book_online, AppTheme.accentMagenta),
+                    const SizedBox(height: 16),
+                    _buildStatCard('Unit Dipakai', '${stats['unitsInUse']}', Icons.videogame_asset, AppTheme.accentCyan),
+                    const SizedBox(height: 16),
+                    _buildStatCard('Unit Kosong', '${stats['unitsAvailable']}', Icons.event_available, AppTheme.accentGreen),
+                    const SizedBox(height: 16),
+                    _buildStatCard('Pemasukan Hari Ini', formatRupiah(revenue), Icons.payments_outlined, AppTheme.accentTeal),
+                  ],
+                )
+              else
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: _buildStatCard('Total Booking', '${stats['totalBookings']}', Icons.book_online, AppTheme.accentMagenta)),
+                        const SizedBox(width: 16),
+                        Expanded(child: _buildStatCard('Unit Dipakai', '${stats['unitsInUse']}', Icons.videogame_asset, AppTheme.accentCyan)),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildStatCard(
-                      'Unit Dipakai',
-                      '${stats['unitsInUse']}',
-                      Icons.videogame_asset,
-                      AppTheme.accentCyan,
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(child: _buildStatCard('Unit Kosong', '${stats['unitsAvailable']}', Icons.event_available, AppTheme.accentGreen)),
+                        const SizedBox(width: 16),
+                        Expanded(child: _buildStatCard('Pemasukan Hari Ini', formatRupiah(revenue), Icons.payments_outlined, AppTheme.accentTeal)),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      'Unit Kosong',
-                      '${stats['unitsAvailable']}',
-                      Icons.event_available,
-                      AppTheme.accentGreen,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildStatCard(
-                      'Pemasukan Hari Ini',
-                      formatRupiah(revenue),
-                      Icons.payments_outlined,
-                      AppTheme.accentTeal,
-                    ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
               const SizedBox(height: 32),
 
               // ── Session Timer Cards ──
               _buildSessionTimersSection(provider),
-            ],
-          ),
+                ],
+              ),
+            );
+            } catch (e, stack) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text('Dashboard Error: $e\n$stack', style: const TextStyle(color: Colors.red)),
+                ),
+              );
+            }
+          }
         );
       },
     );
@@ -377,17 +412,20 @@ class _AdminScreenState extends State<AdminScreen> {
             ),
           ),
           const SizedBox(width: 8),
-          Text(
-            isOnline
-                ? 'SYSTEM CLOUD BACKEND CONNECTED'
-                : 'MODE LOKAL / OFFLINE SIMULATED',
-            style: GoogleFonts.spaceGrotesk(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: statusColor,
+          Expanded(
+            child: Text(
+              isOnline
+                  ? 'SYSTEM CLOUD BACKEND CONNECTED'
+                  : 'MODE LOKAL / OFFLINE SIMULATED',
+              style: GoogleFonts.spaceGrotesk(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: statusColor,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 8),
           if (isSyncing)
             const SizedBox(
               width: 14,
@@ -608,7 +646,9 @@ class _AdminScreenState extends State<AdminScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              provider.extendBooking(booking.id, 1);
+              Future.delayed(const Duration(milliseconds: 50), () {
+                if (mounted) provider.extendBooking(booking.id, 1);
+              });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
@@ -680,7 +720,9 @@ class _AdminScreenState extends State<AdminScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              provider.removeBooking(booking.id);
+              Future.delayed(const Duration(milliseconds: 50), () {
+                if (mounted) provider.removeBooking(booking.id);
+              });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
@@ -2269,20 +2311,23 @@ class _AdminScreenState extends State<AdminScreen> {
                                                 : AppTheme.textMuted,
                                       ),
                                       const SizedBox(width: 8),
-                                      Text(
-                                        'Walk-in (Main Sekarang)',
-                                        style: GoogleFonts.spaceGrotesk(
-                                          fontSize: 12,
-                                          fontWeight:
-                                              selectedMode ==
-                                                      SessionInputMode.walkIn
-                                                  ? FontWeight.bold
-                                                  : FontWeight.w600,
-                                          color:
-                                              selectedMode ==
-                                                      SessionInputMode.walkIn
-                                                  ? AppTheme.textPrimary
-                                                  : AppTheme.textMuted,
+                                      Flexible(
+                                        child: Text(
+                                          'Walk-in (Main Sekarang)',
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.spaceGrotesk(
+                                            fontSize: 12,
+                                            fontWeight:
+                                                selectedMode ==
+                                                        SessionInputMode.walkIn
+                                                    ? FontWeight.bold
+                                                    : FontWeight.w600,
+                                            color:
+                                                selectedMode ==
+                                                        SessionInputMode.walkIn
+                                                    ? AppTheme.textPrimary
+                                                    : AppTheme.textMuted,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -2335,20 +2380,23 @@ class _AdminScreenState extends State<AdminScreen> {
                                                 : AppTheme.textMuted,
                                       ),
                                       const SizedBox(width: 8),
-                                      Text(
-                                        'Jadwal Booking',
-                                        style: GoogleFonts.spaceGrotesk(
-                                          fontSize: 12,
-                                          fontWeight:
-                                              selectedMode ==
-                                                      SessionInputMode.booking
-                                                  ? FontWeight.bold
-                                                  : FontWeight.w600,
-                                          color:
-                                              selectedMode ==
-                                                      SessionInputMode.booking
-                                                  ? AppTheme.textPrimary
-                                                  : AppTheme.textMuted,
+                                      Flexible(
+                                        child: Text(
+                                          'Jadwal Booking',
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.spaceGrotesk(
+                                            fontSize: 12,
+                                            fontWeight:
+                                                selectedMode ==
+                                                        SessionInputMode.booking
+                                                    ? FontWeight.bold
+                                                    : FontWeight.w600,
+                                            color:
+                                                selectedMode ==
+                                                        SessionInputMode.booking
+                                                    ? AppTheme.textPrimary
+                                                    : AppTheme.textMuted,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -2440,6 +2488,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<ConsoleType>(
+                                      isExpanded: true,
                                       initialValue: selectedPsType,
                                       dropdownColor: AppTheme.cardDark,
                                       style: GoogleFonts.spaceGrotesk(
@@ -2488,6 +2537,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<String>(
+                                      isExpanded: true,
                                       initialValue: selectedUnitLabel,
                                       dropdownColor: AppTheme.cardDark,
                                       style: GoogleFonts.spaceGrotesk(
@@ -2545,6 +2595,7 @@ class _AdminScreenState extends State<AdminScreen> {
                           ),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<SessionDuration>(
+                            isExpanded: true,
                             initialValue: selectedDuration,
                             dropdownColor: AppTheme.cardDark,
                             style: GoogleFonts.spaceGrotesk(
@@ -2590,6 +2641,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<ConsoleType>(
+                                      isExpanded: true,
                                       initialValue: selectedPsType,
                                       dropdownColor: AppTheme.cardDark,
                                       style: GoogleFonts.spaceGrotesk(
@@ -2637,6 +2689,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<SessionDuration>(
+                                      isExpanded: true,
                                       initialValue: selectedDuration,
                                       dropdownColor: AppTheme.cardDark,
                                       style: GoogleFonts.spaceGrotesk(
@@ -2975,16 +3028,19 @@ class _AdminScreenState extends State<AdminScreen> {
                                       return;
                                     }
 
-                                    provider.addWalkIn(
-                                      baseType: selectedPsType,
-                                      unitLabel: selectedUnitLabel!,
-                                      playerName: name,
-                                      duration: selectedDuration,
-                                      paymentMethod: selectedPaymentMethod,
-                                      paymentStatus: selectedPaymentStatus,
-                                    );
-
                                     Navigator.pop(dialogCtx);
+                                    Future.delayed(const Duration(milliseconds: 50), () {
+                                      if (mounted) {
+                                        provider.addWalkIn(
+                                          baseType: selectedPsType,
+                                          unitLabel: selectedUnitLabel!,
+                                          playerName: name,
+                                          duration: selectedDuration,
+                                          paymentMethod: selectedPaymentMethod,
+                                          paymentStatus: selectedPaymentStatus,
+                                        );
+                                      }
+                                    });
                                     ScaffoldMessenger.of(
                                       context,
                                     ).showSnackBar(
@@ -3026,8 +3082,12 @@ class _AdminScreenState extends State<AdminScreen> {
                                       paymentStatus: selectedPaymentStatus,
                                     );
 
-                                    provider.addBooking(booking);
                                     Navigator.pop(dialogCtx);
+                                    Future.delayed(const Duration(milliseconds: 50), () {
+                                      if (mounted) {
+                                        provider.addBooking(booking);
+                                      }
+                                    });
 
                                     ScaffoldMessenger.of(
                                       context,
