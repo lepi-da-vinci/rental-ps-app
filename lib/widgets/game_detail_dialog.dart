@@ -8,7 +8,7 @@ import 'retro_button.dart';
 /// Modal dialog showing rich details and description for a selected game.
 class GameDetailDialog extends StatelessWidget {
   final GameItem game;
-  final Function(int)? onNavigateToBooking;
+  final void Function(int, {String? preselectedGame})? onNavigateToBooking;
 
   const GameDetailDialog({
     super.key,
@@ -20,7 +20,7 @@ class GameDetailDialog extends StatelessWidget {
   static Future<void> show(
     BuildContext context,
     GameItem game, {
-    Function(int)? onNavigateToBooking,
+    void Function(int, {String? preselectedGame})? onNavigateToBooking,
   }) {
     return showDialog<void>(
       context: context,
@@ -307,7 +307,10 @@ class GameDetailDialog extends StatelessWidget {
                               isFullWidth: true,
                               onPressed: () {
                                 Navigator.of(context).pop();
-                                onNavigateToBooking?.call(3);
+                                onNavigateToBooking?.call(
+                                  3,
+                                  preselectedGame: game.title,
+                                );
                               },
                             ),
                           ),

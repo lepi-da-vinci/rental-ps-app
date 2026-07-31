@@ -15,7 +15,14 @@ import 'package:flutter/services.dart';
 import '../models/customer.dart';
 
 class BookingScreen extends StatefulWidget {
-  const BookingScreen({super.key});
+  final String? initialGame;
+  final ConsoleType? initialConsoleType;
+
+  const BookingScreen({
+    super.key,
+    this.initialGame,
+    this.initialConsoleType,
+  });
 
   @override
   State<BookingScreen> createState() => _BookingScreenState();
@@ -30,14 +37,38 @@ class _BookingScreenState extends State<BookingScreen> {
   DateTime? _selectedDate;
   String? _selectedTime;
   SessionDuration? _selectedDuration;
+  String? _selectedGame;
 
   List<ConsoleType> get _psTypes => ConsoleType.values;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialGame != null) {
+      _selectedGame = widget.initialGame;
+    }
+    if (widget.initialConsoleType != null) {
+      _selectedPsType = widget.initialConsoleType;
+    }
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(BookingScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialGame != null &&
+        widget.initialGame != oldWidget.initialGame) {
+      setState(() {
+        _selectedGame = widget.initialGame;
+        _selectedPsType = widget.initialConsoleType;
+      });
+    }
   }
 
   // Get estimated price based on selection
@@ -59,6 +90,314 @@ class _BookingScreenState extends State<BookingScreen> {
     if (exactPrice.isNotEmpty) return formatRupiah(exactPrice.first.price);
     // Estimate from per-hour of first tier
     return '~${formatRupiah(pkg.prices.first.price * durHours)}';
+  }
+
+  Future<void> _showGamePickerSheet(List<String> games) async {
+    String searchQuery = '';
+    String? tempSelected = _selectedGame;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final filtered = games
+                .where((g) =>
+                    g.toLowerCase().contains(searchQuery.toLowerCase()))
+                .toList();
+
+            return DraggableScrollableSheet(
+              initialChildSize: 0.75,
+              minChildSize: 0.4,
+              maxChildSize: 0.92,
+              expand: false,
+              builder: (context, scrollController) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceDark,
+                    borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(28)),
+                    border: Border.all(
+                        color: AppTheme.accentCyan.withValues(alpha: 0.25)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.accentCyan.withValues(alpha: 0.1),
+                        blurRadius: 30,
+                        spreadRadius: 2,
+                      )
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      // Handle bar
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12, bottom: 4),
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: AppTheme.dividerColor,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      // Header
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppTheme.accentCyan.withValues(alpha: 0.2),
+                                    AppTheme.accentMagenta
+                                        .withValues(alpha: 0.2),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: AppTheme.accentCyan
+                                        .withValues(alpha: 0.4)),
+                              ),
+                              child: const Icon(Icons.videogame_asset_rounded,
+                                  color: AppTheme.accentCyan, size: 22),
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Pilih Game',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppTheme.textPrimary,
+                                  ),
+                                ),
+                                Text(
+                                  '${games.length} game tersedia',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 12,
+                                    color: AppTheme.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Spacer(),
+                            if (tempSelected != null)
+                              GestureDetector(
+                                onTap: () {
+                                  setSheetState(() => tempSelected = null);
+                                  setState(() => _selectedGame = null);
+                                  Navigator.of(context).pop();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.accentMagenta
+                                        .withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        color: AppTheme.accentMagenta
+                                            .withValues(alpha: 0.4)),
+                                  ),
+                                  child: Text(
+                                    'Reset',
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.accentMagenta,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      // Search field
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                        child: TextField(
+                          autofocus: false,
+                          style: GoogleFonts.spaceGrotesk(
+                            color: AppTheme.textPrimary,
+                            fontSize: 14,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Cari game...',
+                            hintStyle: GoogleFonts.spaceGrotesk(
+                                color: AppTheme.textMuted, fontSize: 14),
+                            prefixIcon: const Icon(Icons.search,
+                                color: AppTheme.textMuted, size: 20),
+                            filled: true,
+                            fillColor: AppTheme.cardDark,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                  color: AppTheme.dividerColor),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                  color: AppTheme.dividerColor),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                  color: AppTheme.accentCyan),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                          ),
+                          onChanged: (v) =>
+                              setSheetState(() => searchQuery = v),
+                        ),
+                      ),
+                      const Divider(
+                          height: 1, color: AppTheme.dividerColor),
+                      // Game grid
+                      Expanded(
+                        child: filtered.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.search_off,
+                                        color: AppTheme.textMuted, size: 40),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Game tidak ditemukan',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        color: AppTheme.textMuted,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : GridView.builder(
+                                controller: scrollController,
+                                padding: const EdgeInsets.fromLTRB(
+                                    16, 16, 16, 32),
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  mainAxisSpacing: 10,
+                                  crossAxisSpacing: 10,
+                                  childAspectRatio: 3.2,
+                                ),
+                                itemCount: filtered.length,
+                                itemBuilder: (context, index) {
+                                  final game = filtered[index];
+                                  final isSelected = tempSelected == game;
+                                  return GestureDetector(
+                                    onTap: () {
+                                      setSheetState(
+                                          () => tempSelected = game);
+                                      setState(
+                                          () => _selectedGame = game);
+                                      HapticFeedback.lightImpact();
+                                      Future.delayed(
+                                          const Duration(milliseconds: 160),
+                                          () {
+                                        if (context.mounted) {
+                                          Navigator.of(context).pop();
+                                        }
+                                      });
+                                    },
+                                    child: AnimatedContainer(
+                                      duration:
+                                          const Duration(milliseconds: 200),
+                                      curve: Curves.easeOut,
+                                      decoration: BoxDecoration(
+                                        gradient: isSelected
+                                            ? LinearGradient(
+                                                colors: [
+                                                  AppTheme.accentCyan
+                                                      .withValues(alpha: 0.25),
+                                                  AppTheme.accentMagenta
+                                                      .withValues(alpha: 0.15),
+                                                ],
+                                              )
+                                            : null,
+                                        color: isSelected
+                                            ? null
+                                            : AppTheme.cardDark,
+                                        borderRadius:
+                                            BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? AppTheme.accentCyan
+                                              : AppTheme.dividerColor,
+                                          width: isSelected ? 1.5 : 1,
+                                        ),
+                                        boxShadow: isSelected
+                                            ? [
+                                                BoxShadow(
+                                                  color: AppTheme.accentCyan
+                                                      .withValues(alpha: 0.25),
+                                                  blurRadius: 10,
+                                                )
+                                              ]
+                                            : null,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 6),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            isSelected
+                                                ? Icons.check_circle_rounded
+                                                : Icons
+                                                    .videogame_asset_outlined,
+                                            size: 16,
+                                            color: isSelected
+                                                ? AppTheme.accentCyan
+                                                : AppTheme.textMuted,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              game,
+                                              maxLines: 2,
+                                              overflow:
+                                                  TextOverflow.ellipsis,
+                                              style:
+                                                  GoogleFonts.spaceGrotesk(
+                                                fontSize: 12,
+                                                fontWeight: isSelected
+                                                    ? FontWeight.w700
+                                                    : FontWeight.w500,
+                                                color: isSelected
+                                                    ? AppTheme.textPrimary
+                                                    : AppTheme.textSecondary,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -296,7 +635,10 @@ class _BookingScreenState extends State<BookingScreen> {
                           return InkWell(
                             onTap: () {
                               HapticFeedback.lightImpact();
-                              setState(() => _selectedPsType = type);
+                              setState(() {
+                                _selectedPsType = type;
+                                _selectedGame = null;
+                              });
                             },
                             borderRadius: BorderRadius.circular(12),
                             child: AnimatedContainer(
@@ -341,17 +683,22 @@ class _BookingScreenState extends State<BookingScreen> {
                                         : AppTheme.textMuted,
                                   ),
                                   const SizedBox(height: 8),
-                                  Text(
-                                    type.bookingDisplayName,
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.spaceGrotesk(
-                                      fontSize: 12,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w700
-                                          : FontWeight.w600,
-                                      color: isSelected
-                                          ? AppTheme.textPrimary
-                                          : AppTheme.textMuted,
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                                    child: Text(
+                                      type.bookingDisplayName,
+                                      textAlign: TextAlign.center,
+                                      softWrap: true,
+                                      maxLines: 2,
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 12,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w600,
+                                        color: isSelected
+                                            ? AppTheme.textPrimary
+                                            : AppTheme.textMuted,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -371,6 +718,141 @@ class _BookingScreenState extends State<BookingScreen> {
                             : Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  _buildLabel('GAME YANG INGIN DIMAINKAN (OPSIONAL)'),
+                                  const SizedBox(height: 8),
+                                  Builder(
+                                    builder: (context) {
+                                      final provider = context.watch<BookingProvider>();
+                                      final matchingUnits = provider.units
+                                          .where((u) => u.psType == _selectedPsType)
+                                          .toList();
+                                      final Set<String> gameSet = {};
+                                      for (final u in matchingUnits) {
+                                        gameSet.addAll(u.installedGames);
+                                      }
+                                      final games = gameSet.toList()..sort();
+
+                                      return GestureDetector(
+                                        onTap: () => _showGamePickerSheet(games),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(milliseconds: 250),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 14),
+                                          decoration: BoxDecoration(
+                                            gradient: _selectedGame != null
+                                                ? LinearGradient(
+                                                    colors: [
+                                                      AppTheme.accentCyan
+                                                          .withValues(alpha: 0.08),
+                                                      AppTheme.accentMagenta
+                                                          .withValues(alpha: 0.05),
+                                                    ],
+                                                  )
+                                                : null,
+                                            color: _selectedGame == null
+                                                ? AppTheme.surfaceDark
+                                                : null,
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            border: Border.all(
+                                              color: _selectedGame != null
+                                                  ? AppTheme.accentCyan
+                                                      .withValues(alpha: 0.7)
+                                                  : AppTheme.dividerColor,
+                                              width:
+                                                  _selectedGame != null ? 1.5 : 1,
+                                            ),
+                                            boxShadow: _selectedGame != null
+                                                ? [
+                                                    BoxShadow(
+                                                      color: AppTheme.accentCyan
+                                                          .withValues(alpha: 0.15),
+                                                      blurRadius: 12,
+                                                    )
+                                                  ]
+                                                : null,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(6),
+                                                decoration: BoxDecoration(
+                                                  color: _selectedGame != null
+                                                      ? AppTheme.accentCyan
+                                                          .withValues(alpha: 0.15)
+                                                      : AppTheme.cardDark,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: Icon(
+                                                  _selectedGame != null
+                                                      ? Icons
+                                                          .videogame_asset_rounded
+                                                      : Icons
+                                                          .videogame_asset_outlined,
+                                                  size: 18,
+                                                  color: _selectedGame != null
+                                                      ? AppTheme.accentCyan
+                                                      : AppTheme.textMuted,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    if (_selectedGame != null)
+                                                      Text(
+                                                        'Game Dipilih',
+                                                        style: GoogleFonts
+                                                            .spaceGrotesk(
+                                                          fontSize: 10,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color:
+                                                              AppTheme.accentCyan,
+                                                          letterSpacing: 0.8,
+                                                        ),
+                                                      ),
+                                                    Text(
+                                                      _selectedGame ??
+                                                          'Tap untuk pilih game favorit kamu...',
+                                                      style:
+                                                          GoogleFonts.spaceGrotesk(
+                                                        fontSize: _selectedGame !=
+                                                                null
+                                                            ? 14
+                                                            : 13,
+                                                        fontWeight: _selectedGame !=
+                                                                null
+                                                            ? FontWeight.w700
+                                                            : FontWeight.w400,
+                                                        color: _selectedGame !=
+                                                                null
+                                                            ? AppTheme.textPrimary
+                                                            : AppTheme.textMuted,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Icon(
+                                                _selectedGame != null
+                                                    ? Icons.edit_outlined
+                                                    : Icons.expand_more_rounded,
+                                                color: _selectedGame != null
+                                                    ? AppTheme.accentCyan
+                                                    : AppTheme.textMuted,
+                                                size: 20,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 20),
                                   _buildLabel('DURASI'),
                                   const SizedBox(height: 8),
                                   Wrap(
@@ -572,6 +1054,13 @@ class _BookingScreenState extends State<BookingScreen> {
                         'Konsol',
                         _selectedPsType?.bookingDisplayName ?? '-',
                       ),
+                      if (_selectedGame != null) ...[
+                        const SizedBox(height: 16),
+                        _buildSummaryRow(
+                          'Game',
+                          _selectedGame!,
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       _buildSummaryRow(
                         'Tanggal',
@@ -1212,6 +1701,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                 duration: duration,
                                 assignedUnit: '${_selectedPsType!.displayName} $unitLabel',
                                 paymentMethod: selectedPaymentMethod,
+                                playedGame: _selectedGame,
                               );
 
                               context.read<BookingProvider>().addBooking(booking);
@@ -1399,6 +1889,7 @@ class _BookingScreenState extends State<BookingScreen> {
       _selectedDate = null;
       _selectedTime = null;
       _selectedDuration = null;
+      _selectedGame = null;
     });
   }
 

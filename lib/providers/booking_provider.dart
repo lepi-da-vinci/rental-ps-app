@@ -516,6 +516,19 @@ class BookingProvider extends ChangeNotifier {
     }
   }
 
+  void updateBookingGame(String bookingId, String newGame) async {
+    final idx = _bookings.indexWhere((b) => b.id == bookingId);
+    if (idx != -1) {
+      _bookings[idx] = _bookings[idx].copyWith(playedGame: newGame);
+      await _saveLocalBookings();
+      notifyListeners();
+      if (_isApiConnected) {
+        await ApiService.createBooking(_bookings[idx]);
+        syncWithApi();
+      }
+    }
+  }
+
   Booking? getBookingById(String id) {
     try {
       return _bookings.firstWhere((b) => b.id == id);

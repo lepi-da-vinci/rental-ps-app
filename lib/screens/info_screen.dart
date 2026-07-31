@@ -14,7 +14,7 @@ import '../widgets/glass_panel.dart';
 import '../widgets/game_detail_dialog.dart';
 
 class InfoScreen extends StatefulWidget {
-  final Function(int)? onNavigateToBooking;
+  final void Function(int, {String? preselectedGame})? onNavigateToBooking;
 
   const InfoScreen({super.key, this.onNavigateToBooking});
 

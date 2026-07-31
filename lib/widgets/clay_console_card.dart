@@ -15,6 +15,8 @@ class ClayConsoleCard extends StatelessWidget {
   final VoidCallback? onExtend;
   final VoidCallback? onFinish;
 
+  final VoidCallback? onChangeGame;
+
   const ClayConsoleCard({
     super.key,
     required this.unit,
@@ -23,6 +25,7 @@ class ClayConsoleCard extends StatelessWidget {
     required this.timerStatus,
     this.onExtend,
     this.onFinish,
+    this.onChangeGame,
   });
 
   String _formatCountdown(int seconds) {
@@ -171,57 +174,72 @@ class ClayConsoleCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'GAMER / PEMAIN',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textMuted,
-                        letterSpacing: 1,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'GAMER / PEMAIN',
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textMuted,
+                          letterSpacing: 1,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      activeBooking!.customerName,
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
+                      const SizedBox(height: 3),
+                      Text(
+                        activeBooking!.customerName,
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    if (activeBooking!.playedGame != null) ...[
                       const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.gamepad_rounded, size: 14, color: AppTheme.clayCyan),
-                          const SizedBox(width: 4),
-                          Text(
-                            activeBooking!.playedGame!,
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 12,
-                              color: AppTheme.clayCyan,
-                              fontWeight: FontWeight.w600,
-                            ),
+                      InkWell(
+                        onTap: onChangeGame,
+                        borderRadius: BorderRadius.circular(6),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.gamepad_rounded, size: 14, color: AppTheme.clayCyan),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  activeBooking!.playedGame ?? 'Pilih Game',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 12,
+                                    color: AppTheme.clayCyan,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(Icons.edit_outlined, size: 12, color: AppTheme.clayCyan),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ],
-                  ],
+                  ),
                 ),
+                const SizedBox(width: 8),
 
                 // 3D Inflated Timer Box
                 ClayPanel(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   borderRadius: 18,
                   color: AppTheme.claySurface,
                   borderColor: color.withValues(alpha: 0.6),
                   child: Text(
                     _formatCountdown(remainingSeconds!),
                     style: GoogleFonts.pressStart2p(
-                      fontSize: 14,
+                      fontSize: 13,
                       color: color,
                       height: 1.3,
                     ),
@@ -232,29 +250,56 @@ class ClayConsoleCard extends StatelessWidget {
             const SizedBox(height: 18),
 
             // ── 3D Clay Action Buttons: Tambah Jam & Selesai ──
-            Row(
-              children: [
-                if (onExtend != null)
-                  Expanded(
-                    child: ClayButton.text(
-                      text: 'Tambah Jam',
-                      icon: Icons.add_alarm_rounded,
-                      color: AppTheme.clayPurple,
-                      onTap: onExtend,
-                    ),
-                  ),
-                if (onExtend != null && onFinish != null)
-                  const SizedBox(width: 12),
-                if (onFinish != null)
-                  Expanded(
-                    child: ClayButton.text(
-                      text: 'Selesaikan',
-                      icon: Icons.stop_circle_outlined,
-                      color: AppTheme.clayPink,
-                      onTap: onFinish,
-                    ),
-                  ),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth < 280) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (onExtend != null)
+                        ClayButton.text(
+                          text: 'Tambah Jam',
+                          icon: Icons.add_alarm_rounded,
+                          color: AppTheme.clayPurple,
+                          onTap: onExtend,
+                        ),
+                      if (onExtend != null && onFinish != null)
+                        const SizedBox(height: 8),
+                      if (onFinish != null)
+                        ClayButton.text(
+                          text: 'Selesaikan',
+                          icon: Icons.stop_circle_outlined,
+                          color: AppTheme.clayPink,
+                          onTap: onFinish,
+                        ),
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    if (onExtend != null)
+                      Expanded(
+                        child: ClayButton.text(
+                          text: 'Tambah Jam',
+                          icon: Icons.add_alarm_rounded,
+                          color: AppTheme.clayPurple,
+                          onTap: onExtend,
+                        ),
+                      ),
+                    if (onExtend != null && onFinish != null)
+                      const SizedBox(width: 8),
+                    if (onFinish != null)
+                      Expanded(
+                        child: ClayButton.text(
+                          text: 'Selesaikan',
+                          icon: Icons.stop_circle_outlined,
+                          color: AppTheme.clayPink,
+                          onTap: onFinish,
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           ] else ...[
             // Standby Unit Row

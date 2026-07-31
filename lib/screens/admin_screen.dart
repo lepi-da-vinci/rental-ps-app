@@ -337,15 +337,22 @@ class _AdminScreenState extends State<AdminScreen> {
               const SizedBox(height: 20),
               if (isSmall)
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildStatCard('Total Booking', '${stats['totalBookings']}', Icons.book_online, AppTheme.accentMagenta),
-                    const SizedBox(height: 16),
-                    _buildStatCard('Unit Dipakai', '${stats['unitsInUse']}', Icons.videogame_asset, AppTheme.accentCyan),
-                    const SizedBox(height: 16),
-                    _buildStatCard('Unit Kosong', '${stats['unitsAvailable']}', Icons.event_available, AppTheme.accentGreen),
-                    const SizedBox(height: 16),
-                    _buildStatCard('Pemasukan Hari Ini', formatRupiah(revenue), Icons.payments_outlined, AppTheme.accentTeal),
+                    Row(
+                      children: [
+                        Expanded(child: _buildStatCard('Total Booking', '${stats['totalBookings']}', Icons.book_online, AppTheme.accentMagenta)),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildStatCard('Unit Dipakai', '${stats['unitsInUse']}', Icons.videogame_asset, AppTheme.accentCyan)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: _buildStatCard('Unit Kosong', '${stats['unitsAvailable']}', Icons.event_available, AppTheme.accentGreen)),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildStatCard('Pemasukan Hari Ini', formatRupiah(revenue), Icons.payments_outlined, AppTheme.accentTeal)),
+                      ],
+                    ),
                   ],
                 )
               else
@@ -580,12 +587,151 @@ class _AdminScreenState extends State<AdminScreen> {
             onFinish: booking != null
                 ? () => _handleFinishSession(context, provider, booking)
                 : null,
+            onChangeGame: booking != null
+                ? () => _showChangeGameDialog(context, provider, booking, unit)
+                : null,
           );
         }),
       ],
     );
   },
 );
+  }
+
+  void _showChangeGameDialog(
+    BuildContext context,
+    BookingProvider provider,
+    Booking booking,
+    UnitStatus unit,
+  ) {
+    final installed = unit.installedGames;
+    final customGameController = TextEditingController(text: booking.playedGame ?? '');
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: AppTheme.surfaceDark,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppTheme.dividerColor),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.videogame_asset, color: AppTheme.accentCyan),
+              const SizedBox(width: 10),
+              Text(
+                'Ganti Game Sesi',
+                style: GoogleFonts.spaceGrotesk(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Pemain: ${booking.customerName} (${unit.label})',
+                  style: GoogleFonts.spaceGrotesk(color: AppTheme.textSecondary, fontSize: 13),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Pilih dari game terinstall:',
+                  style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted, fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: installed.map((game) {
+                    final isSelected = customGameController.text == game;
+                    return InkWell(
+                      onTap: () {
+                        customGameController.text = game;
+                        (ctx as Element).markNeedsBuild();
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppTheme.accentCyan.withValues(alpha: 0.2) : AppTheme.cardDark,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected ? AppTheme.accentCyan : AppTheme.dividerColor,
+                          ),
+                        ),
+                        child: Text(
+                          game,
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 12,
+                            color: isSelected ? AppTheme.accentCyan : AppTheme.textPrimary,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Atau ketik nama game secara manual:',
+                  style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted, fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: customGameController,
+                  style: GoogleFonts.spaceGrotesk(color: AppTheme.textPrimary),
+                  decoration: const InputDecoration(
+                    hintText: 'Nama Game (mis. Tekken 8)',
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(
+                'Batal',
+                style: GoogleFonts.spaceGrotesk(color: AppTheme.textMuted),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final selectedGame = customGameController.text.trim();
+                if (selectedGame.isNotEmpty) {
+                  provider.updateBookingGame(booking.id, selectedGame);
+                }
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '✅ Game diubah ke: ${selectedGame.isEmpty ? "Belum diset" : selectedGame}',
+                      style: GoogleFonts.spaceGrotesk(),
+                    ),
+                    backgroundColor: AppTheme.accentGreen,
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accentCyan,
+                foregroundColor: Colors.black,
+              ),
+              child: Text(
+                'Simpan',
+                style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _handleExtendSession(

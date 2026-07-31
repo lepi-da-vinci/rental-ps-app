@@ -65,6 +65,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen>
     with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
+  String? _preselectedGame;
   late AnimationController _bgController;
   late Animation<Alignment> _bgAnimation;
 
@@ -103,7 +104,7 @@ class _MainScreenState extends State<MainScreen>
     });
   }
 
-  void _onNavigate(int index) {
+  void _onNavigate(int index, {String? preselectedGame}) {
     final adminProvider = context.read<AdminProvider>();
     if (index == 4 && !adminProvider.isAdminMode) {
       _showLoginDialog(context);
@@ -112,7 +113,12 @@ class _MainScreenState extends State<MainScreen>
     if (index == 4) {
       _navigateToAdmin();
     } else {
-      setState(() => _currentIndex = index);
+      setState(() {
+        _currentIndex = index;
+        if (preselectedGame != null) {
+          _preselectedGame = preselectedGame;
+        }
+      });
     }
   }
 
@@ -140,13 +146,23 @@ class _MainScreenState extends State<MainScreen>
     final isAdminMode = context.watch<AdminProvider>().isAdminMode;
 
     final screens = [
-      HomeScreen(key: const ValueKey('home'), onNavigate: _onNavigate),
-      InfoScreen(key: const ValueKey('info'), onNavigateToBooking: _onNavigate),
+      HomeScreen(
+        key: const ValueKey('home'),
+        onNavigate: (index) => _onNavigate(index),
+      ),
+      InfoScreen(
+        key: const ValueKey('info'),
+        onNavigateToBooking: (index, {String? preselectedGame}) =>
+            _onNavigate(index, preselectedGame: preselectedGame),
+      ),
       HargaScreen(
         key: const ValueKey('harga'),
-        onNavigateToBooking: _onNavigate,
+        onNavigateToBooking: (index) => _onNavigate(index),
       ),
-      const BookingScreen(key: ValueKey('booking')),
+      BookingScreen(
+        key: ValueKey('booking_${_preselectedGame ?? ""}'),
+        initialGame: _preselectedGame,
+      ),
     ];
 
     final titles = [

@@ -11,6 +11,7 @@ class SessionTimerCard extends StatelessWidget {
   final SessionTimerStatus timerStatus;
   final VoidCallback? onExtend;
   final VoidCallback? onFinish;
+  final VoidCallback? onChangeGame;
 
   const SessionTimerCard({
     super.key,
@@ -20,6 +21,7 @@ class SessionTimerCard extends StatelessWidget {
     required this.timerStatus,
     this.onExtend,
     this.onFinish,
+    this.onChangeGame,
   });
 
   @override
@@ -31,6 +33,7 @@ class SessionTimerCard extends StatelessWidget {
       timerStatus: timerStatus,
       onExtend: onExtend,
       onFinish: onFinish,
+      onChangeGame: onChangeGame,
     );
   }
 }

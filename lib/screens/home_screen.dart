@@ -484,7 +484,10 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: () => GameDetailDialog.show(
             context,
             game,
-            onNavigateToBooking: widget.onNavigate,
+            onNavigateToBooking: widget.onNavigate != null
+                ? (index, {String? preselectedGame}) =>
+                    widget.onNavigate!(index)
+                : null,
           ),
           child: GlassPanel(
             enableBlur: false,
